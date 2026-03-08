@@ -146,7 +146,7 @@
                 <div class="step-arrow">➔</div>
                 <div class="step-indicator" id="ind-2" onclick="cambiarPaso(2)"><span>2. Devanados</span></div>
                 <div class="step-arrow">➔</div>
-                <div class="step-indicator" id="ind-3" onclick="cambiarPaso(3)"><span>3. Encaje y Ranura</span></div>
+                <div class="step-indicator" id="ind-3" onclick="cambiarPaso(3)"><span>3. Ranuras</span></div>
             </div>
 
             <div class="content">
@@ -156,17 +156,22 @@
                         <div class="form-group">
                             <label>Número de Caras/Paneles del Rotor</label>
                             <select id="caras" onchange="actualizarResumenPaso1()">
-                                <option value="4">4 Caras</option>
+                                <option value="4" selected>4 Caras</option>
                                 <option value="6">6 Caras</option>
                                 <option value="8">8 Caras</option>
-                                <option value="10" selected>10 Caras</option>
+                                <option value="10">10 Caras</option>
                                 <option value="12">12 Caras</option>
+                                <option value="12">14 Caras</option>
+                                <option value="12">16 Caras</option>
+                                <option value="12">18 Caras</option>
+                                <option value="12">20 Caras</option>
+                                <option value="12">22 Caras</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Diámetro teórico del rotor (mm)</label>
                             <input type="text" id="diametro" class="calculado" readonly style="font-size: 18px; color: var(--primary-color);">
-                            <small style="color: #666; font-style: italic;">Fórmula: Ancho Panel / sen(π / caras)</small>
+                          
                         </div>
 
                         <h3 style="margin-top:25px; color: var(--primary-color);">☀️ 2. Panel Solar a Utilizar</h3>
@@ -181,23 +186,24 @@
                     </div>
                     
                     <div class="summary-section">
-                        <h3>Caracteristicasdel Panel</h3>
+                        <h3>Caracteristicas del Panel</h3>
                         <div style="display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 14px;">
                             <div class="summary-item"><span>Medidas:</span><span class="value" id="res-medidas">--</span></div>
-                            <div class="summary-item"><span>V. Vacío (Voc):</span><span class="value" id="res-panel-voc">--</span></div>
-                            <div class="summary-item"><span>I. Corto (Isc):</span><span class="value" id="res-panel-isc">--</span></div>
-                            <div class="summary-item"><span>Voltaje Trabajo (V):</span><span class="value" id="res-panel-v">--</span></div>
-                            <div class="summary-item"><span>Corriente (mA):</span><span class="value" id="res-panel-i">--</span></div>
+                            <div class="summary-item"><span>Tensión Vacío (Voc):</span><span class="value" id="res-panel-voc">--</span></div>
+                            <div class="summary-item"><span>Corriente Cortocircuito (Isc):</span><span class="value" id="res-panel-isc">--</span></div>
+                            <div class="summary-item"><span>Tensión Punto Máx.Potencia (Vmp):</span><span class="value" id="res-panel-v">--</span></div>
+                            <div class="summary-item"><span>Corriente Punto Máx.Potencia (Imp):</span><span class="value" id="res-panel-i">--</span></div>
                             
                             <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 8px;">
-                                <span>Potencia Eléctrica:</span><span class="value" id="res-panel-p" style="color:#d35400;">--</span>
+                                <span>Potencia Máxima (Pmax):</span><span class="value" id="res-panel-p" style="color:#d35400;">--</span>
                             </div>
                             <div class="summary-item"><span>Factor de Forma (FF):</span><span class="value" id="res-panel-ff">--</span></div>
                             
                             <div class="summary-item" style="background-color: #eef2f5; padding: 10px; border-radius: 6px; margin-top: 5px; border-bottom: none;">
-                                <span style="font-weight:bold;">Resistencia Ideal:</span>
+                                <span style="font-weight:bold;">Resistencia:</span>
                                 <span class="value" id="res-panel-r" style="font-size: 18px;">--</span>
                             </div>
+
                             <small style="color: #666; margin-top: -5px; margin-bottom: 10px; text-align: center;">* Objetivo a alcanzar con el devanado.</small>
                         </div>
                     </div>
@@ -205,7 +211,7 @@
 
                 <div id="step-2" class="step-container">
                     <div class="form-section">
-                        <h3 style="margin-top:0; color: var(--primary-color);">🧵 Diseño Eléctrico Óptimo</h3>
+                        <h3 style="margin-top:0; color: var(--primary-color);">🧵 Diseño Eléctrico</h3>
                         
                         <div class="form-group" style="display: flex; gap: 10px;">
                             <div style="flex: 1;">
@@ -256,9 +262,12 @@
                     </div>
                     <div class="summary-section">
                         <h3>Análisis del Devanado</h3>
+
                         <div class="summary-item"><span>Material:</span><span class="value" id="res-mat-nombre">Cobre</span></div>
-                        <div class="summary-item"><span>Longitud (1 Dev.):</span><span class="value" id="res-lon-devanado">0 m</span></div>
-                        <div class="summary-item"><span>Peso (1 Dev.):</span><span class="value" id="res-peso-devanado">0 g</span></div>
+                        <div class="summary-item"><span>Longitud Espira:</span><span class="value" id="res-lon-espira-resumen">0 m</span></div>
+                        <div class="summary-item"><span>Longitud (1 Devanado):</span><span class="value" id="res-lon-devanado">0 m</span></div>
+
+                        <div class="summary-item"><span>Peso (1 Devanado):</span><span class="value" id="res-peso-devanado">0 g</span></div>
                         
                         <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
                             <span>LONGITUD TOTAL:</span><span class="value" id="res-lon-total-todos" style="color:#d35400;">0 m</span>
@@ -266,7 +275,19 @@
                         <div class="summary-item">
                             <span>PESO TOTAL:</span><span class="value" id="res-peso-total-todos" style="color: #e74c3c;">0 g</span>
                         </div>
+
                         <small style="color: #666; font-size: 11px; text-align: center; display: block;">* Suma de todos los devanados del rotor.</small>
+
+                        <div class="summary-item" style="background-color: #eef2f5; padding: 10px; border-radius: 6px; margin-top: 15px; border-bottom: none;">
+                            <span style="font-weight:bold;">Espiras por Devanado:</span>
+                            <span class="value" id="res-espiras-final" style="font-size: 18px;">0</span>
+                        </div>
+
+                        <div class="summary-item" style="margin-top: 10px;">
+                            <span>Fuerza Magnetomotriz:</span>
+                            <span class="value" id="res-fmm">0 Av</span>
+                        </div>
+
                     </div>
                 </div>
 
@@ -503,6 +524,10 @@
             } catch (e) {
                 console.error("Error al renderizar UI:", e);
             }
+
+            document.getElementById('panel').selectedIndex = 3;
+            actualizarResumenPaso1();
+
         }
 
         // --- 3. FUNCIONES AÑADIR DATOS ---
@@ -660,6 +685,15 @@
                 
                 gEspiras = espirasCalculadas;
 
+                document.getElementById('res-espiras-final').textContent = espirasCalculadas;
+
+
+                // --- CÁLCULO DE LA FMM ---
+                // gIPanel está en mA, lo pasamos a Amperios dividiendo por 1000
+                const fmm = espirasCalculadas * (gIPanel / 1000);
+                document.getElementById('res-fmm').textContent = fmm.toFixed(2) + ' Av';
+                // -------------------------
+
                 const lonTotalReal = espirasCalculadas * lonEspira;
                 document.getElementById('lon-total').value = lonTotalReal.toFixed(2);
 
@@ -675,6 +709,9 @@
                 const masaTotal_g = masa1_g * numDevanados;
 
                 document.getElementById('res-mat-nombre').textContent = material.nombre;
+
+                document.getElementById('res-lon-espira-resumen').textContent = lonEspira.toFixed(4) + ' m';
+
                 document.getElementById('res-lon-devanado').textContent = lonTotalReal.toFixed(2) + ' m';
                 document.getElementById('res-peso-devanado').textContent = masa1_g.toFixed(1) + ' g';
                 document.getElementById('res-lon-total-todos').textContent = (lonTotalReal * numDevanados).toFixed(2) + ' m';
