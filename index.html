@@ -125,6 +125,75 @@
         .db-list li { background: white; margin-bottom: 8px; padding: 10px; border-radius: 4px; border: 1px solid #eee; font-size: 14px; display: flex; justify-content: space-between; align-items: flex-start; line-height: 1.4; }
         .btn-delete { color: #e74c3c; border: none; background: #ffeaa7; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-delete:hover { background: #e74c3c; color: white; }
+
+
+
+/* ... aquí están los estilos que ya tenías en tu página ... */
+
+          /* 👇 PEGA ESTO: DISEÑO DE LA GALERÍA DE VIDEOS 👇 */
+          .video-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #1e1e24; /* Color de fondo oscuro */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            color: #ffffff;
+          }
+
+          .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+          }
+
+          .video-comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 0.95em;
+          }
+
+          .video-comparison-table th, 
+          .video-comparison-table td {
+            padding: 12px;
+            border: 1px solid #444; 
+            vertical-align: middle;
+          }
+
+          .video-comparison-table th {
+            background-color: #3b82f6; /* Color azul para la cabecera */
+            color: #ffffff;
+            font-weight: bold;
+          }
+
+          .video-comparison-table video {
+            border-radius: 6px;
+            background-color: #000;
+          }
+
+          .btn-download {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: #10b981; /* Verde esmeralda */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease, transform 0.1s;
+          }
+
+          .btn-download:hover {
+            background-color: #059669; /* Verde más oscuro al pasar el ratón */
+            transform: scale(1.05);
+          }
+          /* 👆 FIN DEL DISEÑO DE VIDEOS 👆 */
+
+        </style> </head>
+
+
+
+
     </style>
 </head>
 <body>
@@ -132,6 +201,7 @@
     <div class="top-navbar">
         <button class="nav-tab active" id="tab-calc" onclick="cambiarPagina('calc')">⚙️ Calculadora Motor</button>
         <button class="nav-tab" id="tab-db" onclick="cambiarPagina('db')">🗄️ Base de Datos Componentes</button>
+      <button class="nav-tab" id="tab-videos" onclick="cambiarPagina('videos')">🎥 Galería de Videos</button>
     </div>
 
     <div id="page-calc" class="page-container active">
@@ -418,6 +488,89 @@
             </div>
         </div>
     </div>
+
+
+
+
+
+
+
+
+<div id="page-videos" class="page-container">
+    
+    <div class="panel-contenedor video-section">
+      <h2>🎥 Galería de Motores y Comparativa</h2>
+      <p>Visualiza el funcionamiento de distintas configuraciones y descarga los videos de demostración.</p>
+      
+    
+  
+  <div class="table-responsive">
+    <table class="video-comparison-table">
+      <thead>
+        <tr>
+          <th>Previsualización</th>
+          <th>Modelo / Configuración</th>
+          <th>Tipo de Panel Solar</th>
+          <th>Espiras / Hilo</th>
+          <th>Velocidad Estimada</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td>
+            <video width="160" height="90" controls preload="metadata">
+              <source src="videos/motor1.mp4" type="video/mp4">
+              Tu navegador no soporta el video.
+            </video>
+          </td>
+          <td><strong>Rotor de 4 Caras</strong><br>Velocidad alta</td>
+          <td><strong>Panel 53x18</strong><br>0,4V 101mA</td>
+          <td>30 espiras<br>Cu 0.15mm</td>
+          <td>~1500 RPM</td>
+          <td>
+            <a href="videos/motor1.mp4"" download="Motor_4Caras.mp4" class="btn-download">⬇️ Descargar</a>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <video width="160" height="90" controls preload="metadata">
+              <source src="videos/motor2.mp4" type="video/mp4">
+            </video>
+          </td>
+          <td><strong>Rotor de 4 Caras</strong><br>Velocidad media</td>
+          <td><strong>Panel 53x18</strong><br>0,4V 101mA</td>
+          <td>83 espiras<br>Cu 0.25mm</td>
+          <td>~2200 RPM</td>
+          <td>
+            <a href="videos/motor2.mp4" download="Motor_8Caras.mp4" class="btn-download">⬇️ Descargar</a>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <video width="160" height="90" controls preload="metadata">
+              <source src="videos/motor3.mp4" type="video/mp4">
+            </video>
+          </td>
+          <td><strong>Rotor de 4 Caras</strong><br>Velocidad baja</td>
+          <td><strong>Panel 53x18</strong><br>0,4V 101mA</td>
+          <td>104 espiras<br>Cu 0.28mm</td>
+          <td>~2200 RPM</td>
+          <td>
+            <a href="videos/motor3.mp4" download="Motor_8Caras.mp4" class="btn-download">⬇️ Descargar</a>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
 
     <script>
         function parsearNumero(valor) {
