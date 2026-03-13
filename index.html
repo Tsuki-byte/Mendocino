@@ -795,24 +795,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         let gDiaHilo = 0; 
 
         function actualizarResumenPaso1() {
-            if(dbPaneles.length === 0) return;
-            
-            gNumCaras = parseInt(document.getElementById('caras').value);
+
+
+
+                    if (dbPaneles.length === 0) return;
+
+            // 1. Obtener valores de la interfaz
+            gNumCaras = parseInt(document.getElementById('caras').value); // G5 en Excel
             const indexPanel = document.getElementById('panel').value;
             const panel = dbPaneles[indexPanel];
-            if(!panel) return;
-            
-            gLadoL = panel.l;
-            gLadoA = panel.a; // Lado menor (G7 en tu Excel)
-            gIPanel = panel.i; 
-            
-            // --- LÍNEA CORREGIDA PARA COINCIDIR CON TU EXCEL ---
-            // La fórmula de Excel: =G7 / (2 * SENO(RADIANES(((360 / G5) / 2)))) * 2
-            const anguloRadianes = ((360 / gNumCaras) / 2) * (Math.PI / 180);
-            gDiametroRotor = (gLadoA / (2 * Math.sin(anguloRadianes))) * 2;
-            // --------------------------------------------------
+            if (!panel) return;
 
+            // 2. Asignar dimensiones del panel
+            gLadoL = panel.l; // Lado mayor
+            gLadoA = panel.a; // Lado menor (G7 en Excel)
+            gIPanel = panel.i; 
+
+            // 3. CÁLCULO DEL DIÁMETRO (Traducción exacta de tu Excel)
+            // Excel: =G7 / (2 * SENO(RADIANES(((360 / G5) / 2)))) * 2
+            const anguloGrados = (360 / gNumCaras) / 2;
+            const anguloRadianes = anguloGrados * (Math.PI / 180); // Función RADIANES()
+            
+            // Aplicamos la fórmula idéntica
+            gDiametroRotor = (gLadoA / (2 * Math.sin(anguloRadianes))) * 2;
+
+            // 4. Actualizar visualización en el HTML
             document.getElementById('diametro').value = gDiametroRotor.toFixed(2) + ' mm';
+
 
             gRPlaca = panel.v / (panel.i / 1000); 
             const p_mW = panel.v * panel.i;
