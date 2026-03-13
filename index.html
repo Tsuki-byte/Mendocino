@@ -526,7 +526,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="page-videos" class="page-container">
     
     <div class="panel-contenedor video-section">
-      <h2>🎥 Galería de Motores y Comparativa</h2>
+      <h2>🎥 Galería de Motores</h2>
       <p>Visualiza el funcionamiento de distintas configuraciones y descarga los videos de demostración.</p>
       
     
@@ -803,10 +803,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             if(!panel) return;
             
             gLadoL = panel.l;
-            gLadoA = panel.a;
+            gLadoA = panel.a; // Lado menor (G7 en tu Excel)
             gIPanel = panel.i; 
             
-            gDiametroRotor = gLadoA / Math.sin(Math.PI / gNumCaras);
+            // --- LÍNEA CORREGIDA PARA COINCIDIR CON TU EXCEL ---
+            // La fórmula de Excel: =G7 / (2 * SENO(RADIANES(((360 / G5) / 2)))) * 2
+            const anguloRadianes = ((360 / gNumCaras) / 2) * (Math.PI / 180);
+            gDiametroRotor = (gLadoA / (2 * Math.sin(anguloRadianes))) * 2;
+            // --------------------------------------------------
+
             document.getElementById('diametro').value = gDiametroRotor.toFixed(2) + ' mm';
 
             gRPlaca = panel.v / (panel.i / 1000); 
