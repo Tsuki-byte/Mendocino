@@ -1,26 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
-
-<!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-5K3C8D22');</script>
-<!-- End Google Tag Manager -->
-
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-X5TF2M5Y1E"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-X5TF2M5Y1E');
 </script>
-
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,6 +26,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             --card-bg: #ffffff;
             --input-bg: #ffffff; 
             --calc-bg: #f8f9fa;  
+            /* Colores para la ilustración SVG */
+            --svg-panel-color: #8ac4ff;
+            --svg-ranura-color: #ffda8a;
+            --svg-stroke-color: #444;
         }
 
         body {
@@ -103,7 +99,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         .content { padding: 30px; display: flex; gap: 30px; flex-wrap: wrap; }
         
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #555; }
+        
+        /* Ajustes estéticos para evitar amontonamiento */
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #555; }
+        .form-group label span { display: block; font-size: 11px; color: #7f8c8d; font-weight: normal; margin-top: 2px; }
+        
         input[type="number"], input[type="text"], select {
             width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; box-sizing: border-box; background-color: var(--input-bg);
         }
@@ -138,6 +138,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         .btn-next { background-color: var(--primary-color); }
         .btn-prev { background-color: #7f8c8d; }
 
+        /* Estilos específicos para el contenedor SVG de la ilustración */
+        .svg-illustration-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-sizing: border-box;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        #rotor-svg {
+            width: 100%;
+            height: auto;
+            max-width: 250px;
+            aspect-ratio: 1 / 1;
+        }
+
         /* --- ESTILOS BASE DE DATOS --- */
         .db-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; width: 100%; }
         .db-card { background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 20px; }
@@ -147,88 +168,66 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         .btn-delete { color: #e74c3c; border: none; background: #ffeaa7; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-delete:hover { background: #e74c3c; color: white; }
 
-
-
-/* ... aquí están los estilos que ya tenías en tu página ... */
-
-          /* 👇 PEGA ESTO: DISEÑO DE LA GALERÍA DE VIDEOS 👇 */
-          .video-section {
+        /* --- DISEÑO DE LA GALERÍA DE VIDEOS --- */
+        .video-section {
             margin-top: 30px;
             padding: 20px;
-            background-color: #1e1e24; /* Color de fondo oscuro */
+            background-color: #1e1e24;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             color: #ffffff;
-          }
-
-          .table-responsive {
+        }
+        .table-responsive {
             overflow-x: auto;
             width: 100%;
-          }
-
-          .video-comparison-table {
+        }
+        .video-comparison-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
             text-align: center;
             font-size: 0.95em;
-          }
-
-          .video-comparison-table th, 
-          .video-comparison-table td {
+        }
+        .video-comparison-table th, 
+        .video-comparison-table td {
             padding: 12px;
             border: 1px solid #444; 
             vertical-align: middle;
-          }
-
-          .video-comparison-table th {
-            background-color: #3b82f6; /* Color azul para la cabecera */
+        }
+        .video-comparison-table th {
+            background-color: #3b82f6; 
             color: #ffffff;
             font-weight: bold;
-          }
-
-          .video-comparison-table video {
+        }
+        .video-comparison-table video {
             border-radius: 6px;
             background-color: #000;
-          }
-
-          .btn-download {
+        }
+        .btn-download {
             display: inline-block;
             padding: 8px 15px;
-            background-color: #10b981; /* Verde esmeralda */
+            background-color: #10b981; 
             color: white;
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
             font-size: 0.9em;
             transition: background-color 0.3s ease, transform 0.1s;
-          }
-
-          .btn-download:hover {
-            background-color: #059669; /* Verde más oscuro al pasar el ratón */
+        }
+        .btn-download:hover {
+            background-color: #059669; 
             transform: scale(1.05);
-          }
-          /* 👆 FIN DEL DISEÑO DE VIDEOS 👆 */
-
-        </style> </head>
-
-
-
-
+        }
     </style>
 </head>
 <body>
 
-<!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5K3C8D22"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
-   
-
-    <div class="top-navbar">
+<div class="top-navbar">
         <button class="nav-tab active" id="tab-calc" onclick="cambiarPagina('calc')">⚙️ Calculadora Motor</button>
         <button class="nav-tab" id="tab-db" onclick="cambiarPagina('db')">🗄️ Base de Datos Componentes</button>
-      <button class="nav-tab" id="tab-videos" onclick="cambiarPagina('videos')">🎥 Galería de Videos</button>
+        <button class="nav-tab" id="tab-videos" onclick="cambiarPagina('videos')">🎥 Galería de Videos</button>
     </div>
 
     <div id="page-calc" class="page-container active">
@@ -258,17 +257,42 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                 <option value="8">8 Caras</option>
                                 <option value="10">10 Caras</option>
                                 <option value="12">12 Caras</option>
-                                <option value="12">14 Caras</option>
-                                <option value="12">16 Caras</option>
-                                <option value="12">18 Caras</option>
-                                <option value="12">20 Caras</option>
-                                <option value="12">22 Caras</option>
+                                <option value="14">14 Caras</option>
+                                <option value="16">16 Caras</option>
+                                <option value="18">18 Caras</option>
+                                <option value="20">20 Caras</option>
+                                <option value="22">22 Caras</option>
                             </select>
                         </div>
+
+                        <div class="form-group">
+                            <label>Margen del marco (mm): <span>Borde de plástico a cada lado de la placa</span></label>
+                            <input type="number" id="margen-placa" value="3" step="0.1" min="0" oninput="actualizarResumenPaso1()">
+                        </div>
+
+                        <h4 style="margin-top: 20px; margin-bottom: 12px; border-bottom: 2px solid #eee; padding-bottom: 5px; color: #2c3e50;">Geometría de la Ranura</h4>
+                        
+                        <div style="display: flex; gap: 12px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Ancho (mm):</label>
+                                <input type="number" id="ranura-ancho" value="6.5" step="0.1" min="0" oninput="actualizarResumenPaso1()">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Prof. (mm):</label>
+                                <input type="number" id="ranura-alto" value="3.5" step="0.1" min="0" oninput="actualizarResumenPaso1()">
+                            </div>
+                            <div class="form-group" style="flex: 1.2;">
+                                <label>Forma:</label>
+                                <select id="ranura-tipo" onchange="actualizarResumenPaso1()">
+                                    <option value="cuadrado">Cuadrada</option>
+                                    <option value="trapecio" selected>Trapecio</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label>Diámetro teórico del rotor (mm)</label>
                             <input type="text" id="diametro" class="calculado" readonly style="font-size: 18px; color: var(--primary-color);">
-                          
                         </div>
 
                         <h3 style="margin-top:25px; color: var(--primary-color);">☀️ 2. Panel Solar a Utilizar</h3>
@@ -283,13 +307,38 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     
                     <div class="summary-section">
-                        <h3>Caracteristicas del Panel</h3>
+                        <h3>Ilustración Geométrica</h3>
+
+                    <div class="svg-illustration-container">
+                        <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Sección Frontal del Rotor</h4>
+                        <svg id="rotor-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"></svg>
+                        
+                        <div style="display: flex; gap: 12px; font-size: 12px; margin-top: 10px; flex-wrap: wrap; justify-content: center;">
+                            <span style="display:flex; align-items:center; gap:4px;">
+                                <span style="width:12px; height:12px; background-color:var(--svg-panel-color); border:1px solid var(--svg-stroke-color); border-radius:2px;"></span> Rotor 3D
+                            </span>
+                            <span style="display:flex; align-items:center; gap:4px;">
+                                <span style="width:16px; height:4px; background-color:#2c3e50; border-radius:1px;"></span> Placa Solar
+                            </span>
+                            <span style="display:flex; align-items:center; gap:4px;">
+                                <span id="leyenda-ranura" style="width:12px; height:12px; background-color:#d35400; border:1px solid #444; border-radius:2px; opacity: 0.8;"></span> Bobinado
+                            </span>
+                        </div>
+
+                        <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 20px 0 15px 0;">
+                        
+                        <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Vista Superior de una Cara</h4>
+                        <svg id="panel-svg" xmlns="http://www.w3.org/2000/svg" style="max-width: 100%; height: auto; max-height: 140px;"></svg>
+                    </div>
+
+
+                        <h3>Características del Panel</h3>
                         <div style="display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 14px;">
                             <div class="summary-item"><span>Medidas:</span><span class="value" id="res-medidas">--</span></div>
                             <div class="summary-item"><span>Tensión Vacío (Voc):</span><span class="value" id="res-panel-voc">--</span></div>
                             <div class="summary-item"><span>Corriente Cortocircuito (Isc):</span><span class="value" id="res-panel-isc">--</span></div>
-                            <div class="summary-item"><span>Tensión Punto Máx.Potencia (Vmp):</span><span class="value" id="res-panel-v">--</span></div>
-                            <div class="summary-item"><span>Corriente Punto Máx.Potencia (Imp):</span><span class="value" id="res-panel-i">--</span></div>
+                            <div class="summary-item"><span>Tensión P. Máx. (Vmp):</span><span class="value" id="res-panel-v">--</span></div>
+                            <div class="summary-item"><span>Corriente P. Máx. (Imp):</span><span class="value" id="res-panel-i">--</span></div>
                             
                             <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 8px;">
                                 <span>Potencia Máxima (Pmax):</span><span class="value" id="res-panel-p" style="color:#d35400;">--</span>
@@ -384,71 +433,56 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <span>Fuerza Magnetomotriz:</span>
                             <span class="value" id="res-fmm">0 Av</span>
                         </div>
-
                     </div>
                 </div>
 
                 <div id="step-3" class="step-container">
                     <div class="form-section">
                         <h3 style="margin-top:0; color: var(--primary-color);">📏 Encaje en la Ranura</h3>
-                        <p style="font-size: 14px; color: #666; margin-top: -10px;">Introduce el hueco físico disponible en el rotor para alojar el hilo.</p>
+                        <p style="font-size: 14px; color: #666; margin-top: -10px;">El tamaño de la ranura se ha definido en el Paso 1.</p>
                         
-                        <div class="form-group" style="display: flex; gap: 10px;">
-                            <div style="flex: 1;">
-                                <label>Ancho ranura real [mm]</label>
-                                <input type="number" id="ranura-ancho" step="0.1" placeholder="Ej: 5" oninput="calcularPaso3()">
-                            </div>
-                            <div style="flex: 1;">
-                                <label>Alto/Fondo ranura real [mm]</label>
-                                <input type="number" id="ranura-alto" step="0.1" placeholder="Ej: 5" oninput="calcularPaso3()">
-
-
-                            <div class="form-group">
-                                <label>Calidad de bobinado</label>
-                                <select id="calidad-bobinado" onchange="calcularPaso3()">
-                                <option value="0.05">Máquina (muy compacto)</option>
-                                <option value="0.10">Muy bueno</option>
-                                <option value="0.20">Manual bueno</option>
-                                <option value="0.30" selected>Manual normal</option>
-                                <option value="0.40">Bobinado desordenado</option>
-                                </select>
-                            </div>
-
-
-                            </div>
+                        <div class="form-group">
+                            <label>Calidad de bobinado (Factor de holgura)</label>
+                            <select id="calidad-bobinado" onchange="calcularPaso3()">
+                            <option value="0.05">Máquina (muy compacto)</option>
+                            <option value="0.10">Muy bueno</option>
+                            <option value="0.20">Manual bueno</option>
+                            <option value="0.30" selected>Manual normal</option>
+                            <option value="0.40">Bobinado desordenado</option>
+                            </select>
                         </div>
 
                         <div id="alerta-ranura" style="display: none; background-color: #fdeaea; color: #c0392b; padding: 10px; border-radius: 6px; border-left: 4px solid #c0392b; font-size: 13px; margin-bottom: 15px;">
-                            <strong>⚠️ Cuidado:</strong> El hilo sobresaldrá de la ranura. El alto calculado es mayor que el alto real disponible. Tendrás que apretar mucho el hilo, cambiar a un hilo más fino, o rediseñar el rotor.
+                            <strong>⚠️ Cuidado:</strong> El hilo sobresaldrá de la ranura.
                         </div>
 
                         <div class="nav-buttons">
                             <button class="btn-nav btn-prev" onclick="cambiarPaso(2)">⮜ Anterior</button>
-                            <button class="btn-nav btn-next" onclick="alert('¡Datos guardados! En futuras versiones conectaremos esto con los imanes y el estator.')">Finalizar 🎉</button>
+                            <button class="btn-nav btn-next" onclick="alert('¡Datos guardados!')">Finalizar 🎉</button>
                         </div>
                     </div>
                     
                     <div class="summary-section">
-                        <h3>Geometría del Bobinado</h3>
-                        <div class="summary-item"><span>Conductores por capa:</span><span class="value" id="res-cond-capa">0</span></div>
-                        <div class="summary-item"><span>Número de capas:</span><span class="value" id="res-capas">0</span></div>
-                        <div class="summary-item"><span>Espiras última capa:</span><span class="value" id="res-ult-capa">0</span></div>
-                        
-                        <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
-                            <span>Ancho Ocupado [mm]:</span><span class="value" id="res-ancho-calc" style="color:#d35400;">0.00 mm</span>
+                        <h3>Análisis de Espacio</h3>
+                        <div class="summary-item">
+                            <span>Área Útil Ranura:</span>
+                            <span class="value" id="res-area-ranura">0 mm²</span>
                         </div>
                         <div class="summary-item">
-                            <span>Alto Ocupado [mm]:</span><span class="value" id="res-ancho-alto" style="color:#d35400;">0.00 mm</span>
+                            <span>Ancho Ocupado (Estimado):</span>
+                            <span class="value" id="res-ancho-ocupado">0 mm</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Alto Ocupado (Estimado):</span>
+                            <span class="value" id="res-alto-ocupado">0 mm</span>
                         </div>
                         
-                        <div class="summary-item" style="background-color: #eef2f5; padding: 10px; border-radius: 6px; margin-top: 15px; border-bottom: none;">
-                            <span style="font-weight:bold;">Factor de relleno:</span>
-                            <span class="value" id="res-factor" style="font-size: 18px; color: #27ae60;">0.0%</span>
+                        <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
+                            <span>Ocupación de la Ranura:</span>
+                            <span class="value" id="res-factor" style="font-size: 18px;">0 %</span>
                         </div>
-                        
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -466,7 +500,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <h3>☀️ Paneles Solares</h3>
                         <ul class="db-list" id="lista-paneles"></ul>
                         <h4>Añadir nuevo panel:</h4>
-                        <input type="text" id="db-panel-nombre" placeholder="Nombre (Ej: Mono 40x20)" class="form-group">
+                        <div class="form-group">
+                            <input type="text" id="db-panel-nombre" placeholder="Nombre (Ej: Mono 40x20)">
+                        </div>
                         <div style="display:flex; gap:5px;" class="form-group">
                             <input type="text" inputmode="decimal" id="db-panel-l" placeholder="Largo (mm)">
                             <input type="text" inputmode="decimal" id="db-panel-a" placeholder="Ancho (mm)">
@@ -486,7 +522,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <h3>🧵 Hilos de Bobinar</h3>
                         <ul class="db-list" id="lista-hilos"></ul>
                         <h4>Añadir nuevo hilo:</h4>
-                        <input type="text" inputmode="decimal" id="db-hilo-dia" placeholder="Diámetro (mm, ej: 0.15)" class="form-group">
+                        <div class="form-group">
+                            <input type="text" inputmode="decimal" id="db-hilo-dia" placeholder="Diámetro (mm, ej: 0.15)">
+                        </div>
                         <button class="btn-action" onclick="añadirHilo()">+ Añadir Hilo</button>
                     </div>
 
@@ -494,7 +532,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <h3>🧲 Imanes de Neodimio</h3>
                         <ul class="db-list" id="lista-imanes"></ul>
                         <h4>Añadir nuevo imán:</h4>
-                        <input type="text" id="db-iman-nombre" placeholder="Nombre (Ej: N42 30x15)" class="form-group">
+                        <div class="form-group">
+                            <input type="text" id="db-iman-nombre" placeholder="Nombre (Ej: N42 30x15)">
+                        </div>
                         <div style="display:flex; gap:5px;" class="form-group">
                             <select id="db-iman-forma" style="flex: 1;">
                                 <option value="Bloque">Bloque</option>
@@ -506,7 +546,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <input type="text" inputmode="decimal" id="db-iman-l" placeholder="Largo/Ø Ext">
                             <input type="text" inputmode="decimal" id="db-iman-a" placeholder="Ancho/Ø Int">
                         </div>
-                        <input type="text" inputmode="decimal" id="db-iman-h" placeholder="Grosor (mm)" class="form-group">
+                        <div class="form-group">
+                            <input type="text" inputmode="decimal" id="db-iman-h" placeholder="Grosor (mm)">
+                        </div>
                         <button class="btn-action" onclick="añadirIman()">+ Añadir Imán</button>
                     </div>
 
@@ -516,95 +558,83 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
     </div>
 
-
-
-
-
-
-
-
-<div id="page-videos" class="page-container">
-    
-    <div class="panel-contenedor video-section">
-      <h2>🎥 Galería de Motores</h2>
-      <p>Visualiza el funcionamiento de distintas configuraciones y descarga los videos de demostración.</p>
-      
-    
-  
-  <div class="table-responsive">
-    <table class="video-comparison-table">
-      <thead>
-        <tr>
-          <th>Previsualización</th>
-          <th>Modelo / Configuración</th>
-          <th>Tipo de Panel Solar</th>
-          <th>Espiras / Hilo</th>
-          <th>Velocidad / Peso</th>
-          <th>Acción</th>
-        </tr>
-      </thead>
-      <tbody>
-
-        <tr>
-          <td>
-            <video width="160" height="90" controls preload="metadata">
-              <source src="videos/motor1.mp4" type="video/mp4">
-              Tu navegador no soporta el video.
-            </video>
-          </td>
-          <td><strong>Rotor de 4 Caras</strong><br>Optimizado para rotación rápida<br>Arranque suave<br>Baja inercia</td>
-          <td><strong>Panel 53x18</strong><br>0,4V 101mA</td>
-          <td>30 espiras<br>Cu 0.15mm<sup>2</sup></td>
-          <td>~2027 RPM<br>~38 g</td>
-          <td>
-            <a href="videos/motor1.mp4"" download="Motor_4Caras.mp4" class="btn-download">⬇️ Descargar</a>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <video width="160" height="90" controls preload="metadata">
-              <source src="videos/motor2.mp4" type="video/mp4">
-            </video>
-          </td>
-          <td><strong>Rotor de 4 Caras</strong><br>Equilibrio de Potencia<br>Relación par-velocidad balanceada</td>
-          <td><strong>Panel 53x18</strong><br>0,4V 101mA</td>
-          <td>83 espiras<br>Cu 0.25mm<sup>2</sup></td>
-          <td>~1997 RPM<br>~53 g</td>
-          <td>
-            <a href="videos/motor2.mp4" download="Motor_8Caras.mp4" class="btn-download">⬇️ Descargar</a>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <video width="160" height="90" controls preload="metadata">
-              <source src="videos/motor3.mp4" type="video/mp4">
-            </video>
-          </td>
-          <td><strong>Rotor de 4 Caras</strong><br>Bajas revoluciones<br>Arranque inmediato</td>
-          <td><strong>Panel 53x18</strong><br>0,4V 101mA</td>
-          <td>104 espiras<br>Cu 0.28mm<sup>2</sup></td>
-          <td>~1253 RPM<br>~60 g</td>
-          <td>
-            <a href="videos/motor3.mp4" download="Motor_8Caras.mp4" class="btn-download">⬇️ Descargar</a>
-          </td>
-        </tr>
-
-      </tbody>
-    </table>
-  </div>
-</div>
-
-
-
+    <div id="page-videos" class="page-container">
+        <div class="panel-contenedor video-section">
+            <h2>🎥 Galería de Motores</h2>
+            <p>Visualiza el funcionamiento de distintas configuraciones y descarga los videos de demostración.</p>
+            <div class="table-responsive">
+                <table class="video-comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Previsualización</th>
+                            <th>Modelo / Configuración</th>
+                            <th>Tipo de Panel Solar</th>
+                            <th>Espiras / Hilo</th>
+                            <th>Velocidad / Peso</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <video width="160" height="90" controls preload="metadata">
+                                    <source src="videos/motor1.mp4" type="video/mp4">
+                                    Tu navegador no soporta el video.
+                                </video>
+                            </td>
+                            <td><strong>Rotor de 4 Caras</strong><br>Optimizado para rotación rápida<br>Arranque suave<br>Baja inercia</td>
+                            <td><strong>Panel 53x18</strong><br>0,4V 101mA</td>
+                            <td>30 espiras<br>Cu 0.15mm<sup>2</sup></td>
+                            <td>~2027 RPM<br>~38 g</td>
+                            <td>
+                                <a href="videos/motor1.mp4" download="Motor_4Caras.mp4" class="btn-download">⬇️ Descargar</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <video width="160" height="90" controls preload="metadata">
+                                    <source src="videos/motor2.mp4" type="video/mp4">
+                                </video>
+                            </td>
+                            <td><strong>Rotor de 4 Caras</strong><br>Equilibrio de Potencia<br>Relación par-velocidad balanceada</td>
+                            <td><strong>Panel 53x18</strong><br>0,4V 101mA</td>
+                            <td>83 espiras<br>Cu 0.25mm<sup>2</sup></td>
+                            <td>~1997 RPM<br>~53 g</td>
+                            <td>
+                                <a href="videos/motor2.mp4" download="Motor_8Caras.mp4" class="btn-download">⬇️ Descargar</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <video width="160" height="90" controls preload="metadata">
+                                    <source src="videos/motor3.mp4" type="video/mp4">
+                                </video>
+                            </td>
+                            <td><strong>Rotor de 4 Caras</strong><br>Bajas revoluciones<br>Arranque inmediato</td>
+                            <td><strong>Panel 53x18</strong><br>0,4V 101mA</td>
+                            <td>104 espiras<br>Cu 0.28mm<sup>2</sup></td>
+                            <td>~1253 RPM<br>~60 g</td>
+                            <td>
+                                <a href="videos/motor3.mp4" download="Motor_8Caras.mp4" class="btn-download">⬇️ Descargar</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <script>
+        // --- UTILIDADES ---
         function parsearNumero(valor) {
             if (!valor) return NaN;
             return parseFloat(valor.replace(',', '.'));
         }
 
+        // Convierte grados a radianes
+        function torad(deg) { return deg * (Math.PI / 180); }
+
+        // --- BASE DE DATOS PREDETERMINADA ---
         const defaultPaneles = [
             { nombre: "Aliexpress 48x21", l: 48, a: 21, voc: 0.6, isc: 129, v: 0.41, i: 166.5 },
             { nombre: "Aliexpress 53x18", l: 53, a: 18, voc: 0.501, isc: 133.3, v: 0.468, i: 101.3 },
@@ -637,6 +667,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             { nombre: "Aro 19x9.5x6.4 (N42)", forma: "Aro", l: 19, a: 9.53, h: 6.36, br: 1.32 }
         ];
 
+        // --- CARGA DE DATOS ---
         let dbPaneles, dbHilos, dbImanes;
         try {
             dbPaneles = JSON.parse(localStorage.getItem('dbPaneles')) || [...defaultPaneles];
@@ -663,7 +694,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             }
         }
 
-        // --- 2. RENDERIZADO DE INTERFAZ ---
+        // --- RENDERIZADO DE INTERFAZ GENERAL ---
         function renderizarUI() {
             try {
                 const selPanel = document.getElementById('panel');
@@ -698,17 +729,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     `<li>${im.nombre} <button class="btn-delete" onclick="borrarIman(${i})">X</button></li>`
                 ).join('');
 
-                if(dbPaneles.length > 0) actualizarResumenPaso1();
+                if(dbPaneles.length > 0) {
+                    document.getElementById('panel').selectedIndex = 3;
+                    actualizarResumenPaso1();
+                }
             } catch (e) {
                 console.error("Error al renderizar UI:", e);
             }
-
-            document.getElementById('panel').selectedIndex = 3;
-            actualizarResumenPaso1();
-
         }
 
-        // --- 3. FUNCIONES AÑADIR DATOS ---
         function añadirHilo() {
             const inputVal = document.getElementById('db-hilo-dia').value;
             const dia = parsearNumero(inputVal);
@@ -761,7 +790,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         function borrarHilo(index) { dbHilos.splice(index, 1); guardarDatos(); }
         function borrarIman(index) { dbImanes.splice(index, 1); guardarDatos(); }
 
-        // --- 4. NAVEGACIÓN ---
+        // --- NAVEGACIÓN ---
         function cambiarPagina(pagina) {
             document.querySelectorAll('.page-container').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
@@ -771,9 +800,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         function cambiarPaso(paso) {
             document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.step-indicator').forEach(el => {
-                el.classList.remove('active');
-            });
+            document.querySelectorAll('.step-indicator').forEach(el => { el.classList.remove('active'); });
             
             document.getElementById('step-' + paso).classList.add('active');
             document.getElementById('ind-' + paso).classList.add('active');
@@ -781,47 +808,67 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             for(let i=1; i<paso; i++) {
                 document.getElementById('ind-' + i).classList.add('completed');
             }
+            if(paso === 2) calcularPaso2();
+            if(paso === 3) calcularPaso3();
         }
 
-        // --- 5. LÓGICA CALCULADORA ---
-        const MATERIALES = {
-            cobre: { nombre: "Cobre", densidad: 8.95, resistividad: 1.75e-8 },
-            aluminio: { nombre: "Aluminio", densidad: 2.70, resistividad: 2.82e-8 }
+        // --- LÓGICA DE CÁLCULO ---
+            const MATERIALES = {
+            cobre: { nombre: "Cobre", densidad: 8.95, resistividad: 1.75e-8, colorUI: "#d35400" },   // Naranja/Cobrizo
+            aluminio: { nombre: "Aluminio", densidad: 2.70, resistividad: 2.82e-8, colorUI: "#7f8c8d" } // Gris/Plateado
         };
 
+        // Variables globales de diseño
         let gRPlaca=0, gDiametroRotor=0, gLadoL=0, gLadoA=0, gNumCaras=0;
         let gIPanel = 0; 
         let gEspiras = 0; 
         let gDiaHilo = 0; 
+        let gRanuraAncho = 0, gRanuraAlto = 0, gAreaRanura = 0;
+        let gMargen = 0; 
 
+        // --- PASO 1: GEOMETRÍA ---
         function actualizarResumenPaso1() {
+            if (dbPaneles.length === 0) return;
 
-
-
-                    if (dbPaneles.length === 0) return;
-
-            // 1. Obtener valores de la interfaz
-            gNumCaras = parseInt(document.getElementById('caras').value); // G5 en Excel
+            gNumCaras = parseInt(document.getElementById('caras').value); 
             const indexPanel = document.getElementById('panel').value;
             const panel = dbPaneles[indexPanel];
             if (!panel) return;
 
-            // 2. Asignar dimensiones del panel
-            gLadoL = panel.l; // Lado mayor
-            gLadoA = panel.a; // Lado menor (G7 en Excel)
+            gLadoL = panel.l; 
+            gLadoA = panel.a; 
             gIPanel = panel.i; 
 
-            // 3. CÁLCULO DEL DIÁMETRO (Traducción exacta de tu Excel)
-            // Excel: =G7 / (2 * SENO(RADIANES(((360 / G5) / 2)))) * 2
-            const anguloGrados = (360 / gNumCaras) / 2;
-            const anguloRadianes = anguloGrados * (Math.PI / 180); // Función RADIANES()
-            
-            // Aplicamos la fórmula idéntica
-            gDiametroRotor = (gLadoA / (2 * Math.sin(anguloRadianes))) * 2;
+            const inputMargen = document.getElementById('margen-placa');
+            gMargen = inputMargen ? (parseFloat(inputMargen.value) || 0) : 0;
 
-            // 4. Actualizar visualización en el HTML
+            gRanuraAncho = parseFloat(document.getElementById('ranura-ancho').value) || 0;
+            gRanuraAlto = parseFloat(document.getElementById('ranura-alto').value) || 0;
+            const tipoRanura = document.getElementById('ranura-tipo').value;
+
+            const Wp = gLadoA;        
+            const WpTotal = Wp + (2 * gMargen); 
+            const Ws = gRanuraAncho;  
+            const Ds = gRanuraAlto;   
+
+            const proporcionPanel = WpTotal / (WpTotal + Ws);
+            const proporcionRanura = Ws / (WpTotal + Ws);
+            
+            const anguloTotalRadianes = (2 * Math.PI) / gNumCaras;
+            const angP = anguloTotalRadianes * proporcionPanel;
+            const angS = anguloTotalRadianes * proporcionRanura;
+
+            const radioCircunscrito = WpTotal / (2 * Math.sin(angP / 2));
+            gDiametroRotor = radioCircunscrito * 2;
             document.getElementById('diametro').value = gDiametroRotor.toFixed(2) + ' mm';
 
+            if (tipoRanura === 'trapecio') {
+                const baseMenor = 2 * (radioCircunscrito - Ds) * Math.sin(angS / 2);
+                gAreaRanura = ((Ws + baseMenor) / 2) * Ds;
+                if (gAreaRanura < 0) gAreaRanura = 0; 
+            } else {
+                gAreaRanura = Ws * Ds;
+            }
 
             gRPlaca = panel.v / (panel.i / 1000); 
             const p_mW = panel.v * panel.i;
@@ -832,30 +879,276 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             document.getElementById('res-panel-isc').textContent = panel.isc.toFixed(1) + ' mA';
             document.getElementById('res-panel-v').textContent = panel.v.toFixed(2) + ' V';
             document.getElementById('res-panel-i').textContent = panel.i.toFixed(1) + ' mA';
-            
             document.getElementById('res-panel-p').textContent = p_mW.toFixed(1) + ' mW';
             document.getElementById('res-panel-ff').textContent = ff.toFixed(3);
             document.getElementById('res-panel-r').textContent = gRPlaca.toFixed(2) + ' Ω';
 
+            dibujarRotorSVG(gNumCaras, tipoRanura, Wp, Ws, Ds, radioCircunscrito, angP, angS);
+            // Dibujar la vista superior del panel
+            dibujarPanelSVG(gLadoL, Wp, gMargen);
             calcularPaso2();
         }
 
+        // --- DIBUJO GEOMÉTRICO (SVG) ---
+        function dibujarRotorSVG(N, tipoRanura, Wp, Ws, Ds, R, angP, angS) {
+            const svg = document.getElementById('rotor-svg');
+            if(!svg) return;
+            svg.innerHTML = ''; 
+            
+            const centro = 100; 
+            const radioMaxPx = 90; 
+            const escala = radioMaxPx / R; 
+
+            const Rfondo = R - Ds;
+            let RfondoPx = Rfondo * escala;
+            
+            const radioMasa = radioMaxPx * 0.35;
+            if (RfondoPx < radioMasa) RfondoPx = radioMasa;
+
+            const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--svg-stroke-color').trim() || "#333";
+            const colorImpresion3D = getComputedStyle(document.documentElement).getPropertyValue('--svg-panel-color').trim() || "#fdebd0";
+
+            const circuloExt = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circuloExt.setAttribute("cx", centro);
+            circuloExt.setAttribute("cy", centro);
+            circuloExt.setAttribute("r", radioMaxPx);
+            circuloExt.setAttribute("fill", "none");
+            circuloExt.setAttribute("stroke", "#eee");
+            circuloExt.setAttribute("stroke-dasharray", "3,3");
+            svg.appendChild(circuloExt);
+
+            let dRotor = "";
+            const profPx = Ds * escala;
+
+            for (let i = 0; i < N; i++) {
+                const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
+                const theta1 = anguloCentroPanel - (angP / 2); 
+                const theta2 = anguloCentroPanel + (angP / 2); 
+                const theta3 = theta2 + angS;                  
+
+                const p1x = centro + radioMaxPx * Math.cos(theta1);
+                const p1y = centro + radioMaxPx * Math.sin(theta1);
+                const p2x = centro + radioMaxPx * Math.cos(theta2);
+                const p2y = centro + radioMaxPx * Math.sin(theta2);
+                const p3x = centro + radioMaxPx * Math.cos(theta3);
+                const p3y = centro + radioMaxPx * Math.sin(theta3);
+
+                if (i === 0) {
+                    dRotor += `M ${p1x} ${p1y} `;
+                } else {
+                    dRotor += `L ${p1x} ${p1y} `;
+                }
+                dRotor += `L ${p2x} ${p2y} `;
+
+                if (tipoRanura === 'trapecio') {
+                    const s1x = centro + RfondoPx * Math.cos(theta2);
+                    const s1y = centro + RfondoPx * Math.sin(theta2);
+                    const s2x = centro + RfondoPx * Math.cos(theta3);
+                    const s2y = centro + RfondoPx * Math.sin(theta3);
+                    dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
+                } else { 
+                    const thetaBisectriz = (theta2 + theta3) / 2;
+                    const dirX = Math.cos(thetaBisectriz);
+                    const dirY = Math.sin(thetaBisectriz);
+                    
+                    const s1x = p2x - dirX * profPx;
+                    const s1y = p2y - dirY * profPx;
+                    const s2x = p3x - dirX * profPx;
+                    const s2y = p3y - dirY * profPx;
+                    dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
+                }
+            }
+            dRotor += "Z"; 
+
+            const pathRotor = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            pathRotor.setAttribute("d", dRotor);
+            pathRotor.setAttribute("fill", colorImpresion3D); 
+            pathRotor.setAttribute("stroke", strokeColor);
+            pathRotor.setAttribute("stroke-width", "1");
+            svg.appendChild(pathRotor);
+
+            const eje = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            eje.setAttribute("cx", centro);
+            eje.setAttribute("cy", centro);
+            eje.setAttribute("r", radioMaxPx * 0.12);
+            eje.setAttribute("fill", "#ffffff"); 
+            eje.setAttribute("stroke", strokeColor);
+            eje.setAttribute("stroke-width", "1");
+            svg.appendChild(eje);
+
+            for (let i = 0; i < N; i++) {
+                const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
+                
+                const WpTotal = Wp + (2 * gMargen);
+                const proporcionPlaca = WpTotal > 0 ? (Wp / WpTotal) : 1;
+                const angPlacaReal = angP * proporcionPlaca;
+
+                const theta1 = anguloCentroPanel - (angPlacaReal / 2);
+                const theta2 = anguloCentroPanel + (angPlacaReal / 2);
+
+                const p1x = centro + radioMaxPx * Math.cos(theta1);
+                const p1y = centro + radioMaxPx * Math.sin(theta1);
+                const p2x = centro + radioMaxPx * Math.cos(theta2);
+                const p2y = centro + radioMaxPx * Math.sin(theta2);
+
+                const placaSol = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                placaSol.setAttribute("x1", p1x);
+                placaSol.setAttribute("y1", p1y);
+                placaSol.setAttribute("x2", p2x);
+                placaSol.setAttribute("y2", p2y);
+                placaSol.setAttribute("stroke", "#2c3e50"); 
+                placaSol.setAttribute("stroke-width", "4");
+                placaSol.setAttribute("stroke-linecap", "round");
+                svg.appendChild(placaSol);
+            }
+        }
+
+
+
+// --- DIBUJO DE LA VISTA SUPERIOR DEL PANEL ---
+        // --- DIBUJO DE LA VISTA SUPERIOR DEL PANEL ---
+        function dibujarPanelSVG(Lp, Wp, margen) {
+            const svg = document.getElementById('panel-svg');
+            if(!svg) return;
+            svg.innerHTML = '';
+            
+            const L_total = Lp + (2 * margen);
+            const W_total = Wp + (2 * margen);
+            
+            if(L_total <= 0 || W_total <= 0) return;
+
+            // Usamos la dimensión mayor para que el 'padding' sea siempre uniforme y nada se deforme
+            const maxDim = Math.max(L_total, W_total);
+            const pad = maxDim * 0.30; // 30% de espacio extra alrededor para que quepan holgadamente los textos
+            
+            const vbWidth = L_total + pad * 2;
+            const vbHeight = W_total + pad * 2;
+            
+            svg.setAttribute('viewBox', `0 0 ${vbWidth} ${vbHeight}`);
+
+            const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--svg-stroke-color').trim() || "#333";
+            const colorImpresion3D = getComputedStyle(document.documentElement).getPropertyValue('--svg-panel-color').trim() || "#fdebd0";
+
+            // 1. Dibujar el marco de plástico 3D
+            const marco = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            marco.setAttribute("x", pad);
+            marco.setAttribute("y", pad);
+            marco.setAttribute("width", L_total);
+            marco.setAttribute("height", W_total);
+            marco.setAttribute("fill", colorImpresion3D);
+            marco.setAttribute("stroke", strokeColor);
+            marco.setAttribute("stroke-width", maxDim * 0.005);
+            marco.setAttribute("rx", maxDim * 0.02);
+            svg.appendChild(marco);
+
+            // 2. Dibujar el cristal oscuro (Placa Solar)
+            const placa = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            placa.setAttribute("x", pad + margen);
+            placa.setAttribute("y", pad + margen);
+            placa.setAttribute("width", Lp);
+            placa.setAttribute("height", Wp);
+            placa.setAttribute("fill", "#2c3e50");
+            placa.setAttribute("stroke", "rgba(255,255,255,0.2)");
+            placa.setAttribute("stroke-width", maxDim * 0.003);
+            svg.appendChild(placa);
+
+            // 3. Textos y Líneas de Cota
+            const fontSize = Math.max(maxDim * 0.07, 3);
+            const estiloTexto = `font-size: ${fontSize}px; font-family: sans-serif; fill: #555; text-anchor: middle; font-weight: bold;`;
+            const strokeCota = maxDim * 0.003;
+
+            // --- COTA LARGO (Abajo) ---
+            const yCotaLargo = pad + W_total + (pad * 0.35);
+            const lineLargo = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            lineLargo.setAttribute("x1", pad);
+            lineLargo.setAttribute("y1", yCotaLargo);
+            lineLargo.setAttribute("x2", pad + L_total);
+            lineLargo.setAttribute("y2", yCotaLargo);
+            lineLargo.setAttribute("stroke", "#999");
+            lineLargo.setAttribute("stroke-width", strokeCota);
+            svg.appendChild(lineLargo);
+
+            const txtLargo = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            txtLargo.setAttribute("x", pad + (L_total / 2));
+            txtLargo.setAttribute("y", yCotaLargo + (fontSize * 1.1));
+            txtLargo.setAttribute("style", estiloTexto);
+            txtLargo.textContent = L_total + " mm";
+            svg.appendChild(txtLargo);
+
+            // --- COTA ANCHO (Derecha) ---
+            const xCotaAncho = pad + L_total + (pad * 0.35);
+            const lineAncho = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            lineAncho.setAttribute("x1", xCotaAncho);
+            lineAncho.setAttribute("y1", pad);
+            lineAncho.setAttribute("x2", xCotaAncho);
+            lineAncho.setAttribute("y2", pad + W_total);
+            lineAncho.setAttribute("stroke", "#999");
+            lineAncho.setAttribute("stroke-width", strokeCota);
+            svg.appendChild(lineAncho);
+
+            const txtAncho = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            const txtAnchoX = xCotaAncho + (fontSize * 0.9);
+            const txtAnchoY = pad + (W_total / 2);
+            txtAncho.setAttribute("x", txtAnchoX);
+            txtAncho.setAttribute("y", txtAnchoY);
+            // Rotamos el texto 90 grados para que quede paralelo a la línea y no ocupe espacio horizontal
+            txtAncho.setAttribute("transform", `rotate(90, ${txtAnchoX}, ${txtAnchoY})`);
+            txtAncho.setAttribute("style", estiloTexto);
+            txtAncho.setAttribute("dominant-baseline", "middle");
+            txtAncho.textContent = W_total + " mm";
+            svg.appendChild(txtAncho);
+            
+            // --- COTA MARGEN (Arriba) ---
+            if(margen > 0) {
+                const yCotaMargen = pad - (pad * 0.2);
+                const lineMargen = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                lineMargen.setAttribute("x1", pad);
+                lineMargen.setAttribute("y1", yCotaMargen);
+                lineMargen.setAttribute("x2", pad + margen);
+                lineMargen.setAttribute("y2", yCotaMargen);
+                lineMargen.setAttribute("stroke", "#e74c3c");
+                lineMargen.setAttribute("stroke-width", strokeCota * 1.5);
+                svg.appendChild(lineMargen);
+
+                const txtMargen = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                txtMargen.setAttribute("x", pad + (margen / 2));
+                // Lo subimos un poco más (0.5) para que el texto grande no pise la línea
+                txtMargen.setAttribute("y", yCotaMargen - (fontSize * 0.5));
+                // Quitamos la reducción y lo hacemos un 10% más grande que el resto (1.1)
+                txtMargen.setAttribute("style", `font-size: ${fontSize * 1.1}px; font-family: sans-serif; fill: #e74c3c; text-anchor: middle; font-weight: bold;`);
+                txtMargen.textContent = "m:" + margen;
+                svg.appendChild(txtMargen);
+            }
+        }
+
+        // --- PASO 2: CÁLCULO ELÉCTRICO ---
+// --- PASO 2: CÁLCULO ELÉCTRICO ---
         function calcularPaso2() {
             if(dbHilos.length === 0) return;
             const selHilo = document.getElementById('dia-hilo-select');
             if(!selHilo || selHilo.value === "") return;
 
-            const material = MATERIALES[document.getElementById('material-hilo').value];
+            const idMaterial = document.getElementById('material-hilo').value;
+            const material = MATERIALES[idMaterial];
             const diaHilo = parseFloat(selHilo.value);
             
             gDiaHilo = diaHilo;
 
+            // --- NUEVO: Cambio de color visual en la Interfaz ---
+            const leyenda = document.getElementById('leyenda-ranura');
+            if (leyenda) leyenda.style.backgroundColor = material.colorUI;
+            
+            const txtNombreMat = document.getElementById('res-mat-nombre');
+            if (txtNombreMat) {
+                txtNombreMat.style.color = material.colorUI;
+                txtNombreMat.style.fontWeight = "bold";
+            }
+
             const radioHilo = diaHilo / 2;
-            const seccionHilo = Math.PI * Math.pow(radioHilo, 2);
+            const seccionHilo = Math.PI * Math.pow(radioHilo, 2); 
             document.getElementById('sec-hilo').value = seccionHilo.toFixed(5);
 
             if (seccionHilo > 0) {
-                // Cálculo de densidad de corriente
                 const densidad = (gIPanel / 1000) / seccionHilo;
                 document.getElementById('densidad-corriente').value = densidad.toFixed(2);
                 
@@ -868,7 +1161,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     document.getElementById('densidad-corriente').style.color = 'black';
                 }
 
-                const lonEspira = (2 * gLadoL + 2 * gDiametroRotor) / 1000;
+                const distanciaMediaRanuras = gDiametroRotor - gRanuraAlto;
+                const largoTotalRotor = gLadoL + (2 * gMargen); 
+                const lonEspira = (2 * largoTotalRotor + 2 * distanciaMediaRanuras) / 1000; 
+                
                 document.getElementById('lon-espira').value = lonEspira.toFixed(4);
 
                 const lonTotalIdeal = (gRPlaca * (seccionHilo * 1e-6)) / material.resistividad;
@@ -879,12 +1175,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
                 document.getElementById('res-espiras-final').textContent = espirasCalculadas;
 
-
-                // --- CÁLCULO DE LA FMM ---
-                // gIPanel está en mA, lo pasamos a Amperios dividiendo por 1000
                 const fmm = espirasCalculadas * (gIPanel / 1000);
                 document.getElementById('res-fmm').textContent = fmm.toFixed(2) + ' Av';
-                // -------------------------
 
                 const lonTotalReal = espirasCalculadas * lonEspira;
                 document.getElementById('lon-total').value = lonTotalReal.toFixed(2);
@@ -895,116 +1187,85 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 const numDevanados = gNumCaras / 2;
                 document.getElementById('num-devanados').value = numDevanados;
 
-                // Cálculo de masas (Densidad en g/cm3)
-                const volumen1_cm3 = seccionHilo * (lonTotalReal * 1000) / 1000; // mm2 * mm / 1000 = cm3
+                const volumen1_cm3 = seccionHilo * (lonTotalReal * 1000) / 1000;
                 const masa1_g = volumen1_cm3 * material.densidad;
                 const masaTotal_g = masa1_g * numDevanados;
 
                 document.getElementById('res-mat-nombre').textContent = material.nombre;
-
                 document.getElementById('res-lon-espira-resumen').textContent = lonEspira.toFixed(4) + ' m';
-
                 document.getElementById('res-lon-devanado').textContent = lonTotalReal.toFixed(2) + ' m';
                 document.getElementById('res-peso-devanado').textContent = masa1_g.toFixed(1) + ' g';
                 document.getElementById('res-lon-total-todos').textContent = (lonTotalReal * numDevanados).toFixed(2) + ' m';
                 document.getElementById('res-peso-total-todos').textContent = masaTotal_g.toFixed(1) + ' g';
-
-                calcularPaso3(); 
+                
+                calcularPaso3();
             }
         }
 
+        // --- PASO 3: ENCAJE EN RANURA ---
         function calcularPaso3() {
+            const anchoReal = gRanuraAncho;
+            const altoReal = gRanuraAlto;
 
-    const anchoReal = parseFloat(document.getElementById('ranura-ancho').value) || 0;
-    const altoReal = parseFloat(document.getElementById('ranura-alto').value) || 0;
+            if (anchoReal > 0 && altoReal > 0 && gDiaHilo > 0 && gEspiras > 0) {
+                const conductoresCapa = Math.floor(anchoReal / gDiaHilo);
 
-    if (anchoReal > 0 && altoReal > 0 && gDiaHilo > 0 && gEspiras > 0) {
+                if (conductoresCapa <= 0) {
+                    document.getElementById('alerta-ranura').style.display = 'block';
+                    document.getElementById('alerta-ranura').innerHTML = "<strong>⚠️ Error:</strong> El hilo es más grueso que el ancho de la ranura.";
+                    return;
+                }
 
-        const conductoresCapa = Math.floor(anchoReal / gDiaHilo);
+                const numCapas = Math.ceil(gEspiras / conductoresCapa);
 
-        if (conductoresCapa <= 0) {
-            document.getElementById('alerta-ranura').style.display = 'block';
-            document.getElementById('alerta-ranura').innerHTML =
-            "<strong>⚠️ Error:</strong> El hilo es más grueso que el ancho de la ranura.";
-            return;
-        }
+                let espirasUltima = gEspiras % conductoresCapa;
+                if (espirasUltima === 0) espirasUltima = conductoresCapa;
 
-        const numCapas = Math.ceil(gEspiras / conductoresCapa);
+                const anchoOcupado = (gEspiras < conductoresCapa ? gEspiras : conductoresCapa) * gDiaHilo;
+                const altoOcupado = numCapas * gDiaHilo;
 
-        let espirasUltima = gEspiras % conductoresCapa;
-        if (espirasUltima === 0) espirasUltima = conductoresCapa;
+                const areaCobre = gEspiras * Math.PI * Math.pow(gDiaHilo / 2, 2);
+                const calidad = parseFloat(document.getElementById("calidad-bobinado").value);
+                const areaEfectiva = areaCobre * (1 + calidad);
+                const areaRanura = gAreaRanura; 
 
-        const anchoOcupado = (gEspiras < conductoresCapa ? gEspiras : conductoresCapa) * gDiaHilo;
-        const altoOcupado = numCapas * gDiaHilo;
+                const factorRelleno = (areaEfectiva / areaRanura) * 100;
 
-        // Área cobre real
-const areaCobre = gEspiras * Math.PI * Math.pow(gDiaHilo / 2, 2);
+                document.getElementById('res-area-ranura').textContent = areaRanura.toFixed(2) + ' mm²';
+                document.getElementById('res-ancho-ocupado').textContent = anchoOcupado.toFixed(2) + ' mm';
+                document.getElementById('res-alto-ocupado').textContent = altoOcupado.toFixed(2) + ' mm';
+                document.getElementById('res-factor').textContent = factorRelleno.toFixed(1) + '%';
 
-// Calidad de bobinado elegida
-const calidad = parseFloat(document.getElementById("calidad-bobinado").value);
+                const alerta = document.getElementById('alerta-ranura');
+                const cabePorArea = areaEfectiva <= areaRanura;
 
-// Área efectiva considerando huecos
-const areaEfectiva = areaCobre * (1 + calidad);
-
-// Área ranura
-const areaRanura = anchoReal * altoReal;
-
-// Factor de relleno realista
-const factorRelleno = (areaEfectiva / areaRanura) * 100;
-
-        // Área útil considerando bobinado manual
-        const areaUtil = areaRanura;
-
-        const cabePorArea = areaCobre <= areaUtil;
-
-        document.getElementById('res-cond-capa').textContent = conductoresCapa;
-        document.getElementById('res-capas').textContent = numCapas;
-        document.getElementById('res-ult-capa').textContent = espirasUltima;
-
-        document.getElementById('res-ancho-calc').textContent =
-            anchoOcupado.toFixed(2) + ' mm';
-
-        document.getElementById('res-ancho-alto').textContent =
-            altoOcupado.toFixed(2) + ' mm';
-
-        document.getElementById('res-factor').textContent =
-            factorRelleno.toFixed(1) + '%';
-
-        const alerta = document.getElementById('alerta-ranura');
-
-        if (altoOcupado > altoReal || !cabePorArea) {
-
-            alerta.style.display = 'block';
-
-            alerta.innerHTML =
-            "<strong>⚠️ No cabe en la ranura:</strong><br>" +
-            "El volumen de cobre supera el espacio útil disponible.<br><br>" +
-            "• Área cobre: " + areaCobre.toFixed(2) + " mm²<br>" +
-            "• Área útil ranura (~55%): " + areaUtil.toFixed(2) + " mm²<br><br>" +
-            "Soluciones posibles:<br>" +
-            "• Usar hilo más fino<br>" +
-            "• Reducir número de espiras<br>" +
-            "• Aumentar dimensiones de la ranura";
-
-            document.getElementById('res-ancho-alto').style.color = '#c0392b';
-            document.getElementById('res-factor').style.color = '#e74c3c';
-
-        } else {
-
-            alerta.style.display = 'none';
-
-            document.getElementById('res-ancho-alto').style.color = '#27ae60';
-
-            if (factorRelleno > 60) {
-                document.getElementById('res-factor').style.color = '#e67e22';
-            } else {
-                document.getElementById('res-factor').style.color = '#27ae60';
+                if (altoOcupado > altoReal || !cabePorArea) {
+                    alerta.style.display = 'block';
+                    alerta.innerHTML =
+                    "<strong>⚠️ No cabe en la ranura:</strong><br>" +
+                    "El volumen de cobre (más holgura manual) supera el espacio útil disponible.<br><br>" +
+                    "• Área cobre estimado: " + areaEfectiva.toFixed(2) + " mm²<br>" +
+                    "• Área útil ranura: " + areaRanura.toFixed(2) + " mm²<br><br>" +
+                    "Soluciones posibles:<br>" +
+                    "• Usar hilo más fino<br>" +
+                    "• Reducir número de espiras<br>" +
+                    "• Volver al Paso 1 y aumentar dimensiones de la ranura";
+                    
+                    document.getElementById('res-factor').style.color = '#e74c3c'; 
+                } else {
+                    alerta.style.display = 'none';
+                    if (factorRelleno > 75) {
+                        document.getElementById('res-factor').style.color = '#e67e22'; 
+                    } else if (factorRelleno > 60) {
+                         document.getElementById('res-factor').style.color = '#f1c40f'; 
+                    } else {
+                        document.getElementById('res-factor').style.color = '#27ae60'; 
+                    }
+                }
             }
         }
-    }
-}
 
-        // Inicializar al cargar
+        // --- INICIALIZACIÓN ---
         window.onload = function() {
             renderizarUI();
         };
