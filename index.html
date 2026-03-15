@@ -913,8 +913,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             circuloExt.setAttribute("cy", centro);
             circuloExt.setAttribute("r", radioMaxPx);
             circuloExt.setAttribute("fill", "none");
-            circuloExt.setAttribute("stroke", "#eee");
-            circuloExt.setAttribute("stroke-dasharray", "3,3");
+            // Cambiamos el color a un gris más oscuro (ej. #777 o #333)
+            circuloExt.setAttribute("stroke", "#777"); 
+            // Añadimos grosor a la línea
+            circuloExt.setAttribute("stroke-width", "1"); 
+            // Puedes jugar con estos números para cambiar el espaciado de las rayas (ej. "5,5")
+            circuloExt.setAttribute("stroke-dasharray", "3"); 
             svg.appendChild(circuloExt);
 
             let dRotor = "";
