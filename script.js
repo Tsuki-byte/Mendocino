@@ -285,9 +285,9 @@ function cargarMotor(config) {
                 if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
                     const uid = sessionActiva.user.id;
                     
-                    const { data: paneles, error: errP } = await supabaseClient.from('paneles').select('*').eq('usuario_id', uid);
-                    const { data: hilos, error: errH } = await supabaseClient.from('hilos').select('*').eq('usuario_id', uid);
-                    const { data: imanes, error: errI } = await supabaseClient.from('imanes').select('*').eq('usuario_id', uid);
+                    const { data: paneles, error: errP } = await dbMendocinoClient.from('paneles').select('*').eq('usuario_id', uid);
+                    const { data: hilos, error: errH } = await dbMendocinoClient.from('hilos').select('*').eq('usuario_id', uid);
+                    const { data: imanes, error: errI } = await dbMendocinoClient.from('imanes').select('*').eq('usuario_id', uid);
                     
                     if (!errP && paneles && paneles.length > 0) dbPaneles = paneles;
                     else dbPaneles = JSON.parse(localStorage.getItem('dbPaneles')) || [...defaultPaneles];
@@ -400,7 +400,7 @@ function cargarMotor(config) {
             if (dbHilos.includes(dia)) { alert("Error: Este diámetro ya existe."); return; }
             
             if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
-                await supabaseClient.from('hilos').insert([{ usuario_id: sessionActiva.user.id, diametro: dia }]);
+                await dbMendocinoClient.from('hilos').insert([{ usuario_id: sessionActiva.user.id, diametro: dia }]);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -428,7 +428,7 @@ function cargarMotor(config) {
             const nuevoObj = { usuario_id: sessionActiva.user.id, nombre, voc, isc, v, i, l, a };
 
             if (typeof supabase !== 'undefined' && supabase) {
-                await supabaseClient.from('paneles').insert([nuevoObj]);
+                await dbMendocinoClient.from('paneles').insert([nuevoObj]);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -456,7 +456,7 @@ function cargarMotor(config) {
             const nuevoObj = { usuario_id: sessionActiva.user.id, nombre, forma, l, a, h, br };
             
             if (typeof supabase !== 'undefined' && supabase) {
-                await supabaseClient.from('imanes').insert([nuevoObj]);
+                await dbMendocinoClient.from('imanes').insert([nuevoObj]);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -469,7 +469,7 @@ function cargarMotor(config) {
 
         async function borrarPanel(index) { 
             if (typeof supabase !== 'undefined' && supabase && dbPaneles[index] && dbPaneles[index].id) {
-                await supabaseClient.from('paneles').delete().eq('id', dbPaneles[index].id);
+                await dbMendocinoClient.from('paneles').delete().eq('id', dbPaneles[index].id);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -479,7 +479,7 @@ function cargarMotor(config) {
         async function borrarHilo(index) { 
             if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
                 const uid = sessionActiva.user.id;
-                await supabaseClient.from('hilos').delete().eq('usuario_id', uid).eq('diametro', dbHilos[index]);
+                await dbMendocinoClient.from('hilos').delete().eq('usuario_id', uid).eq('diametro', dbHilos[index]);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -488,7 +488,7 @@ function cargarMotor(config) {
         }
         async function borrarIman(index) { 
             if (typeof supabase !== 'undefined' && supabase && dbImanes[index] && dbImanes[index].id) {
-                await supabaseClient.from('imanes').delete().eq('id', dbImanes[index].id);
+                await dbMendocinoClient.from('imanes').delete().eq('id', dbImanes[index].id);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -1221,7 +1221,7 @@ function calcularPasoMagnetico() {
     if (typeof supabase !== 'undefined' && supabase) {
         const usr = usuarioActual && usuarioActual.nombre ? usuarioActual.nombre : 'demo';
         const id_unico = usr + '-' + new Date().getTime();
-        await supabaseClient.from('motores').insert([{
+        await dbMendocinoClient.from('motores').insert([{
             id_unico: id_unico,
             titulo: nombreMotor,
             config: miConfiguracion,
@@ -2221,7 +2221,7 @@ let sessionActiva = null;
 let profileActual = null;
 
 async function inicializarAuth() {
-    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    dbMendocinoClient.auth.onAuthStateChange(async (event, session) => {
         sessionActiva = session;
         if (session) {
             document.getElementById('modal-auth').style.display = 'none';
@@ -2243,7 +2243,7 @@ async function inicializarAuth() {
 }
 
 async function cargarPerfilUsuario(user) {
-    const { data: profile, error } = await supabase
+    const { data: profile, error } = await dbMendocinoClient
         .from('profiles')
         .select('*')
         .eq('id', user.id)
@@ -2296,7 +2296,7 @@ async function ejecutarAuth() {
             const btn = document.getElementById('btn-auth-accion');
             btn.textContent = "Registrando..."; btn.disabled = true;
             
-            const { data, error } = await supabaseClient.auth.signUp({
+            const { data, error } = await dbMendocinoClient.auth.signUp({
                 email: email,
                 password: password,
                 options: { data: { nombre: nombre } }
@@ -2315,7 +2315,7 @@ async function ejecutarAuth() {
         } else {
             const btn = document.getElementById('btn-auth-accion');
             btn.textContent = "Iniciando..."; btn.disabled = true;
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
+            const { data, error } = await dbMendocinoClient.auth.signInWithPassword({
                 email: email,
                 password: password
             });
@@ -2342,7 +2342,7 @@ async function ejecutarAuth() {
 async function cerrarSesion() {
     const pw = document.getElementById('auth-password');
     if(pw) pw.value = '';
-    await supabaseClient.auth.signOut();
+    await dbMendocinoClient.auth.signOut();
 }
 
 function actualizarMensajeNivel() {
