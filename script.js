@@ -2362,12 +2362,86 @@ function actualizarPanelAdminUI() {
     actualizarMensajeNivel();
 }
 
-function abrirPanelAdmin() {
+async function abrirPanelAdmin() {
     if (!esAdmin) {
         mostrarToast('Debes acceder como administrador.', 'aviso');
         return;
     }
-    window.location.href = 'admin.html';
+    document.getElementById('modal-admin').style.display = 'flex';
+    await cargarListaAlumnosAdmin();
+}
+
+function cerrarModalAdmin() {
+    document.getElementById('modal-admin').style.display = 'none';
+}
+
+async function cargarListaAlumnosAdmin() {
+    const listBody = document.getElementById('lista-alumnos-body');
+    const totalStat = document.getElementById('stat-total-alumnos');
+    
+    listBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Cargando clase...</td></tr>';
+    
+    try {
+        const { data: alumnos, error } = await dbMendocinoClient
+            .from('profiles')
+            .select('*')
+            .order('nombre', { ascending: true });
+            
+        if (error) throw error;
+        
+        totalStat.textContent = alumnos.length;
+        listBody.innerHTML = '';
+        
+        alumnos.forEach(alumno => {
+            const row = document.createElement('tr');
+            row.style.borderBottom = '1px solid #f1f2f6';
+            
+            row.innerHTML = `
+                <td style="padding: 12px; font-weight: bold; color: #2c3e50;">${alumno.nombre || 'Sin nombre'}</td>
+                <td style="padding: 12px; color: #64748b; font-size: 14px;">${alumno.email}</td>
+                <td style="padding: 12px;">
+                    <select id="nivel-selector-${alumno.id}" style="padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer;">
+                        <option value="basico" ${alumno.nivel === 'basico' ? 'selected' : ''}>Básico</option>
+                        <option value="avanzado" ${alumno.nivel === 'avanzado' ? 'selected' : ''}>Avanzado</option>
+                        <option value="experto" ${alumno.nivel === 'experto' ? 'selected' : ''}>Experto</option>
+                    </select>
+                </td>
+                <td style="padding: 12px;">
+                    <button onclick="actualizarNivelAlumno('${alumno.id}', '${alumno.nombre}')" style="background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                        Guardar
+                    </button>
+                </td>
+            `;
+            listBody.appendChild(row);
+        });
+        
+    } catch (e) {
+        listBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color: #ef4444;">Error: ${e.message}</td></tr>`;
+    }
+}
+
+async function actualizarNivelAlumno(id, nombre) {
+    const selector = document.getElementById(`nivel-selector-${id}`);
+    const nuevoNivel = selector.value;
+    
+    try {
+        const { error } = await dbMendocinoClient
+            .from('profiles')
+            .update({ nivel: nuevoNivel })
+            .eq('id', id);
+            
+        if (error) throw error;
+        
+        mostrarToast(`Nivel de ${nombre} actualizado correctamente.`, 'ok');
+        
+        // Si el admin se cambia el nivel a sí mismo, aplicar cambios localmente
+        if (id === sessionActiva.user.id) {
+            usuarioActual.nivel = nuevoNivel;
+            aplicarNivelUsuario();
+        }
+    } catch (e) {
+        mostrarToast(`Error al actualizar: ${e.message}`, 'error');
+    }
 }
 
 function cargarUsuarioActualDesdeStorage() {
