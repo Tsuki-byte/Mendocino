@@ -2340,9 +2340,29 @@ async function ejecutarAuth() {
 }
 
 async function cerrarSesion() {
-    const pw = document.getElementById('auth-password');
-    if(pw) pw.value = '';
-    await dbMendocinoClient.auth.signOut();
+    try {
+        const pw = document.getElementById('auth-password');
+        if(pw) pw.value = '';
+        
+        // Cerrar el modal de admin si estuviera abierto
+        cerrarModalAdmin();
+        
+        const { error } = await dbMendocinoClient.auth.signOut();
+        if (error) throw error;
+        
+        // Si por algún motivo la UI no se actualiza sola vía onAuthStateChange, forzamos
+        sessionActiva = null;
+        profileActual = null;
+        esAdmin = false;
+        document.getElementById('modal-auth').style.display = 'flex';
+        
+    } catch (e) {
+        console.error("Error al cerrar sesión:", e);
+        // Fallback: Si todo falla, limpiar storage local y recargar
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.reload();
+    }
 }
 
 function actualizarMensajeNivel() {
