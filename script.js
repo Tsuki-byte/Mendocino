@@ -282,12 +282,12 @@ function cargarMotor(config) {
         
         async function cargarDatosGlobales() {
             try {
-                if (typeof supabase !== 'undefined' && supabase) {
-                    const usr = usuarioActual && usuarioActual.nombre ? usuarioActual.nombre : 'demo';
+                if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
+                    const uid = sessionActiva.user.id;
                     
-                    const { data: paneles, error: errP } = await supabase.from('paneles').select('*').eq('usuario_creador', usr);
-                    const { data: hilos, error: errH } = await supabase.from('hilos').select('*').eq('usuario_creador', usr);
-                    const { data: imanes, error: errI } = await supabase.from('imanes').select('*').eq('usuario_creador', usr);
+                    const { data: paneles, error: errP } = await supabase.from('paneles').select('*').eq('usuario_id', uid);
+                    const { data: hilos, error: errH } = await supabase.from('hilos').select('*').eq('usuario_id', uid);
+                    const { data: imanes, error: errI } = await supabase.from('imanes').select('*').eq('usuario_id', uid);
                     
                     if (!errP && paneles && paneles.length > 0) dbPaneles = paneles;
                     else dbPaneles = JSON.parse(localStorage.getItem('dbPaneles')) || [...defaultPaneles];
@@ -298,7 +298,7 @@ function cargarMotor(config) {
                     if (!errI && imanes && imanes.length > 0) dbImanes = imanes;
                     else dbImanes = JSON.parse(localStorage.getItem('dbImanes')) || [...defaultImanes];
                 } else {
-                    throw new Error("Supabase no definido");
+                    throw new Error("Supabase no definido o sin sesión");
                 }
             } catch (e) {
                 console.warn("Fallo cargando de Supabase, usando LocalStorage:", e);
@@ -399,9 +399,8 @@ function cargarMotor(config) {
             if (isNaN(dia) || dia <= 0) { alert("Error: Introduce un diámetro válido."); return; }
             if (dbHilos.includes(dia)) { alert("Error: Este diámetro ya existe."); return; }
             
-            const usr = usuarioActual && usuarioActual.nombre ? usuarioActual.nombre : 'demo';
-            if (typeof supabase !== 'undefined' && supabase) {
-                await supabase.from('hilos').insert([{ usuario_creador: usr, diametro: dia }]);
+            if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
+                await supabase.from('hilos').insert([{ usuario_id: sessionActiva.user.id, diametro: dia }]);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -426,8 +425,7 @@ function cargarMotor(config) {
                 return;
             }
             
-            const usr = usuarioActual && usuarioActual.nombre ? usuarioActual.nombre : 'demo';
-            const nuevoObj = { usuario_creador: usr, nombre, voc, isc, v, i, l, a };
+            const nuevoObj = { usuario_id: sessionActiva.user.id, nombre, voc, isc, v, i, l, a };
 
             if (typeof supabase !== 'undefined' && supabase) {
                 await supabase.from('paneles').insert([nuevoObj]);
@@ -455,8 +453,7 @@ function cargarMotor(config) {
                 return;
             }
 
-            const usr = usuarioActual && usuarioActual.nombre ? usuarioActual.nombre : 'demo';
-            const nuevoObj = { usuario_creador: usr, nombre, forma, l, a, h, br };
+            const nuevoObj = { usuario_id: sessionActiva.user.id, nombre, forma, l, a, h, br };
             
             if (typeof supabase !== 'undefined' && supabase) {
                 await supabase.from('imanes').insert([nuevoObj]);
@@ -480,9 +477,9 @@ function cargarMotor(config) {
             }
         }
         async function borrarHilo(index) { 
-            if (typeof supabase !== 'undefined' && supabase) {
-                const usr = usuarioActual && usuarioActual.nombre ? usuarioActual.nombre : 'demo';
-                await supabase.from('hilos').delete().eq('usuario_creador', usr).eq('diametro', dbHilos[index]);
+            if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
+                const uid = sessionActiva.user.id;
+                await supabase.from('hilos').delete().eq('usuario_id', uid).eq('diametro', dbHilos[index]);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -2218,169 +2215,168 @@ function adminEliminarUsuario(nombre) {
 }
 
 
-// === PARCHE USUARIOS / ADMIN ===
-const CLAVE_ADMIN_MOTOR = 'mendocino-admin';
-const STORAGE_USUARIOS_MOTOR = 'usuariosMotorMendocino';
-let esAdmin = sessionStorage.getItem('adminMotorMendocino') === '1';
+// === PARCHE USUARIOS / ADMIN SUPABASE AUTH ===
+let esAdmin = false;
+let sessionActiva = null;
+let profileActual = null;
 
-function obtenerUsuariosGuardados() {
-    try {
-        const data = JSON.parse(localStorage.getItem(STORAGE_USUARIOS_MOTOR));
-        return (data && typeof data === 'object') ? data : {};
-    } catch (e) {
-        return {};
+async function inicializarAuth() {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        sessionActiva = session;
+        if (session) {
+            document.getElementById('modal-auth').style.display = 'none';
+            await cargarPerfilUsuario(session.user);
+            await cargarDatosGlobales();
+            renderizarUI();
+            actualizarPanelAdminUI();
+            aplicarNivelUsuario();
+            cargarMotoresProyectos();
+        } else {
+            document.getElementById('modal-auth').style.display = 'flex';
+            document.getElementById('mensaje-nivel').textContent = "Sesión cerrada";
+            const btnIr = document.getElementById('btn-ir-admin');
+            if (btnIr) btnIr.style.display = 'none';
+            profileActual = null;
+            esAdmin = false;
+        }
+    });
+}
+
+async function cargarPerfilUsuario(user) {
+    const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+        
+    if (profile) {
+        profileActual = profile;
+        esAdmin = profile.rol === 'admin';
+        usuarioActual.nombre = profile.nombre || user.email;
+        usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
+    } else {
+        usuarioActual.nombre = user.email;
+        usuarioActual.nivel = NIVELES_USUARIO.BASICO;
+        esAdmin = false;
     }
 }
 
-function guardarUsuariosGuardados(usuarios) {
-    localStorage.setItem(STORAGE_USUARIOS_MOTOR, JSON.stringify(usuarios || {}));
+let modoRegistroAuth = false;
+
+function toggleModoAuth(e) {
+    if (e) e.preventDefault();
+    modoRegistroAuth = !modoRegistroAuth;
+    document.getElementById('auth-nombre-group').style.display = modoRegistroAuth ? 'block' : 'none';
+    document.getElementById('btn-auth-accion').textContent = modoRegistroAuth ? 'Registrarse' : 'Iniciar Sesión';
+    document.getElementById('link-toggle-auth').textContent = modoRegistroAuth ? '¿Ya tienes cuenta? Inicia sesión aquí.' : '¿No tienes cuenta? Registrate aquí.';
+    document.getElementById('auth-error').style.display = 'none';
+    document.getElementById('auth-success').style.display = 'none';
+}
+
+async function ejecutarAuth() {
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value.trim();
+    const errorMsg = document.getElementById('auth-error');
+    const successMsg = document.getElementById('auth-success');
+    
+    errorMsg.style.display = 'none';
+    successMsg.style.display = 'none';
+    
+    if (!email || !password) {
+        errorMsg.textContent = "Por favor completa el correo y contraseña.";
+        errorMsg.style.display = 'block';
+        return;
+    }
+    
+    try {
+        if (modoRegistroAuth) {
+            const nombre = document.getElementById('auth-nombre').value.trim();
+            if (!nombre) throw new Error("Debes introducir tu nombre para registrarte.");
+            
+            const btn = document.getElementById('btn-auth-accion');
+            btn.textContent = "Registrando..."; btn.disabled = true;
+            
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: { data: { nombre: nombre } }
+            });
+            
+            btn.textContent = "Registrarse"; btn.disabled = false;
+            if (error) throw error;
+            
+            if (data.user && data.user.identities && data.user.identities.length === 0) {
+                 throw new Error("Este correo ya está registrado, intenta iniciar sesión.");
+            }
+            if (!data.session) {
+                successMsg.textContent = "Registro exitoso. Si exige confirmación, revisa tu email.";
+                successMsg.style.display = 'block';
+            }
+        } else {
+            const btn = document.getElementById('btn-auth-accion');
+            btn.textContent = "Iniciando..."; btn.disabled = true;
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+            btn.textContent = "Iniciar Sesión"; btn.disabled = false;
+            
+            if (error) {
+                if (error.message.includes('Invalid login credentials')) {
+                    throw new Error("Credenciales inválidas. Comprueba tu correo y contraseña.");
+                } else if (error.message.includes('Email not confirmed')) {
+                    throw new Error("Por favor, confirma tu correo electrónico primero.");
+                }
+                throw error;
+            }
+        }
+    } catch (e) {
+        errorMsg.textContent = e.message;
+        errorMsg.style.display = 'block';
+        const btn = document.getElementById('btn-auth-accion');
+        btn.textContent = modoRegistroAuth ? 'Registrarse' : 'Iniciar Sesión'; 
+        btn.disabled = false;
+    }
+}
+
+async function cerrarSesion() {
+    const pw = document.getElementById('auth-password');
+    if(pw) pw.value = '';
+    await supabase.auth.signOut();
 }
 
 function actualizarMensajeNivel() {
     const el = document.getElementById('mensaje-nivel');
     if (!el) return;
-    const nombre = usuarioActual?.nombre || 'Alumno';
-    const nivel = usuarioActual?.nivel || NIVELES_USUARIO.BASICO;
-    const adminTxt = esAdmin ? ' · admin activo' : '';
-    el.textContent = `Usuario: ${nombre} · nivel: ${nivel}${adminTxt}`;
-}
-
-function cargarUsuarioActualDesdeStorage() {
-    const usuarios = obtenerUsuariosGuardados();
-    const ultimo = localStorage.getItem('ultimoUsuarioMotorMendocino');
-
-    if (ultimo && usuarios[ultimo]) {
-        usuarioActual.nombre = ultimo;
-        usuarioActual.nivel = usuarios[ultimo].nivel || NIVELES_USUARIO.BASICO;
-        localStorage.setItem('nivelUsuarioMotor', usuarioActual.nivel);
-    } else if (!usuarioActual.nombre) {
-        usuarioActual.nombre = 'Alumno';
-    }
-
-    const inputUsuario = document.getElementById('input-usuario');
-    if (inputUsuario && usuarioActual.nombre && usuarioActual.nombre !== 'demo') {
-        inputUsuario.value = usuarioActual.nombre;
-    }
-}
-
-function entrarComoUsuario() {
-    const nombre = document.getElementById("input-usuario").value.trim().toLowerCase();
-    if (!nombre) return;
-
-    let usuarios = JSON.parse(localStorage.getItem("usuariosMotorMendocino")) || {};
-
-    // 👇 Si NO existe → registrar
-    if (!usuarios[nombre]) {
-        const email = prompt("Usuario nuevo.\nIntroduce tu correo:");
-        if (!email) return;
-
-        const password = prompt("Introduce una contraseña:");
-        if (!password) return;
-
-        usuarios[nombre] = {
-            nivel: "basico",
-            email: email,
-            password: password
-        };
-
-        localStorage.setItem("usuariosMotorMendocino", JSON.stringify(usuarios));
-
-        alert("Usuario creado correctamente");
-    }
-
-    // 👇 Login normal
-    sessionStorage.setItem("usuarioActivo", nombre);
-
-function actualizarMensajeUsuario() {
-    const usuario = sessionStorage.getItem("usuarioActivo");
-    const usuarios = JSON.parse(localStorage.getItem("usuariosMotorMendocino")) || {};
-
-    if (usuario && usuarios[usuario]) {
-        document.getElementById("mensaje-nivel").textContent =
-            `Usuario: ${usuario} · nivel: ${usuarios[usuario].nivel}`;
-    }
-}
-
-    usuarioActual.nombre = nombre;
-    usuarioActual.nivel = usuarios[nombre].nivel || NIVELES_USUARIO.BASICO;
-    localStorage.setItem('ultimoUsuarioMotorMendocino', nombre);
-    localStorage.setItem('nivelUsuarioMotor', usuarioActual.nivel);
-
-    aplicarNivelUsuario();
-    actualizarPanelAdminUI();
-    mostrarToast(`Sesión iniciada como ${nombre}.`, 'ok');
-}
-
-function iniciarModoAdmin() {
-    const input = document.getElementById('admin-clave');
-    const clave = input ? input.value : '';
-    if (clave !== CLAVE_ADMIN_MOTOR) {
-        mostrarToast('Clave de administrador incorrecta.', 'error');
+    if (!sessionActiva || !profileActual) {
+        el.textContent = "Sesión cerrada";
         return;
     }
-
-    esAdmin = true;
-    sessionStorage.setItem('adminMotorMendocino', '1');
-    if (input) input.value = '';
-    actualizarPanelAdminUI();
-    aplicarNivelUsuario();
-    mostrarToast('Modo administrador activado.', 'ok');
-}
-
-function cambiarNivelUsuario(nuevoNivel) {
-    if (!CONFIG_NIVELES[nuevoNivel]) return;
-
-    usuarioActual.nivel = nuevoNivel;
-    localStorage.setItem('nivelUsuarioMotor', nuevoNivel);
-
-    if (usuarioActual?.nombre) {
-        const usuarios = obtenerUsuariosGuardados();
-        usuarios[usuarioActual.nombre] = { ...(usuarios[usuarioActual.nombre] || {}), nivel: nuevoNivel };
-        guardarUsuariosGuardados(usuarios);
-    }
-
-    aplicarNivelUsuario();
-    mostrarToast(`Nivel cambiado a: ${nuevoNivel}`, 'ok');
+    const adminTxt = esAdmin ? ' · 🛡️ ADMIN' : '';
+    el.textContent = `👨‍🎓 ${profileActual.nombre} (${sessionActiva.user.email})${adminTxt}`;
 }
 
 function actualizarPanelAdminUI() {
-    esAdmin = sessionStorage.getItem('adminMotorMendocino') === '1' || esAdmin;
-
     const btnIrAdmin = document.getElementById('btn-ir-admin');
     if (btnIrAdmin) btnIrAdmin.style.display = esAdmin ? 'inline-flex' : 'none';
-
-    const btnSalirAdmin = document.getElementById('btn-salir-admin');
-    if (btnSalirAdmin) btnSalirAdmin.style.display = esAdmin ? 'inline-flex' : 'none';
-
-    const bloqueSelector = document.getElementById('bloque-selector-nivel');
-    if (bloqueSelector) bloqueSelector.style.display = esAdmin ? 'block' : 'none';
-
-    const selectorNivel = document.getElementById('selector-nivel');
-    if (selectorNivel) selectorNivel.value = usuarioActual?.nivel || NIVELES_USUARIO.BASICO;
-
     actualizarMensajeNivel();
 }
 
 function abrirPanelAdmin() {
-    if (!adminEstaActivo() && !esAdmin) {
+    if (!esAdmin) {
         mostrarToast('Debes acceder como administrador.', 'aviso');
         return;
     }
     window.location.href = 'admin.html';
 }
 
-function salirModoAdmin() {
-    esAdmin = false;
-    sessionStorage.removeItem('adminMotorMendocino');
-    actualizarPanelAdminUI();
-    aplicarNivelUsuario();
-    mostrarToast('Modo administrador cerrado.', 'info');
+function cargarUsuarioActualDesdeStorage() {
+    // Reemplazada por cargarPerfilUsuario
 }
 
 const _windowOnloadMotor = window.onload;
 window.onload = async function() {
     if (typeof _windowOnloadMotor === 'function') await _windowOnloadMotor();
-    cargarUsuarioActualDesdeStorage();
-    actualizarPanelAdminUI();
-    aplicarNivelUsuario();
+    await inicializarAuth();
 };
+

@@ -30,6 +30,38 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5K3C8D22"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+<!-- MODAL DE AUTENTICACIÓN (BLOQUEA LA APP) -->
+<div id="modal-auth" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 40px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <h2 style="margin-top: 0; color: #2c3e50; text-align: center;">⚙️ Motor Mendocino</h2>
+        <p style="text-align: center; color: #7f8c8d; margin-bottom: 25px;">Por favor, identifícate para continuar.</p>
+        
+        <div id="auth-error" style="display: none; background: #fdeaea; color: #c0392b; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px;"></div>
+        <div id="auth-success" style="display: none; background: #eafaf1; color: #27ae60; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px;">Revisa tu correo para confirmar.</div>
+
+        <div class="form-group">
+            <label>Correo Electrónico</label>
+            <input type="email" id="auth-email" placeholder="Introduce tu correo">
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="auth-password" placeholder="Tu contraseña">
+        </div>
+        
+        <div id="auth-nombre-group" class="form-group" style="display: none;">
+            <label>Nombre de Alumno</label>
+            <input type="text" id="auth-nombre" placeholder="Ej: Juan Pérez">
+        </div>
+
+        <button id="btn-auth-accion" class="btn-action" style="width: 100%; margin-top: 10px;" onclick="ejecutarAuth()">Iniciar Sesión</button>
+        
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="#" id="link-toggle-auth" onclick="toggleModoAuth(event)" style="color: #3498db; font-size: 14px; text-decoration: none;">¿No tienes cuenta? Registrate aquí.</a>
+        </div>
+    </div>
+</div>
+
         <div class="top-navbar">
             <button class="nav-tab active" id="tab-calc" data-page="calc">⚙️ Calculadora Motor</button>
             <button class="nav-tab" id="tab-db" data-page="db">🗄️ Base de Datos Componentes</button>
@@ -42,39 +74,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="barra-superior-app">
 
     <div class="fila-acceso">
-        <div class="grupo-acceso">
-            <div class="form-group form-superior">
-                <label for="input-usuario">Alumno</label>
-                <input type="text" id="input-usuario" placeholder="Nombre del alumno">
-            </div>
-
-            <button class="btn-toolbar btn-toolbar-principal" type="button" onclick="entrarComoUsuario()">
-                Entrar
-            </button>
-        </div>
-
-        <div id="panel-admin" class="grupo-acceso">
-            <div class="form-group form-superior">
-                <label for="admin-clave">Clave admin</label>
-                <input type="password" id="admin-clave" placeholder="Clave de administrador">
-            </div>
-
-            <button class="btn-toolbar btn-toolbar-secundario" type="button" onclick="iniciarModoAdmin()">
-                Entrar admin
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div id="mensaje-nivel" class="estado-usuario">Cargando sesión...</div>
+            <button class="btn-toolbar btn-toolbar-secundario" type="button" onclick="cerrarSesion()">
+                Cerrar Sesión
             </button>
         </div>
 
         <div class="grupo-admin-extra">
-            <button id="btn-ir-admin" class="btn-toolbar btn-toolbar-secundario" type="button" onclick="abrirPanelAdmin()" style="display:none;">
-                👥 Usuarios
-            </button>
-
-            <button id="btn-salir-admin" class="btn-toolbar btn-toolbar-secundario" type="button" onclick="salirModoAdmin()" style="display:none;">
-                Salir admin
+            <button id="btn-ir-admin" class="btn-action" type="button" onclick="abrirPanelAdmin()" style="display:none; background-color: #9b59b6;">
+                🛡️ Panel Admin
             </button>
         </div>
-
-        <div id="mensaje-nivel" class="estado-usuario"></div>
     </div>
 
     <div class="separador-suave"></div>

@@ -94,27 +94,42 @@
 
     <script src="script.js"></script>
     <script>
-        function asegurarAdminPanel() {
-            if (typeof adminEstaActivo === 'function' && !adminEstaActivo()) {
-                alert('Debes acceder primero como administrador desde la página principal.');
+        let administradores = [];
+
+        async function asegurarAdminPanel() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                alert('Debes iniciar sesión primero.');
+                window.location.href = 'index.html';
+                return false;
+            }
+            
+            const { data: profile } = await supabase.from('profiles').select('rol').eq('id', session.user.id).single();
+            if (!profile || profile.rol !== 'admin') {
+                alert('Acceso denegado. No eres administrador.');
                 window.location.href = 'index.html';
                 return false;
             }
             return true;
         }
 
-        function renderizarListaUsuariosAdmin() {
-            if (!asegurarAdminPanel()) return;
-
+        async function renderizarListaUsuariosAdmin() {
             const contenedor = document.getElementById('contenedor-lista-usuarios');
             const contador = document.getElementById('contador-usuarios');
-            const usuarios = (typeof obtenerUsuariosGuardados === 'function') ? obtenerUsuariosGuardados() : {};
-            const nombres = Object.keys(usuarios).sort((a, b) => a.localeCompare(b, 'es'));
+            
+            contenedor.innerHTML = '<div style="padding:20px;text-align:center;">Cargando usuarios desde Supabase...</div>';
+            
+            const { data: usuarios, error } = await supabase.from('profiles').select('*').order('nombre', { ascending: true });
+            
+            if (error || !usuarios) {
+                contenedor.innerHTML = `<div class="admin-vacio">Error cargando usuarios: ${error?.message}</div>`;
+                return;
+            }
 
-            contador.textContent = `${nombres.length} usuario${nombres.length === 1 ? '' : 's'}`;
+            contador.textContent = `${usuarios.length} usuario${usuarios.length === 1 ? '' : 's'}`;
 
-            if (!nombres.length) {
-                contenedor.innerHTML = '<div class="admin-vacio">Todavía no hay usuarios guardados en este navegador.</div>';
+            if (usuarios.length === 0) {
+                contenedor.innerHTML = '<div class="admin-vacio">No hay usuarios registrados en el sistema.</div>';
                 return;
             }
 
@@ -122,26 +137,29 @@
                 <table class="admin-tabla">
                     <thead>
                         <tr>
-                            <th>Usuario</th>
-                            <th>Nivel</th>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Rol</th>
+                            <th>Nivel (Permisos en App)</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${nombres.map(nombre => `
+                        ${usuarios.map(u => `
                             <tr>
-                                <td><strong>${nombre}</strong></td>
+                                <td><strong>${u.nombre}</strong></td>
+                                <td>${u.email}</td>
+                                <td>${u.rol === 'admin' ? '🛡️ Admin' : '👤 Alumno'}</td>
                                 <td>
-                                    <select id="nivel-${codificarId(nombre)}">
-                                        <option value="basico" ${usuarios[nombre].nivel === 'basico' ? 'selected' : ''}>Básico</option>
-                                        <option value="avanzado" ${usuarios[nombre].nivel === 'avanzado' ? 'selected' : ''}>Avanzado</option>
-                                        <option value="experto" ${usuarios[nombre].nivel === 'experto' ? 'selected' : ''}>Experto</option>
+                                    <select id="nivel-${u.id}">
+                                        <option value="basico" ${u.nivel === 'basico' ? 'selected' : ''}>Básico</option>
+                                        <option value="avanzado" ${u.nivel === 'avanzado' ? 'selected' : ''}>Avanzado</option>
+                                        <option value="experto" ${u.nivel === 'experto' ? 'selected' : ''}>Experto</option>
                                     </select>
                                 </td>
                                 <td>
                                     <div class="admin-acciones-fila">
-                                        <button class="btn-mini btn-mini-guardar" type="button" onclick="guardarNivelDesdePanel('${escaparTexto(nombre)}')">Guardar nivel</button>
-                                        <button class="btn-mini btn-mini-eliminar" type="button" onclick="eliminarUsuarioDesdePanel('${escaparTexto(nombre)}')">Eliminar</button>
+                                        <button class="btn-mini btn-mini-guardar" type="button" onclick="guardarNivelDesdePanel('${u.id}', '${escaparTexto(u.nombre)}')">Guardar Nivel</button>
                                     </div>
                                 </td>
                             </tr>
@@ -151,70 +169,39 @@
             `;
         }
 
-        function codificarId(texto) {
-            return btoa(unescape(encodeURIComponent(texto))).replace(/=/g, '');
-        }
-
         function escaparTexto(texto) {
             return String(texto).replace(/'/g, "\\'");
         }
 
         function crearUsuarioDesdePanel() {
-            const nombre = document.getElementById('nuevo-usuario').value.trim();
-            const nivel = document.getElementById('nuevo-nivel').value;
-
-            const res = adminCrearUsuario(nombre, nivel);
-            if (!res.ok) {
-                mostrarToast(res.mensaje, 'error');
-                return;
-            }
-
-            document.getElementById('nuevo-usuario').value = '';
-            document.getElementById('nuevo-nivel').value = 'basico';
-            mostrarToast(res.mensaje, 'ok');
-            renderizarListaUsuariosAdmin();
+            mostrarToast("Para crear un alumno con email, debe registrarse desde la pantalla inicial, o invítalo desde el Panel de Supabase.com", 'aviso');
         }
 
-        function guardarNivelDesdePanel(nombre) {
-            const select = document.getElementById(`nivel-${codificarId(nombre)}`);
+        async function guardarNivelDesdePanel(id, nombre) {
+            const select = document.getElementById(`nivel-${id}`);
             const nivel = select ? select.value : 'basico';
-            const res = adminCrearUsuario(nombre, nivel);
+            
+            const { error } = await supabase.from('profiles').update({ nivel: nivel }).eq('id', id);
 
-            if (!res.ok) {
-                mostrarToast(res.mensaje, 'error');
+            if (error) {
+                mostrarToast('Error al guardar nivel: ' + error.message, 'error');
                 return;
-            }
-
-            if (typeof usuarioActual !== 'undefined' && usuarioActual.nombre === nombre) {
-                usuarioActual.nivel = nivel;
-                localStorage.setItem('ultimoUsuarioMotorMendocino', nombre);
             }
 
             mostrarToast(`Nivel de ${nombre} actualizado a ${nivel}.`, 'ok');
             renderizarListaUsuariosAdmin();
         }
 
-        function eliminarUsuarioDesdePanel(nombre) {
-            if (!confirm(`¿Eliminar al usuario "${nombre}"?`)) return;
-
-            const res = adminEliminarUsuario(nombre);
-            if (!res.ok) {
-                mostrarToast(res.mensaje, 'error');
-                return;
-            }
-
-            mostrarToast(res.mensaje, 'ok');
-            renderizarListaUsuariosAdmin();
-        }
-
-        function salirModoAdminDesdePanel() {
-            sessionStorage.removeItem('adminMotorMendocino');
+        async function salirModoAdminDesdePanel() {
+            await supabase.auth.signOut();
             window.location.href = 'index.html';
         }
 
-        window.addEventListener('load', () => {
-            if (!asegurarAdminPanel()) return;
-            renderizarListaUsuariosAdmin();
+        window.addEventListener('load', async () => {
+            const esAdminVálido = await asegurarAdminPanel();
+            if (esAdminVálido) {
+                renderizarListaUsuariosAdmin();
+            }
         });
     </script>
 </body>
