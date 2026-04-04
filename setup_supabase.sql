@@ -2,6 +2,14 @@
 -- MIGRACIÓN A SUPABASE AUTH (USUARIOS REALES) + RLS
 -- =======================================================
 
+-- Limpiar el esquema antiguo (esto borrará los datos viejos de prueba para poder aplicar los nuevos tipos de datos UUID)
+DROP TABLE IF EXISTS public.motores CASCADE;
+DROP TABLE IF EXISTS public.imanes CASCADE;
+DROP TABLE IF EXISTS public.hilos CASCADE;
+DROP TABLE IF EXISTS public.paneles CASCADE;
+DROP TABLE IF EXISTS public.usuarios_mendocino CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+
 -- 1. Tabla de Perfiles públicos vinculada a la Autenticación de Supabase (auth.users)
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
