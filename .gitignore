@@ -1,0 +1,5 @@
+# macOS
+.DS_Store
+
+# Backup and improvements folders if the user doesn't want them tracked? 
+# Usually, we leave them but we should definitely exclude .DS_Store

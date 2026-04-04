@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-5K3C8D22');</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-X5TF2M5Y1E"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-X5TF2M5Y1E');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor Mendocino - Calculadora y Datos</title>
+    
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5K3C8D22"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+        <div class="top-navbar">
+            <button class="nav-tab active" id="tab-calc" onclick="cambiarPagina('calc')">⚙️ Calculadora Motor</button>
+            <button class="nav-tab" id="tab-db" onclick="cambiarPagina('db')">🗄️ Base de Datos Componentes</button>
+            <button class="nav-tab" id="tab-videos" onclick="cambiarPagina('videos')">🎥 Galería de Videos</button>    
+        </div>
+
+    <div id="page-calc" class="page-container active">
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px;">
+            <button onclick="guardarConfiguracionLocal()" style="background-color: #64748b; color: white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                💾 Guardar config.
+            </button>
+            <button onclick="cargarConfiguracionLocal()" style="background-color: var(--primary-color); color: white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                📂 Cargar config.
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="header">
+                <h1>Diseño de Motor Mendocino</h1>
+                <p>Calculadora y simulador de parámetros</p>
+            </div>
+
+            <div class="stepper-container">
+                <div class="step-indicator active" id="ind-1" onclick="cambiarPaso(1)"><span>1. Paneles</span></div>
+                <div class="step-arrow">➔</div>
+                <div class="step-indicator" id="ind-2" onclick="cambiarPaso(2)"><span>2. Devanados</span></div>
+                <div class="step-arrow">➔</div>
+                <div class="step-indicator" id="ind-3" onclick="cambiarPaso(3)"><span>3. Ranuras</span></div>
+            </div>
+
+            <div class="content">
+                <div id="step-1" class="step-container active">
+
+                    <div class="form-section">
+                        <h3 style="margin-top:0; color: var(--primary-color);">📐 1. Geometría del Rotor</h3>
+                        <div class="form-group">
+                            <label>Número de Caras/Paneles del Rotor</label>
+                            <select id="caras" onchange="actualizarResumenPaso1()">
+                                <option value="4" selected>4 Caras</option>
+                                <option value="6">6 Caras</option>
+                                <option value="8">8 Caras</option>
+                                <option value="10">10 Caras</option>
+                                <option value="12">12 Caras</option>
+                                <option value="14">14 Caras</option>
+                                <option value="16">16 Caras</option>
+                                <option value="18">18 Caras</option>
+                                <option value="20">20 Caras</option>
+                                <option value="22">22 Caras</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Margen del marco (mm): <span>Borde de plástico a cada lado de la placa</span></label>
+                            <input type="number" id="margen-placa" value="3" step="0.1" min="0" oninput="actualizarResumenPaso1()">
+                        </div>
+
+                        <h4 style="margin-top: 20px; margin-bottom: 12px; border-bottom: 2px solid #eee; padding-bottom: 5px; color: #2c3e50;">Geometría de la Ranura</h4>
+                        
+                        <div style="display: flex; gap: 12px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Ancho (mm):</label>
+                                <input type="number" id="ranura-ancho" value="6.5" step="0.1" min="0" oninput="actualizarResumenPaso1()">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Prof. (mm):</label>
+                                <input type="number" id="ranura-alto" value="3.5" step="0.1" min="0" oninput="actualizarResumenPaso1()">
+                            </div>
+                            <div class="form-group" style="flex: 1.2;">
+                                <label>Forma:</label>
+                                <select id="ranura-tipo" onchange="actualizarResumenPaso1()">
+                                    <option value="cuadrado">Cuadrada</option>
+                                    <option value="trapecio" selected>Trapecio</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Diámetro teórico del rotor (mm)</label>
+                            <input type="text" id="diametro" class="calculado" readonly style="font-size: 18px; color: var(--primary-color);">
+                        </div>
+
+                        <h3 style="margin-top:25px; color: var(--primary-color);">☀️ 2. Panel Solar a Utilizar</h3>
+                        <div class="form-group">
+                            <label>Selecciona el Panel Solar (desde tu BD)</label>
+                            <select id="panel" onchange="actualizarResumenPaso1()"></select>
+                        </div>
+                        
+                        <div class="nav-buttons" style="justify-content: flex-end;">
+                            <button class="btn-nav btn-next" onclick="cambiarPaso(2)" style="max-width: 200px;">Siguiente ⮞</button>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h3>Ilustración Geométrica</h3>
+
+                    <div class="svg-illustration-container">
+                        <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Sección Frontal del Rotor</h4>
+                        <svg id="rotor-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"></svg>
+                        
+                        <div style="display: flex; gap: 12px; font-size: 12px; margin-top: 10px; flex-wrap: wrap; justify-content: center;">
+                            <span style="display:flex; align-items:center; gap:4px;">
+                                <span style="width:12px; height:12px; background-color:var(--svg-panel-color); border:1px solid var(--svg-stroke-color); border-radius:2px;"></span> Rotor 3D
+                            </span>
+                            <span style="display:flex; align-items:center; gap:4px;">
+                                <span style="width:16px; height:4px; background-color:#2c3e50; border-radius:1px;"></span> Placa Solar
+                            </span>
+                            <span style="display:flex; align-items:center; gap:4px;">
+                                <span id="leyenda-ranura" style="width:12px; height:12px; background-color:#d35400; border:1px solid #444; border-radius:2px; opacity: 0.8;"></span> Bobinado
+                            </span>
+                        </div>
+
+                        <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 20px 0 15px 0;">
+                        
+                        <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Vista Superior de una Cara</h4>
+                        <svg id="panel-svg" xmlns="http://www.w3.org/2000/svg" style="max-width: 100%; height: auto; max-height: 140px;"></svg>
+                    </div>
+
+                        <h3>Características del Panel</h3>
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 14px;">
+                            <div class="summary-item"><span>Medidas:</span><span class="value" id="res-medidas">--</span></div>
+                            <div class="summary-item"><span>Tensión Vacío (Voc):</span><span class="value" id="res-panel-voc">--</span></div>
+                            <div class="summary-item"><span>Corriente Cortocircuito (Isc):</span><span class="value" id="res-panel-isc">--</span></div>
+                            <div class="summary-item"><span>Tensión P. Máx. (Vmp):</span><span class="value" id="res-panel-v">--</span></div>
+                            <div class="summary-item"><span>Corriente P. Máx. (Imp):</span><span class="value" id="res-panel-i">--</span></div>
+                            
+                            <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 8px;">
+                                <span>Potencia Máxima (Pmax):</span><span class="value" id="res-panel-p" style="color:#d35400;">--</span>
+                            </div>
+                            <div class="summary-item"><span>Factor de Forma (FF):</span><span class="value" id="res-panel-ff">--</span></div>
+                            
+                            <div class="summary-item" style="background-color: #eef2f5; padding: 10px; border-radius: 6px; margin-top: 5px; border-bottom: none;">
+                                <span style="font-weight:bold;">Resistencia:</span>
+                                <span class="value" id="res-panel-r" style="font-size: 18px;">--</span>
+                            </div>
+
+                            <small style="color: #666; margin-top: -5px; margin-bottom: 10px; text-align: center;">* Objetivo a alcanzar con el devanado.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="step-2" class="step-container">
+                    <div class="form-section">
+                        <h3 style="margin-top:0; color: var(--primary-color);">🧵 Diseño Eléctrico</h3>
+                        
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <div style="flex: 1;">
+                                <label>Material del Hilo</label>
+                                <select id="material-hilo" onchange="actualizarListaHilos(); calcularPaso2()">
+                                    <option value="cobre" selected>Cobre (Cu)</option>
+                                    <option value="aluminio">Aluminio (Al)</option>
+                                </select>
+                            </div>
+                            <div style="flex: 1;">
+                                <label>Diámetro del hilo [mm]</label>
+                                <select id="dia-hilo-select" onchange="calcularPaso2()"></select>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <div style="flex: 1;">
+                                <label>Sección del hilo [mm²]</label>
+                                <input type="text" id="sec-hilo" class="calculado" readonly>
+                            </div>
+                            <div style="flex: 1;">
+                                <label>Densidad de Corriente [A/mm²]</label>
+                                <input type="text" id="densidad-corriente" class="calculado" readonly>
+                            </div>
+                        </div>
+
+                        <div id="alerta-densidad" style="display: none; background-color: #fdeaea; color: #c0392b; padding: 10px; border-radius: 6px; border-left: 4px solid #c0392b; font-size: 13px; margin-bottom: 15px;">
+                            <strong>⚠️ Peligro de Sobrecalentamiento:</strong> La densidad de corriente supera los 5 A/mm² con este diámetro de hilo y la intensidad del panel seleccionado. Existe un alto riesgo de que el esmalte del hilo se funda, provocando un cortocircuito. Te recomendamos seleccionar un hilo de mayor grosor.
+                        </div>
+
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <div style="flex: 1;"><label>Longitud por espira [m]</label><input type="text" id="lon-espira" class="calculado" readonly></div>
+                            <div style="flex: 1;"><label>Longitud total (1 devanado) [m]</label><input type="text" id="lon-total" class="calculado" readonly></div>
+                        </div>
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <div style="flex: 1;"><label>Espiras por devanado</label><input type="text" id="espiras" class="calculado" style="color:var(--primary-color);" readonly></div>
+                            <div style="flex: 1;"><label>Núm. total devanados</label><input type="text" id="num-devanados" class="calculado" readonly></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Resistencia Real Devanado [Ω]</label>
+                            <input type="text" id="res-devanado" class="calculado" readonly>
+                        </div>
+
+                        <div class="nav-buttons">
+                            <button class="btn-nav btn-prev" onclick="cambiarPaso(1)">⮜ Anterior</button>
+                            <button class="btn-nav btn-next" onclick="cambiarPaso(3)">Siguiente ⮞</button>
+                        </div>
+                    </div>
+                    <div class="summary-section">
+                        <h3>Análisis del Devanado</h3>
+
+                        <div class="summary-item"><span>Material:</span><span class="value" id="res-mat-nombre">Cobre</span></div>
+                        <div class="summary-item"><span>Longitud Espira:</span><span class="value" id="res-lon-espira-resumen">0 m</span></div>
+                        <div class="summary-item"><span>Longitud (1 Devanado):</span><span class="value" id="res-lon-devanado">0 m</span></div>
+
+                        <div class="summary-item"><span>Peso (1 Devanado):</span><span class="value" id="res-peso-devanado">0 g</span></div>
+                        
+                        <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
+                            <span>LONGITUD TOTAL:</span><span class="value" id="res-lon-total-todos" style="color:#d35400;">0 m</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>PESO TOTAL:</span><span class="value" id="res-peso-total-todos" style="color: #e74c3c;">0 g</span>
+                        </div>
+
+                        <small style="color: #666; font-size: 11px; text-align: center; display: block;">* Suma de todos los devanados del rotor.</small>
+
+                        <div class="summary-item" style="background-color: #eef2f5; padding: 10px; border-radius: 6px; margin-top: 15px; border-bottom: none;">
+                            <span style="font-weight:bold;">Espiras por Devanado:</span>
+                            <span class="value" id="res-espiras-final" style="font-size: 18px;">0</span>
+                        </div>
+
+                        <div class="summary-item" style="margin-top: 10px;">
+                            <span>Fuerza Magnetomotriz:</span>
+                            <span class="value" id="res-fmm">0 Av</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="step-3" class="step-container">
+                    <div class="form-section">
+                        <h3 style="margin-top:0; color: var(--primary-color);">📏 Encaje en la Ranura</h3>
+                        <p style="font-size: 14px; color: #666; margin-top: -10px;">El tamaño de la ranura se ha definido en el Paso 1.</p>
+                        
+                        <div class="form-group">
+                            <label>Calidad de bobinado (Factor de holgura)</label>
+                            <select id="calidad-bobinado" onchange="calcularPaso3()">
+                            <option value="0.05">Máquina (muy compacto)</option>
+                            <option value="0.10">Muy bueno</option>
+                            <option value="0.20">Manual bueno</option>
+                            <option value="0.30" selected>Manual normal</option>
+                            <option value="0.40">Bobinado desordenado</option>
+                            </select>
+                        </div>
+
+                        <div id="alerta-ranura" style="display: none; background-color: #fdeaea; color: #c0392b; padding: 10px; border-radius: 6px; border-left: 4px solid #c0392b; font-size: 13px; margin-bottom: 15px;">
+                            <strong>⚠️ Cuidado:</strong> El hilo sobresaldrá de la ranura.
+                        </div>
+
+                        <div class="nav-buttons">
+                            <button class="btn-nav btn-prev" onclick="cambiarPaso(2)">⮜ Anterior</button>
+                            <button class="btn-nav btn-next" onclick="finalizarConfiguracion()">Finalizar 🎉</button>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h3>Análisis de Espacio</h3>
+                        <div class="summary-item">
+                            <span>Área Útil Ranura:</span>
+                            <span class="value" id="res-area-ranura">0 mm²</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Ancho Ocupado (Estimado):</span>
+                            <span class="value" id="res-ancho-ocupado">0 mm</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Alto Ocupado (Estimado):</span>
+                            <span class="value" id="res-alto-ocupado">0 mm</span>
+                        </div>
+                        
+                        <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
+                            <span>Ocupación de la Ranura:</span>
+                            <span class="value" id="res-factor" style="font-size: 18px;">0 %</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-db" class="page-container">
+        <div class="card">
+            <div class="header" style="background-color: #34495e;">
+                <h1>Gestor de Componentes</h1>
+                <p>Añade los materiales de tu taller. Soporta comas o puntos.</p>
+            </div>
+            <div class="content">
+                <div class="db-grid">
+                    
+                    <div class="db-card">
+                        <h3>☀️ Paneles Solares</h3>
+                        <ul class="db-list" id="lista-paneles"></ul>
+                        <h4>Añadir nuevo panel:</h4>
+                        <div class="form-group">
+                            <input type="text" id="db-panel-nombre" placeholder="Nombre (Ej: Mono 40x20)">
+                        </div>
+                        <div style="display:flex; gap:5px;" class="form-group">
+                            <input type="text" inputmode="decimal" id="db-panel-l" placeholder="Largo (mm)">
+                            <input type="text" inputmode="decimal" id="db-panel-a" placeholder="Ancho (mm)">
+                        </div>
+                        <div style="display:flex; gap:5px;" class="form-group">
+                            <input type="text" inputmode="decimal" id="db-panel-voc" placeholder="Voc (V)">
+                            <input type="text" inputmode="decimal" id="db-panel-isc" placeholder="Isc (mA)">
+                        </div>
+                        <div style="display:flex; gap:5px;" class="form-group">
+                            <input type="text" inputmode="decimal" id="db-panel-v" placeholder="V. Medida (V)">
+                            <input type="text" inputmode="decimal" id="db-panel-i" placeholder="I. Medida (mA)">
+                        </div>
+                        <button class="btn-action" onclick="añadirPanel()">+ Añadir Panel</button>
+                    </div>
+
+                    <div class="db-card">
+                        <h3>🧵 Hilos de Bobinar</h3>
+                        <ul class="db-list" id="lista-hilos"></ul>
+                        <h4>Añadir nuevo hilo:</h4>
+                        <div class="form-group">
+                            <input type="text" inputmode="decimal" id="db-hilo-dia" placeholder="Diámetro (mm, ej: 0.15)">
+                        </div>
+                        <button class="btn-action" onclick="añadirHilo()">+ Añadir Hilo</button>
+                    </div>
+
+                    <div class="db-card">
+                        <h3>🧲 Imanes de Neodimio</h3>
+                        <ul class="db-list" id="lista-imanes"></ul>
+                        <h4>Añadir nuevo imán:</h4>
+                        <div class="form-group">
+                            <input type="text" id="db-iman-nombre" placeholder="Nombre (Ej: N42 30x15)">
+                        </div>
+                        <div style="display:flex; gap:5px;" class="form-group">
+                            <select id="db-iman-forma" style="flex: 1;">
+                                <option value="Bloque">Bloque</option>
+                                <option value="Aro">Aro/Cilindro</option>
+                            </select>
+                            <input type="text" inputmode="decimal" id="db-iman-br" placeholder="Br (T)" style="flex: 1;">
+                        </div>
+                        <div style="display:flex; gap:5px;" class="form-group">
+                            <input type="text" inputmode="decimal" id="db-iman-l" placeholder="Largo/Ø Ext">
+                            <input type="text" inputmode="decimal" id="db-iman-a" placeholder="Ancho/Ø Int">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" inputmode="decimal" id="db-iman-h" placeholder="Grosor (mm)">
+                        </div>
+                        <button class="btn-action" onclick="añadirIman()">+ Añadir Imán</button>
+                    </div>
+
+                </div>
+                <button class="btn-action btn-danger" onclick="resetearBaseDatos()">⚠️ Restaurar Base de Datos por Defecto</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-videos" class="page-container">
+        <div class="panel-contenedor video-section">
+            <h2>🎥 Galería de Motores</h2>
+            <p>Visualiza el funcionamiento de distintas configuraciones y descarga los videos de demostración.</p>
+            <div class="table-responsive">
+                <table class="video-comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Previsualización</th>
+                            <th>Modelo / Configuración</th>
+                            <th>Tipo de Panel Solar</th>
+                            <th>Espiras / Hilo</th>
+                            <th>Velocidad / Peso</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td>
+                                <video width="160" height="90" controls preload="metadata">
+                                    <source src="videos/motor1.mp4" type="video/mp4">
+                                    Tu navegador no soporta el video.
+                                </video>
+                            </td>
+                            <td><strong>Rotor de 4 Caras</strong><br>Optimizado para rotación rápida<br>Arranque suave<br>Baja inercia</td>
+                            <td><strong>Panel 53x18</strong><br>0,4V 101mA</td>
+                            <td>28 espiras<br>Cu 0.15mm<sup>2</sup></td>
+                            <td>~2027 RPM<br>~38 g</td>
+                            <td>
+                                <a href="videos/motor1.mp4" download="motor1.mp4" class="btn-download">⬇️ Descargar</a>
+                            <button class="btn-config" onclick="cargarMotor({
+                                    caras: 4,
+                                    panel: 1,
+                                    material: 'cobre',
+                                    hilo: 0.15,
+                                    margen: 0,
+                                    ranuraAncho: 6.5,
+                                    ranuraAlto: 3.5,
+                                    ranuraTipo: 'trapecio',
+                                    calidad: '0.40'
+                                })">
+                                ⚙️ Cargar config
+                            </button>
+
+                            </td>
+
+                         
+
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <video width="160" height="90" controls preload="metadata">
+                                    <source src="videos/motor2.mp4" type="video/mp4">
+                                </video>
+                            </td>
+                            <td><strong>Rotor de 4 Caras</strong><br>Equilibrio de Potencia<br>Relación par-velocidad balanceada</td>
+                            <td><strong>Panel 53x18</strong><br>0,4V 101mA</td>
+                            <td>79 espiras<br>Cu 0.25mm<sup>2</sup></td>
+                            <td>~1997 RPM<br>~53 g</td>
+                            <td>
+                                <a href="videos/motor2.mp4" download="motor2.mp4" class="btn-download">⬇️ Descargar</a>
+                                <button class="btn-config" onclick="cargarMotor({
+                                    caras: 4,
+                                    panel: 1,
+                                    material: 'cobre',
+                                    hilo: 0.25,
+                                    margen: 0,
+                                    ranuraAncho: 6.5,
+                                    ranuraAlto: 3.5,
+                                    ranuraTipo: 'trapecio',
+                                    calidad: '0.40'
+                                })">
+                                ⚙️ Cargar config
+                                </button>
+
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <video width="160" height="90" controls preload="metadata">
+                                    <source src="videos/motor3.mp4" type="video/mp4">
+                                </video>
+                            </td>
+                            <td><strong>Rotor de 4 Caras</strong><br>Bajas revoluciones<br>Arranque inmediato</td>
+                            <td><strong>Panel 53x18</strong><br>0,4V 101mA</td>
+                            <td>99 espiras<br>Cu 0.28mm<sup>2</sup></td>
+                            <td>~1253 RPM<br>~60 g</td>
+                            <td>
+                                <a href="videos/motor3.mp4" download="motor3.mp4" class="btn-download">⬇️ Descargar</a>
+                                <button class="btn-config" onclick="cargarMotor({
+                                    caras: 4,
+                                    panel: 1,
+                                    material: 'cobre',
+                                    hilo: 0.28,
+                                    margen: 0,
+                                    ranuraAncho: 6.5,
+                                    ranuraAlto: 3.5,
+                                    ranuraTipo: 'trapecio',
+                                    calidad: '0.40'
+                                })">
+                                ⚙️ Cargar config
+                                </button>
+
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <video width="160" height="90" controls preload="metadata">
+                                    <source src="videos/motor4.mp4" type="video/mp4">
+                                </video>
+                            </td>
+                            <td><strong>Rotor de 16 Caras</strong><br>Bajas revoluciones<br>Arranque muy suave<br>Gran inercia</td>
+                            <td><strong>Panel 157x13</strong><br>0,35V 134mA</td>
+                            <td>64 espiras<br>Cu 0.55mm<sup>2</sup></td>
+                            <td>~110 RPM<br>~1359 g</td>
+                            <td>
+                                <a href="videos/motor4.mp4" download="motor4.mp4" class="btn-download">⬇️ Descargar</a>
+                                    <button class="btn-config" onclick="cargarMotor({
+                                    caras: 16,
+                                    panel: 12,
+                                    material: 'cobre',
+                                    hilo: 0.550,
+                                    margen: 2.7,
+                                    ranuraAncho: 5.4,
+                                    ranuraAlto: 7,
+                                    ranuraTipo: 'trapecio',
+                                    calidad: '0.40'
+                                })">
+                                ⚙️ Cargar config
+                                </button>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- UTILIDADES ---
+        function parsearNumero(valor) {
+            if (!valor) return NaN;
+            return parseFloat(valor.replace(',', '.'));
+        }
+
+        function cargarMotor(config) {
+            // 1. Cambiar a la página de calculadora
+            cambiarPagina('calc');
+
+            // 2. --- PASO 1 ---
+            document.getElementById('caras').value = config.caras;
+            document.getElementById('panel').value = config.panel;
+            
+            // Aquí leemos las variables de la ranura y el margen (que antes faltaban)
+            document.getElementById('margen-placa').value = config.margen;
+            document.getElementById('ranura-ancho').value = config.ranuraAncho;
+            document.getElementById('ranura-alto').value = config.ranuraAlto;
+            document.getElementById('ranura-tipo').value = config.ranuraTipo;
+
+            actualizarResumenPaso1();
+
+            // 3. --- PASO 2 ---
+            document.getElementById('material-hilo').value = config.material;
+            actualizarListaHilos(); 
+            document.getElementById('dia-hilo-select').value = config.hilo;
+
+            calcularPaso2();
+
+            // 4. --- PASO 3 ---
+            // Aquí leemos la nueva variable de la calidad (bobinado desordenado)
+            if (config.calidad) {
+                document.getElementById('calidad-bobinado').value = config.calidad;
+            }
+            
+            calcularPaso3();
+
+            // 5. Volver visualmente al paso 1 para que el usuario empiece a revisar desde el principio
+            cambiarPaso(1);
+        }
+
+        // --- BASE DE DATOS PREDETERMINADA ---
+        const defaultPaneles = [
+            { nombre: "Aliexpress 48x21", l: 48, a: 21, voc: 0.6, isc: 129, v: 0.41, i: 166.5 },
+            { nombre: "Aliexpress 53x18", l: 53, a: 18, voc: 0.501, isc: 133.3, v: 0.468, i: 101.3 },
+            { nombre: "Aliexpress 53x29", l: 53, a: 29, voc: 5.78, isc: 13.8, v: 4.55, i: 9.3 },
+            { nombre: "Aliexpress 43x16", l: 43, a: 16, voc: 1.9, isc: 45, v: 1.83, i: 42.4 },
+            { nombre: "Aliexpress 43x25", l: 43, a: 25, voc: 2.29, isc: 23, v: 1.51, i: 21.8 },
+            { nombre: "Aliexpress 84x142", l: 84, a: 142, voc: 5.5, isc: 65, v: 5.08, i: 61.9 },
+            { nombre: "Aliexpress 28x55", l: 28, a: 55, voc: 2.95, isc: 5, v: 1.75, i: 4.2 },
+            { nombre: "Mono 52x19 (Ali)", l: 52, a: 19, voc: 0.55, isc: 200, v: 0.52, i: 200 },
+            { nombre: "Mono 52x26 (Ali)", l: 52, a: 26, voc: 0.542, isc: 205, v: 0.33, i: 226 },
+            { nombre: "Mono 39x19 (Ali)", l: 39, a: 19, voc: 0.528, isc: 153, v: 0.36, i: 75.2 },
+            { nombre: "Mono 78x26 (Ali)", l: 78, a: 26, voc: 0.552, isc: 233, v: 0.37, i: 316 },
+            { nombre: "Mono 159x26 (Ali)", l: 159, a: 26, voc: 0.57, isc: 246, v: 0.29, i: 432 },
+            { nombre: "Mono 157x13 (Ali)", l: 157, a: 13, voc: 0.534, isc: 155, v: 0.35, i: 134 },
+            { nombre: "Mono 158x52 (Ali)", l: 158, a: 52, voc: 0.551, isc: 241, v: 0.19, i: 639 }
+        ];
+
+      
+        // Lista de secciones disponibles para Cobre (en mm)
+        const hilosCobre = [0.10, 0.15, 0.25, 0.28, 0.315, 0.40, 0.50, 0.55, 0.63, 0.90, 1.0];
+
+        // Lista de secciones disponibles para Aluminio (en mm)
+        const hilosAluminio = [0.90];
+
+        const defaultHilos = [0.10, 0.15, 0.25, 0.28, 0.315, 0.40, 0.50, 0.55, 0.63, 0.90, 1.0];
+
+        const defaultImanes = [
+            { nombre: "Bloque 30x15x6 (42SH)", forma: "Bloque", l: 30, a: 15, h: 6, br: 1.32 },
+            { nombre: "Bloque 60x20x5 (N45)", forma: "Bloque", l: 60, a: 20, h: 5, br: 1.37 },
+            { nombre: "Bloque 60x30x10 (N45)", forma: "Bloque", l: 60, a: 30, h: 10, br: 1.37 },
+            { nombre: "Bloque 80x40x10 (N45)", forma: "Bloque", l: 80, a: 40, h: 10, br: 1.37 },
+            { nombre: "Bloque 27x9x4 (N35)", forma: "Bloque", l: 27.85, a: 8.83, h: 4.22, br: 1.21 },
+            { nombre: "Bloque 30x10x5 (N42)", forma: "Bloque", l: 29.84, a: 9.76, h: 4.76, br: 1.32 },
+            { nombre: "Bloque 50x5x5 (N45)", forma: "Bloque", l: 49.96, a: 4.91, h: 4.91, br: 1.37 },
+            { nombre: "Bloque 40x20x5 (N42)", forma: "Bloque", l: 40, a: 20, h: 5, br: 1.32 },
+            { nombre: "Bloque 40x10x5 (N42)", forma: "Bloque", l: 40, a: 9.96, h: 5, br: 1.32 },
+            { nombre: "Aro 25x4.2x5 (N45)", forma: "Aro", l: 25, a: 4.2, h: 5, br: 1.37 },
+            { nombre: "Aro 19x9.5x6.4 (N42)", forma: "Aro", l: 19, a: 9.53, h: 6.36, br: 1.32 }
+        ];
+
+        // --- CARGA DE DATOS ---
+        let dbPaneles, dbHilos, dbImanes;
+        try {
+            dbPaneles = JSON.parse(localStorage.getItem('dbPaneles')) || [...defaultPaneles];
+            dbHilos = JSON.parse(localStorage.getItem('dbHilos')) || [...defaultHilos];
+            dbImanes = JSON.parse(localStorage.getItem('dbImanes')) || [...defaultImanes];
+        } catch (e) {
+            dbPaneles = [...defaultPaneles]; dbHilos = [...defaultHilos]; dbImanes = [...defaultImanes];
+        }
+
+        function guardarDatos() {
+            localStorage.setItem('dbPaneles', JSON.stringify(dbPaneles));
+            localStorage.setItem('dbHilos', JSON.stringify(dbHilos));
+            localStorage.setItem('dbImanes', JSON.stringify(dbImanes));
+            renderizarUI(); 
+        }
+
+        function resetearBaseDatos() {
+            if(confirm("¿Estás seguro de que quieres borrar tus componentes y volver a los de defecto?")) {
+                dbPaneles = [...defaultPaneles];
+                dbHilos = [...defaultHilos];
+                dbImanes = [...defaultImanes];
+                guardarDatos();
+                alert("Base de datos restaurada.");
+            }
+        }
+
+        // --- RENDERIZADO DE INTERFAZ GENERAL ---
+        function renderizarUI() {
+            try {
+                const selPanel = document.getElementById('panel');
+                selPanel.innerHTML = '';
+                dbPaneles.forEach((p, index) => { selPanel.innerHTML += `<option value="${index}">${p.nombre}</option>`; });
+
+                const selHilo = document.getElementById('dia-hilo-select');
+                selHilo.innerHTML = '';
+                dbHilos.sort((a,b) => a-b).forEach(h => {
+                    selHilo.innerHTML += `<option value="${h}">${Number(h).toFixed(3)} mm</option>`;
+                });
+
+                document.getElementById('lista-paneles').innerHTML = dbPaneles.map((p, i) => {
+                    const p_mW = p.v * p.i;
+                    const r_ohm = p.v / (p.i / 1000);
+                    const ff = (p.v * p.i) / (p.voc * p.isc) || 0;
+                    return `<li>
+                        <div style="width:100%;">
+                            <strong>${p.nombre}</strong> (${p.l}x${p.a}mm) 
+                            <button class="btn-delete" style="float:right;" onclick="borrarPanel(${i})">X</button><br>
+                            <small>Voc: ${p.voc}V | Isc: ${p.isc}mA | V: ${p.v}V | I: ${p.i}mA</small><br>
+                            <small style="color:var(--primary-color);"><strong>P:</strong> ${p_mW.toFixed(1)}mW | <strong>R ideal:</strong> ${r_ohm.toFixed(1)}Ω | <strong>FF:</strong> ${ff.toFixed(3)}</small>
+                        </div>
+                    </li>`;
+                }).join('');
+
+                document.getElementById('lista-hilos').innerHTML = dbHilos.map((h, i) => 
+                    `<li>Ø ${Number(h).toFixed(3)} mm <button class="btn-delete" onclick="borrarHilo(${i})">X</button></li>`
+                ).join('');
+
+                document.getElementById('lista-imanes').innerHTML = dbImanes.map((im, i) => 
+                    `<li>${im.nombre} <button class="btn-delete" onclick="borrarIman(${i})">X</button></li>`
+                ).join('');
+
+                if (dbPaneles.length > 0) {
+                    const panelSelect = document.getElementById('panel');
+
+                    if (panelSelect.selectedIndex < 0 || panelSelect.selectedIndex >= dbPaneles.length) {
+                        panelSelect.selectedIndex = 0;
+                    }
+
+    actualizarResumenPaso1();
+}
+
+            } catch (e) {
+                console.error("Error al renderizar UI:", e);
+            }
+        }
+
+        function añadirHilo() {
+            const inputVal = document.getElementById('db-hilo-dia').value;
+            const dia = parsearNumero(inputVal);
+            if (isNaN(dia) || dia <= 0) { alert("Error: Introduce un diámetro válido."); return; }
+            if (dbHilos.includes(dia)) { alert("Error: Este diámetro ya existe."); return; }
+            dbHilos.push(dia);
+            guardarDatos();
+            document.getElementById('db-hilo-dia').value = '';
+            alert(`¡Hilo de Ø ${dia} mm añadido correctamente!`);
+        }
+
+        function añadirPanel() {
+            const nombre = document.getElementById('db-panel-nombre').value;
+            const voc = parsearNumero(document.getElementById('db-panel-voc').value);
+            const isc = parsearNumero(document.getElementById('db-panel-isc').value);
+            const v = parsearNumero(document.getElementById('db-panel-v').value);
+            const i = parsearNumero(document.getElementById('db-panel-i').value);
+            const l = parsearNumero(document.getElementById('db-panel-l').value);
+            const a = parsearNumero(document.getElementById('db-panel-a').value);
+
+            if (!nombre || [voc, isc, v, i, l, a].some(n => isNaN(n) || n <= 0)) {
+            alert("Error: Todos los valores del panel deben ser numéricos y mayores que 0.");
+            return;
+}
+
+            dbPaneles.push({ nombre, voc, isc, v, i, l, a });
+            guardarDatos();
+          
+    <script src="script.js"></script>
