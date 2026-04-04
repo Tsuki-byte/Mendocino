@@ -285,9 +285,9 @@ function cargarMotor(config) {
                 if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
                     const uid = sessionActiva.user.id;
                     
-                    const { data: paneles, error: errP } = await supabase.from('paneles').select('*').eq('usuario_id', uid);
-                    const { data: hilos, error: errH } = await supabase.from('hilos').select('*').eq('usuario_id', uid);
-                    const { data: imanes, error: errI } = await supabase.from('imanes').select('*').eq('usuario_id', uid);
+                    const { data: paneles, error: errP } = await supabaseClient.from('paneles').select('*').eq('usuario_id', uid);
+                    const { data: hilos, error: errH } = await supabaseClient.from('hilos').select('*').eq('usuario_id', uid);
+                    const { data: imanes, error: errI } = await supabaseClient.from('imanes').select('*').eq('usuario_id', uid);
                     
                     if (!errP && paneles && paneles.length > 0) dbPaneles = paneles;
                     else dbPaneles = JSON.parse(localStorage.getItem('dbPaneles')) || [...defaultPaneles];
@@ -400,7 +400,7 @@ function cargarMotor(config) {
             if (dbHilos.includes(dia)) { alert("Error: Este diámetro ya existe."); return; }
             
             if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
-                await supabase.from('hilos').insert([{ usuario_id: sessionActiva.user.id, diametro: dia }]);
+                await supabaseClient.from('hilos').insert([{ usuario_id: sessionActiva.user.id, diametro: dia }]);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -428,7 +428,7 @@ function cargarMotor(config) {
             const nuevoObj = { usuario_id: sessionActiva.user.id, nombre, voc, isc, v, i, l, a };
 
             if (typeof supabase !== 'undefined' && supabase) {
-                await supabase.from('paneles').insert([nuevoObj]);
+                await supabaseClient.from('paneles').insert([nuevoObj]);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -456,7 +456,7 @@ function cargarMotor(config) {
             const nuevoObj = { usuario_id: sessionActiva.user.id, nombre, forma, l, a, h, br };
             
             if (typeof supabase !== 'undefined' && supabase) {
-                await supabase.from('imanes').insert([nuevoObj]);
+                await supabaseClient.from('imanes').insert([nuevoObj]);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -469,7 +469,7 @@ function cargarMotor(config) {
 
         async function borrarPanel(index) { 
             if (typeof supabase !== 'undefined' && supabase && dbPaneles[index] && dbPaneles[index].id) {
-                await supabase.from('paneles').delete().eq('id', dbPaneles[index].id);
+                await supabaseClient.from('paneles').delete().eq('id', dbPaneles[index].id);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -479,7 +479,7 @@ function cargarMotor(config) {
         async function borrarHilo(index) { 
             if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
                 const uid = sessionActiva.user.id;
-                await supabase.from('hilos').delete().eq('usuario_id', uid).eq('diametro', dbHilos[index]);
+                await supabaseClient.from('hilos').delete().eq('usuario_id', uid).eq('diametro', dbHilos[index]);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -488,7 +488,7 @@ function cargarMotor(config) {
         }
         async function borrarIman(index) { 
             if (typeof supabase !== 'undefined' && supabase && dbImanes[index] && dbImanes[index].id) {
-                await supabase.from('imanes').delete().eq('id', dbImanes[index].id);
+                await supabaseClient.from('imanes').delete().eq('id', dbImanes[index].id);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -1221,7 +1221,7 @@ function calcularPasoMagnetico() {
     if (typeof supabase !== 'undefined' && supabase) {
         const usr = usuarioActual && usuarioActual.nombre ? usuarioActual.nombre : 'demo';
         const id_unico = usr + '-' + new Date().getTime();
-        await supabase.from('motores').insert([{
+        await supabaseClient.from('motores').insert([{
             id_unico: id_unico,
             titulo: nombreMotor,
             config: miConfiguracion,
@@ -2221,7 +2221,7 @@ let sessionActiva = null;
 let profileActual = null;
 
 async function inicializarAuth() {
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
         sessionActiva = session;
         if (session) {
             document.getElementById('modal-auth').style.display = 'none';
@@ -2296,7 +2296,7 @@ async function ejecutarAuth() {
             const btn = document.getElementById('btn-auth-accion');
             btn.textContent = "Registrando..."; btn.disabled = true;
             
-            const { data, error } = await supabase.auth.signUp({
+            const { data, error } = await supabaseClient.auth.signUp({
                 email: email,
                 password: password,
                 options: { data: { nombre: nombre } }
@@ -2315,7 +2315,7 @@ async function ejecutarAuth() {
         } else {
             const btn = document.getElementById('btn-auth-accion');
             btn.textContent = "Iniciando..."; btn.disabled = true;
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password
             });
@@ -2342,7 +2342,7 @@ async function ejecutarAuth() {
 async function cerrarSesion() {
     const pw = document.getElementById('auth-password');
     if(pw) pw.value = '';
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
 }
 
 function actualizarMensajeNivel() {

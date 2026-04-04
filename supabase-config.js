@@ -9,6 +9,6 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Inicialización del cliente Supabase desde el CDN
 // Sobreescribimos el objeto global window.supabase pasándole sus credenciales para que actúe como cliente
-window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 console.log("Supabase Cliente Inicializado correctamente (esperando consultar la BD...)");
