@@ -1043,12 +1043,17 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus {
 }
 
 .barra-superior-app {
-    background: linear-gradient(180deg, #eef3fb 0%, #e9eef7 100%);
-    border: 1px solid #d8e1ef;
-    border-radius: 18px;
-    padding: 20px 22px 18px;
-    margin-bottom: 18px;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    padding: 22px 26px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 .fila-acceso {
@@ -1092,32 +1097,30 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus {
 }
 
 .estado-usuario {
-    margin-left: auto;
-    align-self: center;
-    padding: 12px 16px;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.75);
-    border: 1px solid #d6deea;
-    font-size: 14px;
-    font-weight: 700;
-    color: #475569;
-    min-height: 48px;
+    padding: 8px 16px;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #e2e8f0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
     display: flex;
     align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
-.separador-suave {
-    height: 1px;
-    margin: 18px 0 16px;
-    background: linear-gradient(to right, transparent, #cbd5e1, transparent);
+.estado-usuario::before {
+    content: "👤";
+    font-size: 14px;
 }
 
 .fila-configuracion {
     display: flex;
-    flex-wrap: wrap;
-    gap: 14px 20px;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid rgba(0,0,0,0.05);
 }
 
 .titulo-seccion-app {

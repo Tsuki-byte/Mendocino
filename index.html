@@ -104,38 +104,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
 <div class="barra-superior-app">
-
     <div class="fila-acceso">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div id="mensaje-nivel" class="estado-usuario">Cargando sesión...</div>
-            <button class="btn-toolbar btn-toolbar-secundario" type="button" onclick="cerrarSesion()">
+        <div id="mensaje-nivel" class="estado-usuario">Cargando sesión...</div>
+        
+        <div class="grupo-admin-extra" style="display: flex; gap: 10px; align-items: center;">
+            <button id="btn-ir-admin" class="btn-action" type="button" onclick="abrirPanelAdmin()" style="display:none; background-color: #9b59b6; margin: 0; padding: 8px 15px; font-size: 13px;">
+                🛡️ Panel Admin
+            </button>
+            <button class="btn-toolbar btn-toolbar-secundario" style="margin:0;" type="button" onclick="cerrarSesion()">
                 Cerrar Sesión
             </button>
         </div>
-
-        <div class="grupo-admin-extra">
-            <button id="btn-ir-admin" class="btn-action" type="button" onclick="abrirPanelAdmin()" style="display:none; background-color: #9b59b6;">
-                🛡️ Panel Admin
-            </button>
-        </div>
     </div>
-
-    <div class="separador-suave"></div>
 
     <div class="fila-configuracion">
-        <div class="titulo-seccion-app">Configuración local</div>
-
+        <div class="titulo-seccion-app">⚙️ Configuración local</div>
         <div class="acciones-configuracion">
             <button class="btn-toolbar btn-toolbar-secundario" type="button" onclick="guardarConfiguracionLocal()">
-                💾 Guardar config.
+                💾 Guardar
             </button>
-
             <button class="btn-toolbar btn-toolbar-principal" type="button" onclick="cargarConfiguracionLocal()">
-                📂 Cargar config.
+                📂 Cargar
             </button>
         </div>
     </div>
-
 </div>
 
 
