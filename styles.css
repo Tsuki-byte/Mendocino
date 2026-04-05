@@ -25,14 +25,27 @@
 
         /* --- BARRA DE NAVEGACIÓN --- */
         .top-navbar {
-            background-color: #2c3e50;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             width: 100%;
-            padding: 15px 0;
+            padding: 10px 24px;
             display: flex;
-            justify-content: center;
-            gap: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 25px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            box-sizing: border-box;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
         .nav-tab {
@@ -1042,116 +1055,37 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus {
     margin-bottom: 6px;
 }
 
-.barra-superior-app {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 0 0 15px 15px;
-    padding: 8px 20px;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    width: 100%;
-    max-width: 1200px;
-}
-
-.barra-superior-app .seccion-barra {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.v-separator {
-    width: 1px;
-    height: 24px;
-    background: rgba(0,0,0,0.08);
-    margin: 0 5px;
-}
-
-/* Eliminadas filas redundantes para diseño ultra-compacto */
-
-.grupo-acceso {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: end;
-}
-
-.grupo-admin-extra {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-}
-
-.form-superior {
-    min-width: 220px;
-    margin-bottom: 0;
-}
-
-.form-superior label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 14px;
-    font-weight: 700;
-    color: #334155;
-}
-
-.form-superior input {
-    height: 46px;
-    border-radius: 8px;
-    font-size: 15px;
-}
-
-.estado-usuario {
-    padding: 8px 16px;
-    border-radius: 50px;
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid #e2e8f0;
+/* Secciones de Usuario y Configuración integradas en Navbar */
+.nav-right .estado-usuario {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e2e8f0;
+    padding: 6px 14px;
+    border-radius: 20px;
     font-size: 13px;
     font-weight: 600;
-    color: #1e293b;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
-.estado-usuario::before {
-    content: "👤";
-    font-size: 14px;
-}
-
-/* Eliminada fila-configuracion para diseño ultra-compacto */
-
-.titulo-seccion-app {
+.nav-right .btn-toolbar-nav {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
     font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: bold;
 }
 
-.acciones-configuracion {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
+.nav-right .btn-toolbar-nav:hover {
+    background: rgba(255,255,255,0.15);
 }
 
-@media (max-width: 900px) {
-    .estado-usuario {
-        margin-left: 0;
-        width: 100%;
-    }
-
-    .fila-configuracion {
-        align-items: flex-start;
-    }
+.nav-right .v-separator {
+    width: 1px;
+    height: 20px;
+    background: rgba(255,255,255,0.2);
 }
 
 
