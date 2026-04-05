@@ -2230,7 +2230,6 @@ async function inicializarAuth() {
             renderizarUI();
             actualizarPanelAdminUI();
             aplicarNivelUsuario();
-            cargarMotoresProyectos();
         } else {
             document.getElementById('modal-auth').style.display = 'flex';
             document.getElementById('mensaje-nivel').textContent = "Sesión cerrada";
