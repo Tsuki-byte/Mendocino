@@ -1429,15 +1429,13 @@ function calcularPasoMagnetico() {
             }).join('');
         }
 
-        // --- INICIALIZACIÓN ---
-        window.onload = async function() {
+        // --- INICIALIZACIÓN BASE ---
+        function inicializarAplicacionBase() {
             inicializarNavegacionProfesional();
-            await cargarDatosGlobales();
-            renderizarUI();
             renderizarProyectos();
             poblarSelectoresLevitacion();
             actualizarModeloAxial();
-        };
+        }
 
 
         function finalizarConfiguracion() {
@@ -2405,12 +2403,14 @@ const EMAILS_ADMIN_FALLBACK = ['josecarlosmillandecortes@unizar.es', 'jcmillan@u
 
 function actualizarPanelAdminUI() {
     const btnIrAdmin = document.getElementById('btn-ir-admin');
-    if (!btnIrAdmin) return;
-    
+
     // El usuario es admin si tiene el rol O si su email está en la lista blanca
     const esRealAdmin = esAdmin || (sessionActiva && EMAILS_ADMIN_FALLBACK.includes(sessionActiva.user.email));
-    
-    btnIrAdmin.style.display = esRealAdmin ? 'inline-flex' : 'none';
+
+    if (btnIrAdmin) {
+        btnIrAdmin.style.display = esRealAdmin ? 'inline-flex' : 'none';
+    }
+
     actualizarMensajeNivel();
 }
 
@@ -2420,12 +2420,22 @@ async function abrirPanelAdmin() {
         mostrarToast('Debes acceder como administrador.', 'aviso');
         return;
     }
-    document.getElementById('modal-admin').style.display = 'flex';
-    await cargarListaAlumnosAdmin();
+
+    const modalAdmin = document.getElementById('modal-admin');
+    if (modalAdmin) {
+        modalAdmin.style.display = 'flex';
+        await cargarListaAlumnosAdmin();
+        return;
+    }
+
+    window.location.href = 'admin_estable.html';
 }
 
 function cerrarModalAdmin() {
-    document.getElementById('modal-admin').style.display = 'none';
+    const modalAdmin = document.getElementById('modal-admin');
+    if (modalAdmin) {
+        modalAdmin.style.display = 'none';
+    }
 }
 
 async function cargarListaAlumnosAdmin() {
@@ -2501,9 +2511,20 @@ function cargarUsuarioActualDesdeStorage() {
     // Reemplazada por cargarPerfilUsuario
 }
 
-const _windowOnloadMotor = window.onload;
 window.onload = async function() {
-    if (typeof _windowOnloadMotor === 'function') await _windowOnloadMotor();
+    ocultarUIHastaAutenticacion();
+    inicializarAplicacionBase();
     await inicializarAuth();
+
+    if (!authInicializada) return;
+
+    if (!sessionActiva) {
+        const modalAuth = document.getElementById('modal-auth');
+        if (modalAuth) {
+            modalAuth.style.display = 'flex';
+        } else {
+            mostrarUIAutenticada();
+        }
+    }
 };
 

@@ -36,14 +36,14 @@
 </head>
 <body>
     <div class="top-navbar">
-        <button class="nav-tab active" type="button" onclick="window.location.href='index.html'">⬅ Volver a la calculadora</button>
+        <button class="nav-tab active" type="button" onclick="window.location.href='index_estable.html'">⬅ Volver a la calculadora</button>
     </div>
 
     <div class="admin-wrap">
         <div class="admin-card">
             <div class="admin-header">
                 <h1 style="margin:0;">👥 Administración de usuarios</h1>
-                <p style="margin:6px 0 0; opacity:.9;">Alta, listado, edición de nivel y eliminación de usuarios guardados en este navegador.</p>
+                <p style="margin:6px 0 0; opacity:.9;">Alta, listado y edición de nivel de usuarios gestionados desde Supabase.</p>
             </div>
 
             <div class="admin-body">
@@ -67,9 +67,9 @@
                         <hr style="margin:18px 0; border:0; border-top:1px solid #e2e8f0;">
 
                         <h3>Sesión</h3>
-                        <p class="nota-admin">Este panel usa la misma base local del navegador. Más adelante se puede migrar a MySQL sin cambiar la idea del panel.</p>
+                        <p class="nota-admin">Este panel trabaja contra Supabase: autentica con la sesión actual y lee los usuarios desde la tabla profiles.</p>
                         <div class="admin-toolbar">
-                            <button class="btn-toolbar btn-toolbar-secundario" type="button" onclick="window.location.href='index.html'">Volver</button>
+                            <button class="btn-toolbar btn-toolbar-secundario" type="button" onclick="window.location.href='index_estable.html'">Volver</button>
                             <button class="btn-toolbar btn-toolbar-principal" type="button" onclick="salirModoAdminDesdePanel()">Salir admin</button>
                         </div>
                     </section>
@@ -92,7 +92,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
 
-    <script src="script.js"></script>
+    <script src="script_estable.js"></script>
     <script>
         let administradores = [];
 
