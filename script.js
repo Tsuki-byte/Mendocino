@@ -2232,7 +2232,11 @@ async function inicializarAuth() {
             aplicarNivelUsuario();
         } else {
             document.getElementById('modal-auth').style.display = 'flex';
-            document.getElementById('mensaje-nivel').textContent = "Sesión cerrada";
+            const badgeUser = document.getElementById('mensaje-nivel');
+            if (badgeUser) {
+                badgeUser.style.display = 'none'; // No mostrar nada si no hay sesión
+                badgeUser.textContent = "";
+            }
             const btnIr = document.getElementById('btn-ir-admin');
             if (btnIr) btnIr.style.display = 'none';
             profileActual = null;
@@ -2253,6 +2257,14 @@ async function cargarPerfilUsuario(user) {
         esAdmin = profile.rol === 'admin';
         usuarioActual.nombre = profile.nombre || user.email;
         usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
+        
+        // MOSTRAR badge solo ahora con el nombre real
+        const badgeUser = document.getElementById('mensaje-nivel');
+        if (badgeUser) {
+            badgeUser.style.display = 'flex';
+            badgeUser.style.background = 'rgba(255,255,255,0.15)';
+            badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
+        }
     } else {
         usuarioActual.nombre = user.email;
         usuarioActual.nivel = NIVELES_USUARIO.BASICO;
