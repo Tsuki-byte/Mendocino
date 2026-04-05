@@ -2252,17 +2252,25 @@ async function inicializarAuth() {
 
     // Forzar comprobación inmediata al cargar (para que window.onload no se bloquee)
     try {
-        const { data: { session }, error } = await dbMendocinoClient.auth.getSession();
-        if (error) console.error("Error obteniendo sesión inicial:", error);
+        // MÁS ESTRICTO: Usar getUser() en lugar de getSession() para verificar con el servidor
+        const { data: { user }, error } = await dbMendocinoClient.auth.getUser();
         
-        sessionActiva = session;
-        if (session) {
-            await cargarPerfilUsuario(session.user);
+        if (error || !user) {
+            console.warn("Sesión no válida o usuario borrado:", error?.message);
+            sessionActiva = null;
+            profileActual = null;
+            ocultarUIHastaAutenticacion();
+        } else {
+            // Si el usuario existe, recuperamos la sesión actual del almacenamiento local (segura tras getUser)
+            const { data: { session } } = await dbMendocinoClient.auth.getSession();
+            sessionActiva = session;
+            await cargarPerfilUsuario(user);
             await cargarDatosGlobales();
             renderizarUI();
+            mostrarUIAutenticada();
         }
     } catch (err) {
-        console.error("Excepción en getSession inicial:", err);
+        console.error("Excepción en verificación inicial:", err);
     }
     
     authInicializada = true;
@@ -2382,26 +2390,30 @@ async function ejecutarAuth() {
 
 async function cerrarSesion() {
     try {
-        console.log("Iniciando cierre de sesión...");
+        console.log("Iniciando cierre de sesión robusto...");
         
-        // Cerramos sesión en Supabase
-        await dbMendocinoClient.auth.signOut();
-        
-        // Limpiamos absolutamente todo del navegador
+        // 1. Limpieza local inmediata e infalible
         localStorage.clear();
         sessionStorage.clear();
         
         // Forzamos la desaparición del badge por si el reload tarda
         const el = document.getElementById('mensaje-nivel');
         if (el) el.style.display = 'none';
+
+        // 2. Intentamos avisar al servidor, pero no bloqueamos el flujo si falla
+        try {
+            await dbMendocinoClient.auth.signOut();
+        } catch (authErr) {
+            console.warn("Error enviando signOut al servidor (probablemente sesión ya inválida):", authErr);
+        }
         
-        // Recarga total de la página para resetear el estado
+        // 3. Recarga total de la página para resetear el estado
         window.location.href = window.location.pathname + "?v=" + new Date().getTime();
         
     } catch (e) {
-        console.error("Error al salir:", e);
+        console.error("Error crítico al salir:", e);
         localStorage.clear();
-        window.location.reload();
+        window.location.href = window.location.pathname;
     }
 }
 
