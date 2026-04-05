@@ -102,10 +102,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
 
             <div class="nav-right">
-                <div id="mensaje-nivel" class="estado-usuario">Cargando...</div>
-                
-                <div class="v-separator"></div>
-
                 <div class="grupo-config-nav" style="display: flex; gap: 6px;">
                     <button class="btn-toolbar-nav" type="button" onclick="guardarConfiguracionLocal()" title="Guardar Configuración">💾</button>
                     <button class="btn-toolbar-nav" type="button" onclick="cargarConfiguracionLocal()" title="Cargar Configuración">📂</button>
@@ -116,6 +112,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <button id="btn-ir-admin" class="btn-action" type="button" onclick="abrirPanelAdmin()" style="display:none; background-color: #9b59b6; margin: 0; padding: 6px 12px; font-size: 12px; border-radius: 20px; border: none;">
                     🛡️ Admin
                 </button>
+
+                <div id="mensaje-nivel" class="estado-usuario" style="margin-right: 5px;">Cargando...</div>
+
                 <button class="btn-toolbar-nav" style="background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.3);" type="button" onclick="cerrarSesion()">
                     Salir
                 </button>
@@ -709,7 +708,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <!-- Cliente de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js?v=10"></script>
-    <script src="script.js?v=10"></script>
+    <script src="supabase-config.js?v=11"></script>
+    <script src="script.js?v=11"></script>
 </body>
 </html>
