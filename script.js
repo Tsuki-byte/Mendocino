@@ -2229,25 +2229,38 @@ async function inicializarAuth() {
     // Escuchar cambios (para futuras sesiones, login, logout)
     dbMendocinoClient.auth.onAuthStateChange(async (event, session) => {
         console.log("Evento Auth:", event, !!session);
-        sessionActiva = session;
-        
-        if (session) {
-            document.getElementById('modal-auth').style.display = 'none';
-            await cargarPerfilUsuario(session.user);
-            await cargarDatosGlobales();
-            renderizarUI();
-            actualizarPanelAdminUI();
-            aplicarNivelUsuario();
-            mostrarUIAutenticada();
-        } else {
-            profileActual = null;
-            esAdmin = false;
-            ocultarUIHastaAutenticacion();
+        try {
+            sessionActiva = session;
+            
+            if (session) {
+                document.getElementById('modal-auth').style.display = 'none';
+                await cargarPerfilUsuario(session.user);
+                await cargarDatosGlobales();
+                renderizarUI();
+                actualizarPanelAdminUI();
+                aplicarNivelUsuario();
+                mostrarUIAutenticada();
+            } else {
+                profileActual = null;
+                esAdmin = false;
+                ocultarUIHastaAutenticacion();
+                actualizarMensajeNivel();
+                const btnIr = document.getElementById('btn-ir-admin');
+                if (btnIr) btnIr.style.display = 'none';
+            }
+        } catch (err) {
+            console.error("Error en el evento Auth:", err);
+            sessionActiva = null;
+            document.getElementById('modal-auth').style.display = 'flex';
+            const errorMsg = document.getElementById('auth-error');
+            if (errorMsg) {
+                errorMsg.textContent = "Hubo un problema al cargar tu sesión. Recomendamos acceder mediante un servidor (desactivar file://).";
+                errorMsg.style.display = 'block';
+            }
             actualizarMensajeNivel();
-            const btnIr = document.getElementById('btn-ir-admin');
-            if (btnIr) btnIr.style.display = 'none';
+        } finally {
+            authInicializada = true;
         }
-        authInicializada = true;
     });
 
     // Forzar comprobación inmediata al cargar (para que window.onload no se bloquee)
@@ -2271,6 +2284,16 @@ async function inicializarAuth() {
         }
     } catch (err) {
         console.error("Excepción en verificación inicial:", err);
+        sessionActiva = null;
+        profileActual = null;
+        ocultarUIHastaAutenticacion();
+        
+        // Mostrar posible error al usuario
+        const errorMsg = document.getElementById('auth-error');
+        if (errorMsg) {
+            errorMsg.textContent = "Error de conexión. Si estás abriendo el archivo localmente (file://), usa un servidor web local.";
+            errorMsg.style.display = 'block';
+        }
     }
     
     authInicializada = true;
@@ -2437,7 +2460,7 @@ function actualizarMensajeNivel() {
     el.textContent = `👤 ${nombreAMostrar}${adminTxt}`;
 }
 
-const EMAILS_ADMIN_FALLBACK = ['josecarlosmillandecortes@unizar.es', 'jcmillan@unizar.es']; 
+const EMAILS_ADMIN_FALLBACK = ['josecarlosmillandecortes@unizar.es', 'jcmillan@unizar.es', 'cmillan@unizar.es']; 
 
 function actualizarPanelAdminUI() {
     const btnIrAdmin = document.getElementById('btn-ir-admin');
