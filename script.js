@@ -2225,6 +2225,15 @@ async function inicializarAuth() {
         sessionActiva = session;
         if (session) {
             document.getElementById('modal-auth').style.display = 'none';
+            
+            // Mostrar email inmediatamente mientras carga el perfil
+            const badgeUser = document.getElementById('mensaje-nivel');
+            if (badgeUser) {
+                badgeUser.style.display = 'flex';
+                badgeUser.textContent = `👤 ${session.user.email}`;
+                badgeUser.style.background = 'rgba(255,255,255,0.1)';
+            }
+
             await cargarPerfilUsuario(session.user);
             await cargarDatosGlobales();
             renderizarUI();
@@ -2269,6 +2278,13 @@ async function cargarPerfilUsuario(user) {
         usuarioActual.nombre = user.email;
         usuarioActual.nivel = NIVELES_USUARIO.BASICO;
         esAdmin = false;
+
+        // Mostrar badge con email de respaldo si no hay perfil en la tabla
+        const badgeUser = document.getElementById('mensaje-nivel');
+        if (badgeUser) {
+            badgeUser.style.display = 'flex';
+            badgeUser.textContent = `👤 ${user.email}`;
+        }
     }
 }
 
