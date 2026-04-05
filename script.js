@@ -2358,26 +2358,24 @@ async function ejecutarAuth() {
 
 async function cerrarSesion() {
     try {
-        mostrarToast("Cerrando sesión...", "info");
+        console.log("Iniciando cierre de sesión...");
         
-        // Limpiamos los campos del modal por si acaso
-        const pw = document.getElementById('auth-password');
-        if(pw) pw.value = '';
-        
+        // Cerramos sesión en Supabase
         await dbMendocinoClient.auth.signOut();
         
-        // Brute force: Limpiar memoria y storage
+        // Limpiamos absolutamente todo del navegador
         localStorage.clear();
         sessionStorage.clear();
-        sessionActiva = null;
-        profileActual = null;
-        esAdmin = false;
         
-        // Recargar para empezar de cero sin sesión
-        window.location.reload();
+        // Forzamos la desaparición del badge por si el reload tarda
+        const el = document.getElementById('mensaje-nivel');
+        if (el) el.style.display = 'none';
+        
+        // Recarga total de la página para resetear el estado
+        window.location.href = window.location.pathname + "?v=" + new Date().getTime();
         
     } catch (e) {
-        console.error("Error crítico al cerrar sesión:", e);
+        console.error("Error al salir:", e);
         localStorage.clear();
         window.location.reload();
     }
