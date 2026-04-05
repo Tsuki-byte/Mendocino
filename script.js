@@ -2222,30 +2222,24 @@ let profileActual = null;
 
 async function inicializarAuth() {
     dbMendocinoClient.auth.onAuthStateChange(async (event, session) => {
+        console.log("Evento Auth:", event, !!session);
         sessionActiva = session;
+        
         if (session) {
             document.getElementById('modal-auth').style.display = 'none';
-            
-            // Mostrar email inmediatamente mientras carga el perfil
-            const badgeUser = document.getElementById('mensaje-nivel');
-            if (badgeUser) {
-                badgeUser.style.display = 'flex';
-                badgeUser.textContent = `👤 ${session.user.email}`;
-                badgeUser.style.background = 'rgba(255,255,255,0.1)';
-            }
-
             await cargarPerfilUsuario(session.user);
             await cargarDatosGlobales();
             renderizarUI();
             actualizarPanelAdminUI();
             aplicarNivelUsuario();
         } else {
-            document.getElementById('modal-auth').style.display = 'flex';
-            actualizarMensajeNivel(); // Esto se encargará de ocultar el badge
-            const btnIr = document.getElementById('btn-ir-admin');
-            if (btnIr) btnIr.style.display = 'none';
+            // Limpieza y mostrar login
             profileActual = null;
             esAdmin = false;
+            document.getElementById('modal-auth').style.display = 'flex';
+            actualizarMensajeNivel();
+            const btnIr = document.getElementById('btn-ir-admin');
+            if (btnIr) btnIr.style.display = 'none';
         }
     });
 }
@@ -2364,26 +2358,27 @@ async function ejecutarAuth() {
 
 async function cerrarSesion() {
     try {
+        mostrarToast("Cerrando sesión...", "info");
+        
+        // Limpiamos los campos del modal por si acaso
         const pw = document.getElementById('auth-password');
         if(pw) pw.value = '';
         
-        // Cerrar el modal de admin si estuviera abierto
-        cerrarModalAdmin();
+        await dbMendocinoClient.auth.signOut();
         
-        const { error } = await dbMendocinoClient.auth.signOut();
-        if (error) throw error;
-        
-        // Si por algún motivo la UI no se actualiza sola vía onAuthStateChange, forzamos
+        // Brute force: Limpiar memoria y storage
+        localStorage.clear();
+        sessionStorage.clear();
         sessionActiva = null;
         profileActual = null;
         esAdmin = false;
-        document.getElementById('modal-auth').style.display = 'flex';
+        
+        // Recargar para empezar de cero sin sesión
+        window.location.reload();
         
     } catch (e) {
-        console.error("Error al cerrar sesión:", e);
-        // Fallback: Si todo falla, limpiar storage local y recargar
+        console.error("Error crítico al cerrar sesión:", e);
         localStorage.clear();
-        sessionStorage.clear();
         window.location.reload();
     }
 }
