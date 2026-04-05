@@ -2125,33 +2125,20 @@ function aplicarVisibilidadPorNivel() {
     });
 }
 
-function actualizarPanelAdminUI() {
-    const panelAdmin = document.getElementById('panel-admin');
-    if (panelAdmin) {
-        panelAdmin.style.display = esAdmin ? 'block' : 'none';
-    }
-
-    const adminUsuario = document.getElementById('admin-usuario');
-    if (adminUsuario && usuarioActual.nombre) {
-        adminUsuario.value = usuarioActual.nombre;
-    }
-
-    const btnIrAdmin = document.getElementById('btn-ir-admin');
-    if (btnIrAdmin) {
-        btnIrAdmin.style.display = esAdmin ? 'inline-flex' : 'none';
-    }
-
-    const btnSalirAdmin = document.getElementById('btn-salir-admin');
-    if (btnSalirAdmin) {
-        btnSalirAdmin.style.display = esAdmin ? 'inline-flex' : 'none';
-    }
-}
-
 function abrirPanelAdmin() {
-    if (!esAdmin) {
+    const esRealAdmin = esAdmin || (sessionActiva && EMAILS_ADMIN_FALLBACK.includes(sessionActiva.user.email));
+    if (!esRealAdmin) {
         mostrarToast('Debes acceder como administrador.', 'aviso');
         return;
     }
+
+    const modalAdmin = document.getElementById('modal-admin');
+    if (modalAdmin) {
+        modalAdmin.style.display = 'flex';
+        cargarListaAlumnosAdmin();
+        return;
+    }
+
     window.location.href = 'admin.html';
 }
 
@@ -2217,6 +2204,26 @@ function adminEliminarUsuario(nombre) {
 let esAdmin = false;
 let sessionActiva = null;
 let profileActual = null;
+let authInicializada = false;
+
+function ocultarUIHastaAutenticacion() {
+    const modal = document.getElementById('modal-auth');
+    if (modal) modal.style.display = 'flex';
+    document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active'));
+}
+
+function inicializarAplicacionBase() {
+    inicializarNavegacionProfesional();
+    // Preparar UI inicial sin datos
+    renderizarUI();
+}
+
+function mostrarUIAutenticada() {
+    const modal = document.getElementById('modal-auth');
+    if (modal) modal.style.display = 'none';
+    cambiarPagina('calc');
+}
+
 
 async function inicializarAuth() {
     dbMendocinoClient.auth.onAuthStateChange(async (event, session) => {
@@ -2239,6 +2246,7 @@ async function inicializarAuth() {
             const btnIr = document.getElementById('btn-ir-admin');
             if (btnIr) btnIr.style.display = 'none';
         }
+        authInicializada = true;
     });
 }
 
@@ -2412,23 +2420,6 @@ function actualizarPanelAdminUI() {
     }
 
     actualizarMensajeNivel();
-}
-
-async function abrirPanelAdmin() {
-    const esRealAdmin = esAdmin || (sessionActiva && EMAILS_ADMIN_FALLBACK.includes(sessionActiva.user.email));
-    if (!esRealAdmin) {
-        mostrarToast('Debes acceder como administrador.', 'aviso');
-        return;
-    }
-
-    const modalAdmin = document.getElementById('modal-admin');
-    if (modalAdmin) {
-        modalAdmin.style.display = 'flex';
-        await cargarListaAlumnosAdmin();
-        return;
-    }
-
-    window.location.href = 'admin_estable.html';
 }
 
 function cerrarModalAdmin() {
