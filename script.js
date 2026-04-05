@@ -2226,6 +2226,7 @@ function mostrarUIAutenticada() {
 
 
 async function inicializarAuth() {
+    // Escuchar cambios (para futuras sesiones, login, logout)
     dbMendocinoClient.auth.onAuthStateChange(async (event, session) => {
         console.log("Evento Auth:", event, !!session);
         sessionActiva = session;
@@ -2237,17 +2238,34 @@ async function inicializarAuth() {
             renderizarUI();
             actualizarPanelAdminUI();
             aplicarNivelUsuario();
+            mostrarUIAutenticada();
         } else {
-            // Limpieza y mostrar login
             profileActual = null;
             esAdmin = false;
-            document.getElementById('modal-auth').style.display = 'flex';
+            ocultarUIHastaAutenticacion();
             actualizarMensajeNivel();
             const btnIr = document.getElementById('btn-ir-admin');
             if (btnIr) btnIr.style.display = 'none';
         }
         authInicializada = true;
     });
+
+    // Forzar comprobación inmediata al cargar (para que window.onload no se bloquee)
+    try {
+        const { data: { session }, error } = await dbMendocinoClient.auth.getSession();
+        if (error) console.error("Error obteniendo sesión inicial:", error);
+        
+        sessionActiva = session;
+        if (session) {
+            await cargarPerfilUsuario(session.user);
+            await cargarDatosGlobales();
+            renderizarUI();
+        }
+    } catch (err) {
+        console.error("Excepción en getSession inicial:", err);
+    }
+    
+    authInicializada = true;
 }
 
 async function cargarPerfilUsuario(user) {
@@ -2507,15 +2525,14 @@ window.onload = async function() {
     inicializarAplicacionBase();
     await inicializarAuth();
 
-    if (!authInicializada) return;
-
+    // Si después de inicializar no hay sesión, aseguramos que el modal se vea
     if (!sessionActiva) {
         const modalAuth = document.getElementById('modal-auth');
         if (modalAuth) {
             modalAuth.style.display = 'flex';
-        } else {
-            mostrarUIAutenticada();
         }
+    } else {
+        mostrarUIAutenticada();
     }
 };
 
