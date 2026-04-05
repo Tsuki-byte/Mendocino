@@ -2392,26 +2392,38 @@ function actualizarMensajeNivel() {
     const el = document.getElementById('mensaje-nivel');
     if (!el) return;
     
-    if (!sessionActiva || !profileActual) {
+    // Si no hay sesión, ocultar totalmente
+    if (!sessionActiva) {
         el.style.display = 'none';
         el.textContent = "";
         return;
     }
     
+    // Si hay sesión pero no perfil, mostramos el email como respaldo
+    const nombreAMostrar = profileActual ? profileActual.nombre : sessionActiva.user.email;
+    const adminTxt = esAdmin ? ' · 🛡️ ADMIN' : '';
+    
     el.style.display = 'flex';
     el.style.background = 'rgba(255,255,255,0.15)';
-    const adminTxt = esAdmin ? ' · 🛡️ ADMIN' : '';
-    el.textContent = `👤 ${profileActual.nombre}${adminTxt}`;
+    el.textContent = `👤 ${nombreAMostrar}${adminTxt}`;
 }
+
+const EMAILS_ADMIN_FALLBACK = ['josecarlosmillandecortes@unizar.es', 'jcmillan@unizar.es']; 
 
 function actualizarPanelAdminUI() {
     const btnIrAdmin = document.getElementById('btn-ir-admin');
-    if (btnIrAdmin) btnIrAdmin.style.display = esAdmin ? 'inline-flex' : 'none';
+    if (!btnIrAdmin) return;
+    
+    // El usuario es admin si tiene el rol O si su email está en la lista blanca
+    const esRealAdmin = esAdmin || (sessionActiva && EMAILS_ADMIN_FALLBACK.includes(sessionActiva.user.email));
+    
+    btnIrAdmin.style.display = esRealAdmin ? 'inline-flex' : 'none';
     actualizarMensajeNivel();
 }
 
 async function abrirPanelAdmin() {
-    if (!esAdmin) {
+    const esRealAdmin = esAdmin || (sessionActiva && EMAILS_ADMIN_FALLBACK.includes(sessionActiva.user.email));
+    if (!esRealAdmin) {
         mostrarToast('Debes acceder como administrador.', 'aviso');
         return;
     }
