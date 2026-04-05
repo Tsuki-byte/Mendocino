@@ -1046,22 +1046,33 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 12px;
-    padding: 12px 18px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.fila-acceso {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 0 0 15px 15px;
+    padding: 8px 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 15px;
     width: 100%;
+    max-width: 1200px;
 }
+
+.barra-superior-app .seccion-barra {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.v-separator {
+    width: 1px;
+    height: 24px;
+    background: rgba(0,0,0,0.08);
+    margin: 0 5px;
+}
+
+/* Eliminadas filas redundantes para diseño ultra-compacto */
 
 .grupo-acceso {
     display: flex;
@@ -1115,14 +1126,7 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus {
     font-size: 14px;
 }
 
-.fila-configuracion {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding-top: 10px;
-    border-top: 1px solid rgba(0,0,0,0.04);
-}
+/* Eliminada fila-configuracion para diseño ultra-compacto */
 
 .titulo-seccion-app {
     font-size: 13px;

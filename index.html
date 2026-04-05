@@ -104,31 +104,34 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
 <div class="barra-superior-app">
-    <!-- Fila 1: Usuario y Acciones de Sesión -->
-    <div class="fila-acceso">
-        <div id="mensaje-nivel" class="estado-usuario">Cargando sesión...</div>
-        
-        <div class="grupo-botones-sesion" style="display: flex; gap: 8px; align-items: center;">
-            <button id="btn-ir-admin" class="btn-action" type="button" onclick="abrirPanelAdmin()" style="display:none; background-color: #9b59b6; margin: 0; padding: 6px 12px; font-size: 12px; border-radius: 20px;">
-                🛡️ Admin
-            </button>
-            <button class="btn-toolbar btn-toolbar-secundario" style="margin:0;" type="button" onclick="cerrarSesion()">
-                Cerrar Sesión
-            </button>
-        </div>
+    <!-- SECCIÓN USUARIO -->
+    <div class="seccion-barra">
+        <div id="mensaje-nivel" class="estado-usuario">Cargando...</div>
     </div>
 
-    <!-- Fila 2: Herramientas de Configuración Local -->
-    <div class="fila-configuracion">
-        <div class="titulo-seccion-app" style="font-size: 11px; color: #94a3b8;">⚙️ Configuración Local</div>
-        <div class="acciones-configuracion" style="display: flex; gap: 8px;">
-            <button class="btn-toolbar" type="button" onclick="guardarConfiguracionLocal()" style="background: #f8fafc;">
-                💾 Guardar
-            </button>
-            <button class="btn-toolbar" type="button" onclick="cargarConfiguracionLocal()" style="background: #f8fafc;">
-                📂 Cargar
-            </button>
-        </div>
+    <div class="v-separator"></div>
+
+    <!-- SECCIÓN CONFIGURACIÓN -->
+    <div class="seccion-barra">
+        <span style="font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase;">Config:</span>
+        <button class="btn-toolbar" type="button" onclick="guardarConfiguracionLocal()" style="background: #f8fafc;">
+            💾 Guardar
+        </button>
+        <button class="btn-toolbar" type="button" onclick="cargarConfiguracionLocal()" style="background: #f8fafc;">
+            📂 Cargar
+        </button>
+    </div>
+
+    <div class="v-separator"></div>
+
+    <!-- SECCIÓN SESIÓN / ADMIN -->
+    <div class="seccion-barra">
+        <button id="btn-ir-admin" class="btn-action" type="button" onclick="abrirPanelAdmin()" style="display:none; background-color: #9b59b6; margin: 0; padding: 6px 12px; font-size: 12px; border-radius: 20px;">
+            🛡️ Admin
+        </button>
+        <button class="btn-toolbar btn-toolbar-secundario" style="margin:0;" type="button" onclick="cerrarSesion()">
+            Cerrar Sesión
+        </button>
     </div>
 </div>
 
@@ -717,7 +720,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <!-- Cliente de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js?v=3"></script>
-    <script src="script.js?v=3"></script>
+    <script src="supabase-config.js?v=4"></script>
+    <script src="script.js?v=4"></script>
 </body>
 </html>
