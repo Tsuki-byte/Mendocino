@@ -2132,13 +2132,7 @@ function abrirPanelAdmin() {
         return;
     }
 
-    const modalAdmin = document.getElementById('modal-admin');
-    if (modalAdmin) {
-        modalAdmin.style.display = 'flex';
-        cargarListaAlumnosAdmin();
-        return;
-    }
-
+    // Redirigimos directamente a la página completa de administración
     window.location.href = 'admin.html';
 }
 

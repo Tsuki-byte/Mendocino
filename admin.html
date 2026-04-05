@@ -230,7 +230,15 @@
             }
             
             const { data: profile } = await dbMendocinoClient.from('profiles').select('rol').eq('id', user.id).single();
-            if (!profile || profile.rol !== 'admin') {
+            const emailEsFallback = typeof EMAILS_ADMIN_FALLBACK !== 'undefined' && EMAILS_ADMIN_FALLBACK.includes(user.email);
+            const esRealAdmin = (profile && profile.rol === 'admin') || emailEsFallback;
+
+            if (emailEsFallback && (!profile || profile.rol !== 'admin')) {
+                // Auto-promover a administrador en la base de datos para no tener problemas de permisos (RLS)
+                await dbMendocinoClient.from('profiles').update({ rol: 'admin' }).eq('id', user.id);
+            }
+
+            if (!esRealAdmin) {
                 alert('Acceso denegado. Se requiere cuenta de administrador.');
                 window.location.href = 'index.html';
                 return false;
