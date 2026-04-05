@@ -2241,11 +2241,7 @@ async function inicializarAuth() {
             aplicarNivelUsuario();
         } else {
             document.getElementById('modal-auth').style.display = 'flex';
-            const badgeUser = document.getElementById('mensaje-nivel');
-            if (badgeUser) {
-                badgeUser.style.display = 'none'; // No mostrar nada si no hay sesión
-                badgeUser.textContent = "";
-            }
+            actualizarMensajeNivel(); // Esto se encargará de ocultar el badge
             const btnIr = document.getElementById('btn-ir-admin');
             if (btnIr) btnIr.style.display = 'none';
             profileActual = null;
@@ -2395,12 +2391,17 @@ async function cerrarSesion() {
 function actualizarMensajeNivel() {
     const el = document.getElementById('mensaje-nivel');
     if (!el) return;
+    
     if (!sessionActiva || !profileActual) {
-        el.textContent = "Sesión cerrada";
+        el.style.display = 'none';
+        el.textContent = "";
         return;
     }
+    
+    el.style.display = 'flex';
+    el.style.background = 'rgba(255,255,255,0.15)';
     const adminTxt = esAdmin ? ' · 🛡️ ADMIN' : '';
-    el.textContent = `👨‍🎓 ${profileActual.nombre} (${sessionActiva.user.email})${adminTxt}`;
+    el.textContent = `👤 ${profileActual.nombre}${adminTxt}`;
 }
 
 function actualizarPanelAdminUI() {
