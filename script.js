@@ -348,9 +348,15 @@ function cargarMotor(config) {
                     const diametro = document.getElementById('diametro');
                     if (diametro) diametro.value = 'Sin paneles disponibles';
                 }
-                renderizarProyectos();
+                
+                // Renderizado de proyectos NO bloqueante con pequeño delay
+                setTimeout(() => {
+                    renderizarProyectos().catch(e => console.error("DEBUG [UI]: Fallo galería:", e));
+                }, 100);
+                
+                console.log("DEBUG [UI]: Renderización de interfaz completada.");
             } catch (e) {
-                console.error("Error al renderizar UI:", e);
+                console.error("DEBUG [UI]: Error fatal durante la renderización:", e);
             }
         }
 
@@ -1414,6 +1420,7 @@ function calcularPasoMagnetico() {
             const contenedor = obtenerElemento('contenedor-proyectos');
             if (!contenedor) return;
 
+            console.log("DEBUG [Gallery]: Iniciando renderizado de la galería...");
             contenedor.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#64748b;">⏳ Cargando galería de proyectos...</div>';
 
             try {
@@ -2314,31 +2321,39 @@ async function inicializarAuth() {
 
         // Suscribirse a cambios de estado
         client.auth.onAuthStateChange(async (event, session) => {
-            console.log("Supabase Auth Event:", event, !!session);
+            console.log("DEBUG [Auth]: Evento recibido:", event, "Sesión activa:", !!session);
             
             try {
                 sessionActiva = session;
                 
                 if (session) {
-                    console.log("Sesión detectada, configurando UI...");
+                    console.log("DEBUG [Auth]: Usuario autenticado, configurando interfaz...");
                     const modalAuth = document.getElementById('modal-auth');
                     if (modalAuth) modalAuth.style.display = 'none';
                     
                     // No bloqueamos todo el arranque por los datos del perfil
-                    cargarPerfilUsuario(session.user).catch(e => console.error("Error cargando perfil:", e));
-                    cargarDatosGlobales().then(() => renderizarUI()).catch(e => console.error("Error cargando datos:", e));
+                    cargarPerfilUsuario(session.user).catch(e => console.error("DEBUG [Auth]: Error en perfil:", e));
+                    
+                    console.log("DEBUG [Auth]: Iniciando carga de datos globales...");
+                    cargarDatosGlobales()
+                        .then(() => {
+                            console.log("DEBUG [Auth]: Datos globales listos, renderizando UI...");
+                            renderizarUI();
+                        })
+                        .catch(e => console.error("DEBUG [Auth]: Fallo en carga global:", e));
                     
                     actualizarPanelAdminUI();
                     aplicarNivelUsuario();
                     mostrarUIAutenticada();
+                    console.log("DEBUG [Auth]: Flujo de entrada completado.");
                 } else {
-                    console.log("No hay sesión activa.");
+                    console.log("DEBUG [Auth]: No se detectó sesión activa.");
                     if (!window.location.pathname.includes('admin.html')) {
                         ocultarUIHastaAutenticacion();
                     }
                 }
             } catch (err) {
-                console.error("Error procesando evento Auth:", err);
+                console.error("DEBUG [Auth]: Error crítico en evento de autenticación:", err);
             } finally {
                 if (!authInicialEventsHandled) {
                     authInicialEventsHandled = true;
