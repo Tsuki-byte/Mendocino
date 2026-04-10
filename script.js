@@ -2220,53 +2220,46 @@ function mostrarUIAutenticada() {
 
 
 async function inicializarAuth() {
+    console.log("Iniciando inicializarAuth...");
     return new Promise((resolve) => {
         let authInicialEventsHandled = false;
 
-        const { data: authListener } = dbMendocinoClient.auth.onAuthStateChange(async (event, session) => {
-            console.log("Evento Auth:", event, !!session);
-            
-            // Si ya manejamos la inicialización, solo reaccionamos a eventos futuros
-            if (authInicializada && event === 'SIGNED_OUT') {
-                window.location.reload(); 
-                return;
-            }
+        // Intentar obtener el cliente de Supabase (con reintento si falla la carga)
+        const getClient = () => window.dbMendocinoClient || (typeof dbMendocinoClient !== 'undefined' ? dbMendocinoClient : null);
+        
+        const client = getClient();
+        if (!client) {
+            console.error("CRÍTICO: Cliente Supabase no encontrado al inicializar.");
+            resolve(); return;
+        }
 
+        // Suscribirse a cambios de estado
+        client.auth.onAuthStateChange(async (event, session) => {
+            console.log("Supabase Auth Event:", event, !!session);
+            
             try {
                 sessionActiva = session;
                 
                 if (session) {
-                    // Ocultar modal inmediatamente si hay sesión
+                    console.log("Sesión detectada, configurando UI...");
                     const modalAuth = document.getElementById('modal-auth');
                     if (modalAuth) modalAuth.style.display = 'none';
                     
-                    // Cargar datos (no esperamos infinitamente por ellos para mostrar la UI)
-                    // Usamos Promise.race con un pequeño timeout de 4 segundos
-                    const timeoutPromise = new Promise(r => setTimeout(() => r('timeout'), 4000));
-                    await Promise.race([
-                        (async () => {
-                            await cargarPerfilUsuario(session.user);
-                            await cargarDatosGlobales();
-                        })(),
-                        timeoutPromise
-                    ]);
-
-                    renderizarUI();
+                    // No bloqueamos todo el arranque por los datos del perfil
+                    cargarPerfilUsuario(session.user).catch(e => console.error("Error cargando perfil:", e));
+                    cargarDatosGlobales().then(() => renderizarUI()).catch(e => console.error("Error cargando datos:", e));
+                    
                     actualizarPanelAdminUI();
                     aplicarNivelUsuario();
                     mostrarUIAutenticada();
                 } else {
-                    profileActual = null;
-                    esAdmin = false;
-                    ocultarUIHastaAutenticacion();
-                    actualizarMensajeNivel();
-                    const btnIr = document.getElementById('btn-ir-admin');
-                    if (btnIr) btnIr.style.display = 'none';
+                    console.log("No hay sesión activa.");
+                    if (!window.location.pathname.includes('admin.html')) {
+                        ocultarUIHastaAutenticacion();
+                    }
                 }
             } catch (err) {
-                console.error("Error en el evento Auth:", err);
-                // Si falla, al menos mostramos la UI básica o el error
-                if (session) mostrarUIAutenticada();
+                console.error("Error procesando evento Auth:", err);
             } finally {
                 if (!authInicialEventsHandled) {
                     authInicialEventsHandled = true;
@@ -2276,33 +2269,33 @@ async function inicializarAuth() {
             }
         });
 
-        // Fallback manual si onAuthStateChange no responde rápido (Sucede en GitHub Pages a veces)
+        // Timeout de seguridad: Si Supabase no responde nada en 2 segundos, continuamos
         setTimeout(async () => {
             if (!authInicialEventsHandled) {
-                console.warn("Forzando resolución de Auth por timeout (fallback)");
+                console.warn("Auth timeout fallback activado.");
                 try {
-                    const { data: { session } } = await dbMendocinoClient.auth.getSession();
+                    const { data: { session } } = await client.auth.getSession();
                     sessionActiva = session;
                     if (session) {
-                        await cargarPerfilUsuario(session.user);
                         mostrarUIAutenticada();
                     }
                 } catch (e) {
-                    console.error("Error en fallback auth:", e);
+                    console.error("Error en fallback getSession:", e);
                 } finally {
                     authInicialEventsHandled = true;
                     authInicializada = true;
                     resolve();
                 }
             }
-        }, 2500);
+        }, 2000);
     });
 }
 
 async function cargarPerfilUsuario(user) {
     if (!user) return;
     try {
-        const { data: profile, error } = await dbMendocinoClient
+        const client = window.dbMendocinoClient || dbMendocinoClient;
+        const { data: profile, error } = await client
             .from('profiles')
             .select('*')
             .eq('id', user.id)
@@ -2318,19 +2311,18 @@ async function cargarPerfilUsuario(user) {
             usuarioActual.nivel = NIVELES_USUARIO.BASICO;
             esAdmin = false;
         }
-        
+    } catch (err) {
+        console.error("Error al cargar perfil:", err);
+        usuarioActual.nombre = user.email || 'Usuario';
+        usuarioActual.nivel = NIVELES_USUARIO.BASICO;
+        esAdmin = false;
+    } finally {
         const badgeUser = document.getElementById('mensaje-nivel');
         if (badgeUser) {
             badgeUser.style.display = 'flex';
             badgeUser.style.background = 'rgba(255,255,255,0.15)';
             badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
         }
-    } catch (err) {
-        console.error("Error al cargar perfil:", err);
-        usuarioActual.nombre = user.email || 'Usuario';
-        usuarioActual.nivel = NIVELES_USUARIO.BASICO;
-        esAdmin = false;
-        actualizarMensajeNivel();
     }
 }let modoRegistroAuth = false;
 
