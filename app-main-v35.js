@@ -2108,6 +2108,9 @@ function cambiarPaso(numPaso) {
     if (numPaso === 5) {
         generarInformeAutomatico();
     }
+
+    // Guardar el número de paso en el progreso
+    guardarProgresoCalculadora();
 }
 
 
@@ -2623,6 +2626,90 @@ async function actualizarNivelAlumno(id, nombre) {
     }
 }
 
+
+// --- PERSISTENCIA DE ESTADO (MEMORY SESSION) ---
+function guardarProgresoCalculadora() {
+    try {
+        const inputs = [
+            'caras', 'margen-placa', 'ranura-ancho', 'ranura-alto', 'ranura-tipo', 
+            'panel', 'material-hilo', 'dia-hilo-select', 'calidad-bobinado', 
+            'campo-b', 'radio-efectivo-mm', 'campo-b-levitacion', 
+            'longitud-activa-levitacion-mm', 'factor-orientacion-levitacion'
+        ];
+
+        const estado = {
+            pasoActual: 1,
+            valores: {}
+        };
+
+        // Identificar paso actual
+        const stepActivo = document.querySelector('.step-container.active');
+        if (stepActivo) {
+            estado.pasoActual = parseInt(stepActivo.id.replace('step-', ''));
+        }
+
+        // Recopilar valores
+        inputs.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                estado.valores[id] = el.value;
+            }
+        });
+
+        localStorage.setItem('progresoMendocino', JSON.stringify(estado));
+    } catch (e) {
+        console.error("Error guardando progreso:", e);
+    }
+}
+
+function cargarProgresoCalculadora() {
+    try {
+        const raw = localStorage.getItem('progresoMendocino');
+        if (!raw) return;
+
+        const estado = JSON.parse(raw);
+        if (!estado || !estado.valores) return;
+
+        console.log("DEBUG [Storage]: Cargando progreso guardado...", estado);
+
+        // Poblamos los valores
+        Object.keys(estado.valores).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.value = estado.valores[id];
+            }
+        });
+
+        // Restaurar el paso
+        if (estado.pasoActual > 1) {
+            cambiarPaso(estado.pasoActual);
+        }
+
+        // Forzar recalcular todo para que los gráficos se sincronicen
+        actualizarResumenPaso1(); 
+        
+    } catch (e) {
+        console.error("Error cargando progreso:", e);
+    }
+}
+
+function inicializarAutoGuardado() {
+    const contenedor = document.getElementById('page-calc');
+    if (!contenedor) return;
+
+    contenedor.addEventListener('input', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+            guardarProgresoCalculadora();
+        }
+    });
+    
+    contenedor.addEventListener('change', (e) => {
+        if (e.target.tagName === 'SELECT') {
+            guardarProgresoCalculadora();
+        }
+    });
+}
+
 function cargarUsuarioActualDesdeStorage() {
     // Reemplazada por cargarPerfilUsuario
 }
@@ -2646,6 +2733,10 @@ window.onload = async function() {
         }
     } else {
         mostrarUIAutenticada();
+        
+        // --- RESTAURAR PROGRESO ---
+        cargarProgresoCalculadora();
+        inicializarAutoGuardado();
     }
 };
 
