@@ -783,10 +783,12 @@ function cargarMotor(config) {
                 pathRotor.setAttribute("stroke-width", "1");
                 svg.appendChild(pathRotor);
 
-                // --- DIBUJO DEL BOBINADO (NARANJA / ROJO SI > 100%) ---
+                // --- DIBUJO DEL BOBINADO (NARANJA / ROJO SI >= 100%) ---
                 const fo = EstadoDiseno.factorOcupacion || 0;
                 if (fo > 0) {
-                    const colorBobinado = fo > 1.0 ? "#c0392b" : "#d35400";
+                    const esExceso = fo >= 1.0;
+                    const colorBobinado = esExceso ? "#e74c3c" : "#d35400";
+                    const opacidadBobinado = esExceso ? "1.0" : "0.8"; // Más sólido en alerta
                     const profBobinadoPx = Ds * escala * Math.min(fo, 1.2); // Limitamos visualmente
                     
                     for (let i = 0; i < N; i++) {
@@ -812,7 +814,7 @@ function cargarMotor(config) {
                         const polyBobinado = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
                         polyBobinado.setAttribute("points", `${f1x},${f1y} ${o1x},${o1y} ${o2x},${o2y} ${f2x},${f2y}`);
                         polyBobinado.setAttribute("fill", colorBobinado);
-                        polyBobinado.setAttribute("opacity", "0.8");
+                        polyBobinado.setAttribute("opacity", opacidadBobinado);
                         svg.appendChild(polyBobinado);
                     }
                 }
@@ -1017,14 +1019,21 @@ function actualizarListaHilos() {
             
             EstadoDiseno.diametroHilo_mm = diaHilo;
 
-            // --- NUEVO: Cambio de color visual en la Interfaz (Alerta si > 100%) ---
+            // --- NUEVO: Cambio de color visual en la Interfaz (Alerta si >= 100%) ---
             const foActual = (EstadoDiseno.factorOcupacion || 0);
-            const colorAlerta = foActual > 1.0 ? "#c0392b" : "#d35400";
+            const esExcesoActual = foActual >= 1.0;
+            const colorAlerta = esExcesoActual ? "#e74c3c" : "#d35400";
 
             const leyenda1 = document.getElementById('leyenda-ranura');
             const leyenda2 = document.getElementById('leyenda-ranura-step2');
-            if (leyenda1) leyenda1.style.backgroundColor = colorAlerta;
-            if (leyenda2) leyenda2.style.backgroundColor = colorAlerta;
+            if (leyenda1) {
+                leyenda1.style.backgroundColor = colorAlerta;
+                leyenda1.style.opacity = esExcesoActual ? "1" : "0.8";
+            }
+            if (leyenda2) {
+                leyenda2.style.backgroundColor = colorAlerta;
+                leyenda2.style.opacity = esExcesoActual ? "1" : "0.8";
+            }
             
             const txtNombreMat = document.getElementById('res-mat-nombre');
             if (txtNombreMat) {
