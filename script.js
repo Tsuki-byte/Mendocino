@@ -664,6 +664,40 @@ function cargarMotor(config) {
             pathRotor.setAttribute("stroke-width", "1");
             svg.appendChild(pathRotor);
 
+            // --- DIBUJO DEL BOBINADO (NARANJA) ---
+            const fo = EstadoDiseno.factorOcupacion || 0;
+            if (fo > 0) {
+                const colorBobinado = "#d35400";
+                const profBobinadoPx = Ds * escala * Math.min(fo, 1.2); // Limitamos visualmente
+                
+                for (let i = 0; i < N; i++) {
+                    const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
+                    const theta2 = anguloCentroPanel + (angP / 2); 
+                    const theta3 = theta2 + angS;
+                    const thetaBisectriz = (theta2 + theta3) / 2;
+                    const dirX = Math.cos(thetaBisectriz);
+                    const dirY = Math.sin(thetaBisectriz);
+
+                    // Puntos base de la ranura (en el perímetro)
+                    const b1x = centro + radioMaxPx * Math.cos(theta2);
+                    const b1y = centro + radioMaxPx * Math.sin(theta2);
+                    const b2x = centro + radioMaxPx * Math.cos(theta3);
+                    const b2y = centro + radioMaxPx * Math.sin(theta3);
+
+                    // Puntos de "fondo" del bobinado
+                    const f1x = b1x - dirX * profBobinadoPx;
+                    const f1y = b1y - dirY * profBobinadoPx;
+                    const f2x = b2x - dirX * profBobinadoPx;
+                    const f2y = b2y - dirY * profBobinadoPx;
+
+                    const polyBobinado = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                    polyBobinado.setAttribute("points", `${b1x},${b1y} ${f1x},${f1y} ${f2x},${f2y} ${b2x},${b2y}`);
+                    polyBobinado.setAttribute("fill", colorBobinado);
+                    polyBobinado.setAttribute("opacity", "0.8");
+                    svg.appendChild(polyBobinado);
+                }
+            }
+
             const eje = document.createElementNS("http://www.w3.org/2000/svg", "circle");
             eje.setAttribute("cx", centro);
             eje.setAttribute("cy", centro);
@@ -813,7 +847,7 @@ function cargarMotor(config) {
                 txtMargen.setAttribute("y", yCotaMargen - (fontSize * 0.5));
                 // Quitamos la reducción y lo hacemos un 10% más grande que el resto (1.1)
                 txtMargen.setAttribute("style", `font-size: ${fontSize * 1.1}px; font-family: sans-serif; fill: #e74c3c; text-anchor: middle; font-weight: bold;`);
-                txtMargen.textContent = "m:" + margen;
+                txtMargen.textContent = "Grosor marco (m): " + margen + " mm";
                 svg.appendChild(txtMargen);
             }
         }
@@ -1096,6 +1130,24 @@ function calcularPasoMagnetico() {
                 document.getElementById('res-ancho-ocupado').textContent = anchoOcupado.toFixed(2) + ' mm';
                 document.getElementById('res-alto-ocupado').textContent = altoOcupado.toFixed(2) + ' mm';
                 document.getElementById('res-factor').textContent = factorRelleno.toFixed(1) + '%';
+                const elVisualBar = document.getElementById('visual-factor-bar');
+                if (elVisualBar) elVisualBar.style.width = Math.min(factorRelleno, 100) + '%';
+
+                // Guardar para el dibujo
+                EstadoDiseno.factorOcupacion = factorRelleno / 100;
+                
+                // Redibujar para mostrar el bobinado naranja
+                const caras = parseInt(document.getElementById('caras').value);
+                const tipoRanura = document.getElementById('ranura-tipo').value;
+                const Wp = parseFloat(document.getElementById('db-panel-a').value) || 0;
+                const Ws = parseFloat(document.getElementById('ranura-ancho').value) || 0;
+                const Ds = parseFloat(document.getElementById('ranura-alto').value) || 0;
+                const R = EstadoDiseno.diametroRotor / 2;
+                const angP = (2 * Math.PI / caras) * (Wp / (Wp + Ws));
+                const angS = (2 * Math.PI / caras) * (Ws / (Wp + Ws));
+                
+                dibujarRotorSVG(caras, tipoRanura, Wp, Ws, Ds, R, angP, angS);
+                dibujarPanelSVG(EstadoDiseno.longitudPanel, Wp, EstadoDiseno.margenMarco_mm);
 
                 const alerta = document.getElementById('alerta-ranura');
                 const cabePorArea = areaEfectiva <= areaRanura;
