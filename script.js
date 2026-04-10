@@ -2430,6 +2430,8 @@ async function cargarPerfilUsuario(user) {
         }
     }
 
+}
+
 
 async function cerrarSesion() {
     try {
