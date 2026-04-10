@@ -1174,32 +1174,6 @@ function calcularPasoMagnetico() {
                 dibujarRotorSVG(caras, tipoRanura, Wp, Ws, Ds, R, angP, angS);
                 dibujarPanelSVG(EstadoDiseno.longitudPanel, Wp, EstadoDiseno.margenMarco_mm);
             }
-                const cabePorArea = areaEfectiva <= areaRanura;
-
-                if (altoOcupado > altoReal || !cabePorArea) {
-                    alerta.style.display = 'block';
-                    alerta.innerHTML =
-                    "<strong>⚠️ No cabe en la ranura:</strong><br>" +
-                    "El volumen de cobre (más holgura manual) supera el espacio útil disponible.<br><br>" +
-                    "• Área cobre estimado: " + areaEfectiva.toFixed(2) + " mm²<br>" +
-                    "• Área útil ranura: " + areaRanura.toFixed(2) + " mm²<br><br>" +
-                    "Soluciones posibles:<br>" +
-                    "• Usar hilo más fino<br>" +
-                    "• Reducir número de espiras<br>" +
-                    "• Volver al Paso 1 y aumentar dimensiones de la ranura";
-                    
-                    document.getElementById('res-factor').style.color = '#e74c3c'; 
-                } else {
-                    alerta.style.display = 'none';
-                    if (factorRelleno > 75) {
-                        document.getElementById('res-factor').style.color = '#e67e22'; 
-                    } else if (factorRelleno > 60) {
-                         document.getElementById('res-factor').style.color = '#f1c40f'; 
-                    } else {
-                        document.getElementById('res-factor').style.color = '#27ae60'; 
-                    }
-                }
-            }
         }
 
 
