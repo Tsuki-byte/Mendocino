@@ -2223,18 +2223,34 @@ async function inicializarAuth() {
     return new Promise((resolve) => {
         let authInicialEventsHandled = false;
 
-        // Escuchar cambios (para futuras sesiones, login, logout y carga inicial)
         const { data: authListener } = dbMendocinoClient.auth.onAuthStateChange(async (event, session) => {
             console.log("Evento Auth:", event, !!session);
+            
+            // Si ya manejamos la inicialización, solo reaccionamos a eventos futuros
+            if (authInicializada && event === 'SIGNED_OUT') {
+                window.location.reload(); 
+                return;
+            }
+
             try {
                 sessionActiva = session;
                 
                 if (session) {
+                    // Ocultar modal inmediatamente si hay sesión
                     const modalAuth = document.getElementById('modal-auth');
                     if (modalAuth) modalAuth.style.display = 'none';
                     
-                    await cargarPerfilUsuario(session.user);
-                    await cargarDatosGlobales();
+                    // Cargar datos (no esperamos infinitamente por ellos para mostrar la UI)
+                    // Usamos Promise.race con un pequeño timeout de 4 segundos
+                    const timeoutPromise = new Promise(r => setTimeout(() => r('timeout'), 4000));
+                    await Promise.race([
+                        (async () => {
+                            await cargarPerfilUsuario(session.user);
+                            await cargarDatosGlobales();
+                        })(),
+                        timeoutPromise
+                    ]);
+
                     renderizarUI();
                     actualizarPanelAdminUI();
                     aplicarNivelUsuario();
@@ -2249,16 +2265,8 @@ async function inicializarAuth() {
                 }
             } catch (err) {
                 console.error("Error en el evento Auth:", err);
-                sessionActiva = null;
-                const modalAuth = document.getElementById('modal-auth');
-                if (modalAuth) modalAuth.style.display = 'flex';
-                
-                const errorMsg = document.getElementById('auth-error');
-                if (errorMsg) {
-                    errorMsg.textContent = "Hubo un problema al cargar tu sesión. Recomendamos acceder mediante un servidor web local.";
-                    errorMsg.style.display = 'block';
-                }
-                actualizarMensajeNivel();
+                // Si falla, al menos mostramos la UI básica o el error
+                if (session) mostrarUIAutenticada();
             } finally {
                 if (!authInicialEventsHandled) {
                     authInicialEventsHandled = true;
@@ -2268,55 +2276,30 @@ async function inicializarAuth() {
             }
         });
 
-        // Supabase v2 sometimes takes a cycle to trigger INITIAL_SESSION, 
-        // fall back manually just in case it takes too long or fails to trigger.
+        // Fallback manual si onAuthStateChange no responde rápido (Sucede en GitHub Pages a veces)
         setTimeout(async () => {
-             if (!authInicialEventsHandled) {
-                 console.warn("Forzando lectura de sesión (timeout de fallback)");
-                 try {
-                     const { data: { session } } = await dbMendocinoClient.auth.getSession();
-                     sessionActiva = session;
-                     if(session) {
-                         const modalAuth = document.getElementById('modal-auth');
-                         if (modalAuth) modalAuth.style.display = 'none';
-                         await cargarPerfilUsuario(session.user);
-                         await cargarDatosGlobales();
-                         renderizarUI();
-                         actualizarPanelAdminUI();
-                         aplicarNivelUsuario();
-                         mostrarUIAutenticada();
-                     } else {
-                         ocultarUIHastaAutenticacion();
-                     }
-                 } catch(e) {
-                     console.error("Fallback de sesión fallido", e);
-                     ocultarUIHastaAutenticacion();
-                 } finally {
-                     authInicialEventsHandled = true;
-                     authInicializada = true;
-                     resolve();
-                 }
-             }
-        }, 1500);
+            if (!authInicialEventsHandled) {
+                console.warn("Forzando resolución de Auth por timeout (fallback)");
+                try {
+                    const { data: { session } } = await dbMendocinoClient.auth.getSession();
+                    sessionActiva = session;
+                    if (session) {
+                        await cargarPerfilUsuario(session.user);
+                        mostrarUIAutenticada();
+                    }
+                } catch (e) {
+                    console.error("Error en fallback auth:", e);
+                } finally {
+                    authInicialEventsHandled = true;
+                    authInicializada = true;
+                    resolve();
+                }
+            }
+        }, 2500);
     });
 }
 
 async function cargarPerfilUsuario(user) {
-    try {
-        const { data: profile, error } = await dbMendocinoClient
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-            
-        if (profile && !error) {
-            profileActual = profile;
-            esAdmin = profile.rol === 'admin';
-            usuarioActual.nombre = profile.nombre || user.email;
-            usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
-            
-            const badgeUser = document.getElementById('mensaje-nivel');
-            if (badgeUser) {
                 badgeUser.style.display = 'flex';
                 badgeUser.style.background = 'rgba(255,255,255,0.15)';
                 badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
