@@ -750,7 +750,8 @@ function cargarMotor(config) {
 
             // Usamos la dimensión mayor para que el 'padding' sea siempre uniforme y nada se deforme
             const maxDim = Math.max(L_total, W_total);
-            const pad = maxDim * 0.45; // Aumentamos el padding para evitar que los textos largos se corten
+            // Aumentamos el padding significativamente (0.55) para que quepan etiquetas largas
+            const pad = maxDim * 0.55; 
             
             const vbWidth = L_total + pad * 2;
             const vbHeight = W_total + pad * 2;
@@ -845,7 +846,7 @@ function cargarMotor(config) {
                 txtMargen.setAttribute("x", pad + (margen / 2));
                 txtMargen.setAttribute("y", yCotaMargen - (fontSize * 0.5));
                 txtMargen.setAttribute("style", `font-size: ${fontSize * 1.1}px; font-family: sans-serif; fill: #e74c3c; text-anchor: middle; font-weight: bold;`);
-                txtMargen.textContent = "m:" + margen + " mm";
+                txtMargen.textContent = "m: " + margen + " mm (Grosor marco)";
                 svg.appendChild(txtMargen);
             }
         }
@@ -1107,53 +1108,66 @@ function calcularPasoMagnetico() {
                 if (conductoresCapa <= 0) {
                     document.getElementById('alerta-ranura').style.display = 'block';
                     document.getElementById('alerta-ranura').innerHTML = "<strong>⚠️ Error:</strong> El hilo es más grueso que el ancho de la ranura.";
-                    return;
+                } else {
+                    const numCapas = Math.ceil(EstadoDiseno.espirasPorDevanado / conductoresCapa);
+
+                    let espirasUltima = EstadoDiseno.espirasPorDevanado % conductoresCapa;
+                    if (espirasUltima === 0) espirasUltima = conductoresCapa;
+
+                    const anchoOcupado = (EstadoDiseno.espirasPorDevanado < conductoresCapa ? EstadoDiseno.espirasPorDevanado : conductoresCapa) * EstadoDiseno.diametroHilo_mm;
+                    const altoOcupado = numCapas * EstadoDiseno.diametroHilo_mm;
+
+                    const areaCobre = EstadoDiseno.espirasPorDevanado * Math.PI * Math.pow(EstadoDiseno.diametroHilo_mm / 2, 2);
+                    const calidad = parseFloat(document.getElementById("calidad-bobinado").value);
+                    const areaEfectiva = areaCobre * (1 + calidad);
+                    const areaRanura = EstadoDiseno.areaRanuraUtil_mm2;
+                    const factorRelleno = areaRanura > 0 ? (areaEfectiva / areaRanura) * 100 : 0;
+
+                    document.getElementById('res-area-ranura').textContent = areaRanura.toFixed(2) + ' mm²';
+                    document.getElementById('res-ancho-ocupado').textContent = anchoOcupado.toFixed(2) + ' mm';
+                    document.getElementById('res-alto-ocupado').textContent = altoOcupado.toFixed(2) + ' mm';
+                    document.getElementById('res-factor').textContent = factorRelleno.toFixed(1) + '%';
+                    const elVisualBar = document.getElementById('visual-factor-bar');
+                    if (elVisualBar) elVisualBar.style.width = Math.min(factorRelleno, 100) + '%';
+
+                    // Guardar para el dibujo
+                    EstadoDiseno.factorOcupacion = factorRelleno / 100;
+                    
+                    const alerta = document.getElementById('alerta-ranura');
+                    const cabePorArea = areaEfectiva <= areaRanura;
+
+                    if (altoOcupado > altoReal || !cabePorArea) {
+                        alerta.style.display = 'block';
+                        alerta.innerHTML = `<strong>⚠️ Cuidado:</strong> El bobinado sobresaldrá de la ranura (${(factorRelleno).toFixed(0)}% ocupación).`;
+                    } else {
+                        alerta.style.display = 'none';
+                    }
                 }
-
-                const numCapas = Math.ceil(EstadoDiseno.espirasPorDevanado / conductoresCapa);
-
-                let espirasUltima = EstadoDiseno.espirasPorDevanado % conductoresCapa;
-                if (espirasUltima === 0) espirasUltima = conductoresCapa;
-
-                const anchoOcupado = (EstadoDiseno.espirasPorDevanado < conductoresCapa ? EstadoDiseno.espirasPorDevanado : conductoresCapa) * EstadoDiseno.diametroHilo_mm;
-                const altoOcupado = numCapas * EstadoDiseno.diametroHilo_mm;
-
-                const areaCobre = EstadoDiseno.espirasPorDevanado * Math.PI * Math.pow(EstadoDiseno.diametroHilo_mm / 2, 2);
-                const calidad = parseFloat(document.getElementById("calidad-bobinado").value);
-                const areaEfectiva = areaCobre * (1 + calidad);
-                const areaRanura = EstadoDiseno.areaRanuraUtil_mm2;
-                const factorRelleno = areaRanura > 0 ? (areaEfectiva / areaRanura) * 100 : 0;
-
-                document.getElementById('res-area-ranura').textContent = areaRanura.toFixed(2) + ' mm²';
-                document.getElementById('res-ancho-ocupado').textContent = anchoOcupado.toFixed(2) + ' mm';
-                document.getElementById('res-alto-ocupado').textContent = altoOcupado.toFixed(2) + ' mm';
-                document.getElementById('res-factor').textContent = factorRelleno.toFixed(1) + '%';
-                const elVisualBar = document.getElementById('visual-factor-bar');
-                if (elVisualBar) elVisualBar.style.width = Math.min(factorRelleno, 100) + '%';
-
-                // Guardar para el dibujo
-                EstadoDiseno.factorOcupacion = factorRelleno / 100;
+            } else {
+                // RESET si no hay datos de bobinado
+                document.getElementById('res-factor').textContent = '0%';
+                if (document.getElementById('visual-factor-bar')) document.getElementById('visual-factor-bar').style.width = '0%';
+                EstadoDiseno.factorOcupacion = 0;
+            }
                 
-                // Redibujar para mostrar el bobinado naranja
-                const caras = EstadoDiseno.numeroCaras;
+            // REDIBUJAR SIEMPRE (FUERA DEL IF) para asegurar sincronización
+            const caras = EstadoDiseno.numeroCaras;
+            if (caras >= 3) {
                 const tipoRanura = document.getElementById('ranura-tipo').value;
                 const Wp = EstadoDiseno.anchoPanel;
                 const Ws = EstadoDiseno.anchoRanura_mm;
                 const Ds = EstadoDiseno.altoRanura_mm;
                 const R = EstadoDiseno.diametroRotor / 2;
                 
-                // Calculamos WpTotal sumando el margen
                 const WpTotal = Wp + (2 * EstadoDiseno.margenMarco_mm);
                 const sumaAnchuras = WpTotal + Ws;
-                
                 const anguloTotalRadianes = (2 * Math.PI) / caras;
                 const angP = anguloTotalRadianes * (WpTotal / sumaAnchuras);
                 const angS = anguloTotalRadianes * (Ws / sumaAnchuras);
                 
                 dibujarRotorSVG(caras, tipoRanura, Wp, Ws, Ds, R, angP, angS);
                 dibujarPanelSVG(EstadoDiseno.longitudPanel, Wp, EstadoDiseno.margenMarco_mm);
-
-                const alerta = document.getElementById('alerta-ranura');
+            }
                 const cabePorArea = areaEfectiva <= areaRanura;
 
                 if (altoOcupado > altoReal || !cabePorArea) {
