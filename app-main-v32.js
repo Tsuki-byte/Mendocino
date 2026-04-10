@@ -2312,6 +2312,32 @@ function adminEliminarUsuario(nombre) {
 }
 
 
+function ocultarUIHastaAutenticacion() {
+    console.log("UI: Ocultando hasta autenticación...");
+    const modal = document.getElementById('modal-auth');
+    if (modal) modal.style.display = 'flex';
+    
+    const appPrincipal = document.getElementById('app-principal');
+    if (appPrincipal) {
+        appPrincipal.style.display = 'none';
+        appPrincipal.style.opacity = '0';
+        appPrincipal.style.pointerEvents = 'none';
+    }
+}
+
+function mostrarUIAutenticada() {
+    console.log("UI: Mostrando interfaz autenticada...");
+    const modal = document.getElementById('modal-auth');
+    if (modal) modal.style.display = 'none';
+    
+    const appPrincipal = document.getElementById('app-principal');
+    if (appPrincipal) {
+        appPrincipal.style.display = 'block';
+        appPrincipal.style.opacity = '1';
+        appPrincipal.style.pointerEvents = 'auto';
+    }
+}
+
 async function inicializarAuth() {
     console.log("Iniciando inicializarAuth...");
     return new Promise((resolve) => {
