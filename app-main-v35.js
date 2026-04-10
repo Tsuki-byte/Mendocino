@@ -2691,20 +2691,32 @@ function cargarProgresoCalculadora() {
 
         console.log("DEBUG [Storage]: Cargando progreso guardado...", estado);
 
-        // Poblamos los valores
+        // 1. Restaurar Material del hilo primero (porque condiciona el selector de diámetros)
+        const idMat = 'material-hilo';
+        const elMat = document.getElementById(idMat);
+        if (elMat && estado.valores[idMat]) {
+            elMat.value = estado.valores[idMat];
+            // Forzar actualización de la lista de hilos disponibles para ese material
+            if (typeof actualizarListaHilos === 'function') {
+                actualizarListaHilos();
+            }
+        }
+
+        // 2. Restaurar el resto de valores
         Object.keys(estado.valores).forEach(id => {
+            if (id === idMat) return; // Ya lo hemos procesado
             const el = document.getElementById(id);
             if (el) {
                 el.value = estado.valores[id];
             }
         });
 
-        // Restaurar el paso
+        // 3. Restaurar el paso
         if (estado.pasoActual > 1) {
             cambiarPaso(estado.pasoActual);
         }
 
-        // Forzar recalcular todo para que los gráficos se sincronicen
+        // Forzar recalcular todo para que los gráficos y resultados se sincronicen
         actualizarResumenPaso1(); 
         
     } catch (e) {
