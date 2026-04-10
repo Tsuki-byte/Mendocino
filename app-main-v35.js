@@ -648,154 +648,155 @@ function cargarMotor(config) {
 
         // --- DIBUJO GEOMÉTRICO (SVG) ---
         function dibujarRotorSVG(N, tipoRanura, Wp, Ws, Ds, R, angP, angS) {
-            const svg = document.getElementById('rotor-svg');
-            if(!svg) return;
-            svg.innerHTML = ''; 
+            const ids = ['rotor-svg', 'rotor-svg-step2'];
             
-            const centro = 100; 
-            const radioMaxPx = 90; 
-            const escala = radioMaxPx / R; 
-
-            const Rfondo = R - Ds;
-            let RfondoPx = Rfondo * escala;
-            
-            const radioMasa = radioMaxPx * 0.35;
-            if (RfondoPx < radioMasa) RfondoPx = radioMasa;
-
-            const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--svg-stroke-color').trim() || "#333";
-            const colorImpresion3D = getComputedStyle(document.documentElement).getPropertyValue('--svg-panel-color').trim() || "#fdebd0";
-
-            const circuloExt = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            circuloExt.setAttribute("cx", centro);
-            circuloExt.setAttribute("cy", centro);
-            circuloExt.setAttribute("r", radioMaxPx);
-            circuloExt.setAttribute("fill", "none");
-            // Cambiamos el color a un gris más oscuro (ej. #777 o #333)
-            circuloExt.setAttribute("stroke", "#777"); 
-            // Añadimos grosor a la línea
-            circuloExt.setAttribute("stroke-width", "1"); 
-            // Puedes jugar con estos números para cambiar el espaciado de las rayas (ej. "5,5")
-            circuloExt.setAttribute("stroke-dasharray", "3"); 
-            svg.appendChild(circuloExt);
-
-            let dRotor = "";
-            const profPx = Ds * escala;
-
-            for (let i = 0; i < N; i++) {
-                const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
-                const theta1 = anguloCentroPanel - (angP / 2); 
-                const theta2 = anguloCentroPanel + (angP / 2); 
-                const theta3 = theta2 + angS;                  
-
-                const p1x = centro + radioMaxPx * Math.cos(theta1);
-                const p1y = centro + radioMaxPx * Math.sin(theta1);
-                const p2x = centro + radioMaxPx * Math.cos(theta2);
-                const p2y = centro + radioMaxPx * Math.sin(theta2);
-                const p3x = centro + radioMaxPx * Math.cos(theta3);
-                const p3y = centro + radioMaxPx * Math.sin(theta3);
-
-                if (i === 0) {
-                    dRotor += `M ${p1x} ${p1y} `;
-                } else {
-                    dRotor += `L ${p1x} ${p1y} `;
-                }
-                dRotor += `L ${p2x} ${p2y} `;
-
-                if (tipoRanura === 'trapecio') {
-                    const s1x = centro + RfondoPx * Math.cos(theta2);
-                    const s1y = centro + RfondoPx * Math.sin(theta2);
-                    const s2x = centro + RfondoPx * Math.cos(theta3);
-                    const s2y = centro + RfondoPx * Math.sin(theta3);
-                    dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
-                } else { 
-                    const thetaBisectriz = (theta2 + theta3) / 2;
-                    const dirX = Math.cos(thetaBisectriz);
-                    const dirY = Math.sin(thetaBisectriz);
-                    
-                    const s1x = p2x - dirX * profPx;
-                    const s1y = p2y - dirY * profPx;
-                    const s2x = p3x - dirX * profPx;
-                    const s2y = p3y - dirY * profPx;
-                    dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
-                }
-            }
-            dRotor += "Z"; 
-
-            const pathRotor = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            pathRotor.setAttribute("d", dRotor);
-            pathRotor.setAttribute("fill", colorImpresion3D); 
-            pathRotor.setAttribute("stroke", strokeColor);
-            pathRotor.setAttribute("stroke-width", "1");
-            svg.appendChild(pathRotor);
-
-            // --- DIBUJO DEL BOBINADO (NARANJA) ---
-            const fo = EstadoDiseno.factorOcupacion || 0;
-            if (fo > 0) {
-                const colorBobinado = "#d35400";
-                const profBobinadoPx = Ds * escala * Math.min(fo, 1.2); // Limitamos visualmente
+            ids.forEach(id => {
+                const svg = document.getElementById(id);
+                if(!svg) return;
+                svg.innerHTML = ''; 
                 
+                const centro = 100; 
+                const radioMaxPx = 90; 
+                const escala = radioMaxPx / R; 
+
+                const Rfondo = R - Ds;
+                let RfondoPx = Rfondo * escala;
+                
+                const radioMasa = radioMaxPx * 0.35;
+                if (RfondoPx < radioMasa) RfondoPx = radioMasa;
+
+                const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--svg-stroke-color').trim() || "#333";
+                const colorImpresion3D = getComputedStyle(document.documentElement).getPropertyValue('--svg-panel-color').trim() || "#fdebd0";
+
+                const circuloExt = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circuloExt.setAttribute("cx", centro);
+                circuloExt.setAttribute("cy", centro);
+                circuloExt.setAttribute("r", radioMaxPx);
+                circuloExt.setAttribute("fill", "none");
+                circuloExt.setAttribute("stroke", "#777"); 
+                circuloExt.setAttribute("stroke-width", "1"); 
+                circuloExt.setAttribute("stroke-dasharray", "3"); 
+                svg.appendChild(circuloExt);
+
+                let dRotor = "";
+                const profPx = Ds * escala;
+
                 for (let i = 0; i < N; i++) {
                     const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
+                    const theta1 = anguloCentroPanel - (angP / 2); 
                     const theta2 = anguloCentroPanel + (angP / 2); 
-                    const theta3 = theta2 + angS;
-                    const thetaBisectriz = (theta2 + theta3) / 2;
-                    const dirX = Math.cos(thetaBisectriz);
-                    const dirY = Math.sin(thetaBisectriz);
+                    const theta3 = theta2 + angS;                  
 
-                    // Puntos del fondo de la ranura (lo más cerca del eje)
-                    const f1x = centro + RfondoPx * Math.cos(theta2);
-                    const f1y = centro + RfondoPx * Math.sin(theta2);
-                    const f2x = centro + RfondoPx * Math.cos(theta3);
-                    const f2y = centro + RfondoPx * Math.sin(theta3);
+                    const p1x = centro + radioMaxPx * Math.cos(theta1);
+                    const p1y = centro + radioMaxPx * Math.sin(theta1);
+                    const p2x = centro + radioMaxPx * Math.cos(theta2);
+                    const p2y = centro + radioMaxPx * Math.sin(theta2);
+                    const p3x = centro + radioMaxPx * Math.cos(theta3);
+                    const p3y = centro + radioMaxPx * Math.sin(theta3);
 
-                    // Puntos exteriores del bobinado (creciendo hacia el perímetro)
-                    const o1x = f1x + dirX * profBobinadoPx;
-                    const o1y = f1y + dirY * profBobinadoPx;
-                    const o2x = f2x + dirX * profBobinadoPx;
-                    const o2y = f2y + dirY * profBobinadoPx;
+                    if (i === 0) {
+                        dRotor += `M ${p1x} ${p1y} `;
+                    } else {
+                        dRotor += `L ${p1x} ${p1y} `;
+                    }
+                    dRotor += `L ${p2x} ${p2y} `;
 
-                    const polyBobinado = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-                    polyBobinado.setAttribute("points", `${f1x},${f1y} ${o1x},${o1y} ${o2x},${o2y} ${f2x},${f2y}`);
-                    polyBobinado.setAttribute("fill", colorBobinado);
-                    polyBobinado.setAttribute("opacity", "0.8");
-                    svg.appendChild(polyBobinado);
+                    if (tipoRanura === 'trapecio') {
+                        const s1x = centro + RfondoPx * Math.cos(theta2);
+                        const s1y = centro + RfondoPx * Math.sin(theta2);
+                        const s2x = centro + RfondoPx * Math.cos(theta3);
+                        const s2y = centro + RfondoPx * Math.sin(theta3);
+                        dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
+                    } else { 
+                        const thetaBisectriz = (theta2 + theta3) / 2;
+                        const dirX = Math.cos(thetaBisectriz);
+                        const dirY = Math.sin(thetaBisectriz);
+                        
+                        const s1x = p2x - dirX * profPx;
+                        const s1y = p2y - dirY * profPx;
+                        const s2x = p3x - dirX * profPx;
+                        const s2y = p3y - dirY * profPx;
+                        dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
+                    }
                 }
-            }
+                dRotor += "Z"; 
 
-            const eje = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            eje.setAttribute("cx", centro);
-            eje.setAttribute("cy", centro);
-            eje.setAttribute("r", radioMaxPx * 0.12);
-            eje.setAttribute("fill", "#ffffff"); 
-            eje.setAttribute("stroke", strokeColor);
-            eje.setAttribute("stroke-width", "1");
-            svg.appendChild(eje);
+                const pathRotor = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                pathRotor.setAttribute("d", dRotor);
+                pathRotor.setAttribute("fill", colorImpresion3D); 
+                pathRotor.setAttribute("stroke", strokeColor);
+                pathRotor.setAttribute("stroke-width", "1");
+                svg.appendChild(pathRotor);
 
-            for (let i = 0; i < N; i++) {
-                const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
-                
-                const WpTotal = Wp + (2 * EstadoDiseno.margenMarco_mm);
-                const proporcionPlaca = WpTotal > 0 ? (Wp / WpTotal) : 1;
-                const angPlacaReal = angP * proporcionPlaca;
+                // --- DIBUJO DEL BOBINADO (NARANJA) ---
+                const fo = EstadoDiseno.factorOcupacion || 0;
+                if (fo > 0) {
+                    const colorBobinado = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || "#d35400";
+                    const profBobinadoPx = Ds * escala * Math.min(fo, 1.2); // Limitamos visualmente
+                    
+                    for (let i = 0; i < N; i++) {
+                        const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
+                        const theta2 = anguloCentroPanel + (angP / 2); 
+                        const theta3 = theta2 + angS;
+                        const thetaBisectriz = (theta2 + theta3) / 2;
+                        const dirX = Math.cos(thetaBisectriz);
+                        const dirY = Math.sin(thetaBisectriz);
 
-                const theta1 = anguloCentroPanel - (angPlacaReal / 2);
-                const theta2 = anguloCentroPanel + (angPlacaReal / 2);
+                        // Puntos del fondo de la ranura (lo más cerca del eje)
+                        const f1x = centro + RfondoPx * Math.cos(theta2);
+                        const f1y = centro + RfondoPx * Math.sin(theta2);
+                        const f2x = centro + RfondoPx * Math.cos(theta3);
+                        const f2y = centro + RfondoPx * Math.sin(theta3);
 
-                const p1x = centro + radioMaxPx * Math.cos(theta1);
-                const p1y = centro + radioMaxPx * Math.sin(theta1);
-                const p2x = centro + radioMaxPx * Math.cos(theta2);
-                const p2y = centro + radioMaxPx * Math.sin(theta2);
+                        // Puntos exteriores del bobinado (creciendo hacia el perímetro)
+                        const o1x = f1x + dirX * profBobinadoPx;
+                        const o1y = f1y + dirY * profBobinadoPx;
+                        const o2x = f2x + dirX * profBobinadoPx;
+                        const o2y = f2y + dirY * profBobinadoPx;
 
-                const placaSol = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                placaSol.setAttribute("x1", p1x);
-                placaSol.setAttribute("y1", p1y);
-                placaSol.setAttribute("x2", p2x);
-                placaSol.setAttribute("y2", p2y);
-                placaSol.setAttribute("stroke", "#2c3e50"); 
-                placaSol.setAttribute("stroke-width", "4");
-                placaSol.setAttribute("stroke-linecap", "round");
-                svg.appendChild(placaSol);
-            }
+                        const polyBobinado = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                        polyBobinado.setAttribute("points", `${f1x},${f1y} ${o1x},${o1y} ${o2x},${o2y} ${f2x},${f2y}`);
+                        polyBobinado.setAttribute("fill", colorBobinado);
+                        polyBobinado.setAttribute("opacity", "0.8");
+                        svg.appendChild(polyBobinado);
+                    }
+                }
+
+                const eje = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                eje.setAttribute("cx", centro);
+                eje.setAttribute("cy", centro);
+                eje.setAttribute("r", radioMaxPx * 0.12);
+                eje.setAttribute("fill", "#ffffff"); 
+                eje.setAttribute("stroke", strokeColor);
+                eje.setAttribute("stroke-width", "1");
+                svg.appendChild(eje);
+
+                for (let i = 0; i < N; i++) {
+                    const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
+                    
+                    const WpTotal = Wp + (2 * EstadoDiseno.margenMarco_mm);
+                    const proporcionPlaca = WpTotal > 0 ? (Wp / WpTotal) : 1;
+                    const angPlacaReal = angP * proporcionPlaca;
+
+                    const theta1 = anguloCentroPanel - (angPlacaReal / 2);
+                    const theta2 = anguloCentroPanel + (angPlacaReal / 2);
+
+                    const p1x = centro + radioMaxPx * Math.cos(theta1);
+                    const p1y = centro + radioMaxPx * Math.sin(theta1);
+                    const p2x = centro + radioMaxPx * Math.cos(theta2);
+                    const p2y = centro + radioMaxPx * Math.sin(theta2);
+
+                    const placaSol = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    placaSol.setAttribute("x1", p1x);
+                    placaSol.setAttribute("y1", p1y);
+                    placaSol.setAttribute("x2", p2x);
+                    placaSol.setAttribute("y2", p2y);
+                    placaSol.setAttribute("stroke", "#2c3e50"); 
+                    placaSol.setAttribute("stroke-width", "4");
+                    placaSol.setAttribute("stroke-linecap", "round");
+                    svg.appendChild(placaSol);
+                }
+            });
         }
 
 
@@ -803,116 +804,120 @@ function cargarMotor(config) {
 // --- DIBUJO DE LA VISTA SUPERIOR DEL PANEL ---
         // --- DIBUJO DE LA VISTA SUPERIOR DEL PANEL ---
         function dibujarPanelSVG(Lp, Wp, margen) {
-            const svg = document.getElementById('panel-svg');
-            if(!svg) return;
-            svg.innerHTML = '';
+            const ids = ['panel-svg', 'panel-svg-step2'];
             
-            const L_total = Lp + (2 * margen);
-            const W_total = Wp + (2 * margen);
-            
-            if(L_total <= 0 || W_total <= 0) return;
+            ids.forEach(id => {
+                const svg = document.getElementById(id);
+                if(!svg) return;
+                svg.innerHTML = '';
+                
+                const L_total = Lp + (2 * margen);
+                const W_total = Wp + (2 * margen);
+                
+                if(L_total <= 0 || W_total <= 0) return;
 
-            // Usamos la dimensión mayor para que el 'padding' sea siempre uniforme y nada se deforme
-            const maxDim = Math.max(L_total, W_total);
-            // Aumentamos el padding significativamente (0.55) para que quepan etiquetas largas
-            const pad = maxDim * 0.55; 
-            
-            const vbWidth = L_total + pad * 2;
-            const vbHeight = W_total + pad * 2;
-            
-            svg.setAttribute('viewBox', `0 0 ${vbWidth} ${vbHeight}`);
+                // Usamos la dimensión mayor para que el 'padding' sea siempre uniforme y nada se deforme
+                const maxDim = Math.max(L_total, W_total);
+                // Aumentamos el padding significativamente (0.55) para que quepan etiquetas largas
+                const pad = maxDim * 0.55; 
+                
+                const vbWidth = L_total + pad * 2;
+                const vbHeight = W_total + pad * 2;
+                
+                svg.setAttribute('viewBox', `0 0 ${vbWidth} ${vbHeight}`);
 
-            const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--svg-stroke-color').trim() || "#333";
-            const colorImpresion3D = getComputedStyle(document.documentElement).getPropertyValue('--svg-panel-color').trim() || "#fdebd0";
+                const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--svg-stroke-color').trim() || "#333";
+                const colorImpresion3D = getComputedStyle(document.documentElement).getPropertyValue('--svg-panel-color').trim() || "#fdebd0";
 
-            // 1. Dibujar el marco de plástico 3D
-            const marco = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            marco.setAttribute("x", pad);
-            marco.setAttribute("y", pad);
-            marco.setAttribute("width", L_total);
-            marco.setAttribute("height", W_total);
-            marco.setAttribute("fill", colorImpresion3D);
-            marco.setAttribute("stroke", strokeColor);
-            marco.setAttribute("stroke-width", maxDim * 0.005);
-            marco.setAttribute("rx", maxDim * 0.02);
-            svg.appendChild(marco);
+                // 1. Dibujar el marco de plástico 3D
+                const marco = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                marco.setAttribute("x", pad);
+                marco.setAttribute("y", pad);
+                marco.setAttribute("width", L_total);
+                marco.setAttribute("height", W_total);
+                marco.setAttribute("fill", colorImpresion3D);
+                marco.setAttribute("stroke", strokeColor);
+                marco.setAttribute("stroke-width", maxDim * 0.005);
+                marco.setAttribute("rx", maxDim * 0.02);
+                svg.appendChild(marco);
 
-            // 2. Dibujar el cristal oscuro (Placa Solar)
-            const placa = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            placa.setAttribute("x", pad + margen);
-            placa.setAttribute("y", pad + margen);
-            placa.setAttribute("width", Lp);
-            placa.setAttribute("height", Wp);
-            placa.setAttribute("fill", "#2c3e50");
-            placa.setAttribute("stroke", "rgba(255,255,255,0.2)");
-            placa.setAttribute("stroke-width", maxDim * 0.003);
-            svg.appendChild(placa);
+                // 2. Dibujar el cristal oscuro (Placa Solar)
+                const placa = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                placa.setAttribute("x", pad + margen);
+                placa.setAttribute("y", pad + margen);
+                placa.setAttribute("width", Lp);
+                placa.setAttribute("height", Wp);
+                placa.setAttribute("fill", "#2c3e50");
+                placa.setAttribute("stroke", "rgba(255,255,255,0.2)");
+                placa.setAttribute("stroke-width", maxDim * 0.003);
+                svg.appendChild(placa);
 
-            // 3. Textos y Líneas de Cota
-            const fontSize = Math.max(maxDim * 0.07, 3);
-            const estiloTexto = `font-size: ${fontSize}px; font-family: sans-serif; fill: #555; text-anchor: middle; font-weight: bold;`;
-            const strokeCota = maxDim * 0.003;
+                // 3. Textos y Líneas de Cota
+                const fontSize = Math.max(maxDim * 0.07, 3);
+                const estiloTexto = `font-size: ${fontSize}px; font-family: sans-serif; fill: #555; text-anchor: middle; font-weight: bold;`;
+                const strokeCota = maxDim * 0.003;
 
-            // --- COTA LARGO (Abajo) ---
-            const yCotaLargo = pad + W_total + (pad * 0.35);
-            const lineLargo = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            lineLargo.setAttribute("x1", pad);
-            lineLargo.setAttribute("y1", yCotaLargo);
-            lineLargo.setAttribute("x2", pad + L_total);
-            lineLargo.setAttribute("y2", yCotaLargo);
-            lineLargo.setAttribute("stroke", "#999");
-            lineLargo.setAttribute("stroke-width", strokeCota);
-            svg.appendChild(lineLargo);
+                // --- COTA LARGO (Abajo) ---
+                const yCotaLargo = pad + W_total + (pad * 0.35);
+                const lineLargo = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                lineLargo.setAttribute("x1", pad);
+                lineLargo.setAttribute("y1", yCotaLargo);
+                lineLargo.setAttribute("x2", pad + L_total);
+                lineLargo.setAttribute("y2", yCotaLargo);
+                lineLargo.setAttribute("stroke", "#999");
+                lineLargo.setAttribute("stroke-width", strokeCota);
+                svg.appendChild(lineLargo);
 
-            const txtLargo = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            txtLargo.setAttribute("x", pad + (L_total / 2));
-            txtLargo.setAttribute("y", yCotaLargo + (fontSize * 1.1));
-            txtLargo.setAttribute("style", estiloTexto);
-            txtLargo.textContent = L_total + " mm";
-            svg.appendChild(txtLargo);
+                const txtLargo = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                txtLargo.setAttribute("x", pad + (L_total / 2));
+                txtLargo.setAttribute("y", yCotaLargo + (fontSize * 1.1));
+                txtLargo.setAttribute("style", estiloTexto);
+                txtLargo.textContent = L_total + " mm";
+                svg.appendChild(txtLargo);
 
-            // --- COTA ANCHO (Derecha) ---
-            const xCotaAncho = pad + L_total + (pad * 0.35);
-            const lineAncho = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            lineAncho.setAttribute("x1", xCotaAncho);
-            lineAncho.setAttribute("y1", pad);
-            lineAncho.setAttribute("x2", xCotaAncho);
-            lineAncho.setAttribute("y2", pad + W_total);
-            lineAncho.setAttribute("stroke", "#999");
-            lineAncho.setAttribute("stroke-width", strokeCota);
-            svg.appendChild(lineAncho);
+                // --- COTA ANCHO (Derecha) ---
+                const xCotaAncho = pad + L_total + (pad * 0.35);
+                const lineAncho = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                lineAncho.setAttribute("x1", xCotaAncho);
+                lineAncho.setAttribute("y1", pad);
+                lineAncho.setAttribute("x2", xCotaAncho);
+                lineAncho.setAttribute("y2", pad + W_total);
+                lineAncho.setAttribute("stroke", "#999");
+                lineAncho.setAttribute("stroke-width", strokeCota);
+                svg.appendChild(lineAncho);
 
-            const txtAncho = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            const txtAnchoX = xCotaAncho + (fontSize * 0.9);
-            const txtAnchoY = pad + (W_total / 2);
-            txtAncho.setAttribute("x", txtAnchoX);
-            txtAncho.setAttribute("y", txtAnchoY);
-            // Rotamos el texto 90 grados para que quede paralelo a la línea y no ocupe espacio horizontal
-            txtAncho.setAttribute("transform", `rotate(90, ${txtAnchoX}, ${txtAnchoY})`);
-            txtAncho.setAttribute("style", estiloTexto);
-            txtAncho.setAttribute("dominant-baseline", "middle");
-            txtAncho.textContent = W_total + " mm";
-            svg.appendChild(txtAncho);
-            
-            // --- COTA MARGEN (Arriba) ---
-            if(margen > 0) {
-                const yCotaMargen = pad - (pad * 0.2);
-                const lineMargen = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                lineMargen.setAttribute("x1", pad);
-                lineMargen.setAttribute("y1", yCotaMargen);
-                lineMargen.setAttribute("x2", pad + margen);
-                lineMargen.setAttribute("y2", yCotaMargen);
-                lineMargen.setAttribute("stroke", "#e74c3c");
-                lineMargen.setAttribute("stroke-width", strokeCota * 1.5);
-                svg.appendChild(lineMargen);
+                const txtAncho = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                const txtAnchoX = xCotaAncho + (fontSize * 0.9);
+                const txtAnchoY = pad + (W_total / 2);
+                txtAncho.setAttribute("x", txtAnchoX);
+                txtAncho.setAttribute("y", txtAnchoY);
+                // Rotamos el texto 90 grados para que quede paralelo a la línea y no ocupe espacio horizontal
+                txtAncho.setAttribute("transform", `rotate(90, ${txtAnchoX}, ${txtAnchoY})`);
+                txtAncho.setAttribute("style", estiloTexto);
+                txtAncho.setAttribute("dominant-baseline", "middle");
+                txtAncho.textContent = W_total + " mm";
+                svg.appendChild(txtAncho);
+                
+                // --- COTA MARGEN (Arriba) ---
+                if(margen > 0) {
+                    const yCotaMargen = pad - (pad * 0.2);
+                    const lineMargen = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    lineMargen.setAttribute("x1", pad);
+                    lineMargen.setAttribute("y1", yCotaMargen);
+                    lineMargen.setAttribute("x2", pad + margen);
+                    lineMargen.setAttribute("y2", yCotaMargen);
+                    lineMargen.setAttribute("stroke", "#e74c3c");
+                    lineMargen.setAttribute("stroke-width", strokeCota * 1.5);
+                    svg.appendChild(lineMargen);
 
-                const txtMargen = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                txtMargen.setAttribute("x", pad + (margen / 2));
-                txtMargen.setAttribute("y", yCotaMargen - (fontSize * 0.5));
-                txtMargen.setAttribute("style", `font-size: ${fontSize * 1.1}px; font-family: sans-serif; fill: #e74c3c; text-anchor: middle; font-weight: bold;`);
-                txtMargen.textContent = "m: " + margen + " mm (Grosor marco)";
-                svg.appendChild(txtMargen);
-            }
+                    const txtMargen = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    txtMargen.setAttribute("x", pad + (margen / 2));
+                    txtMargen.setAttribute("y", yCotaMargen - (fontSize * 0.5));
+                    txtMargen.setAttribute("style", `font-size: ${fontSize * 1.1}px; font-family: sans-serif; fill: #e74c3c; text-anchor: middle; font-weight: bold;`);
+                    txtMargen.textContent = "m: " + margen + " mm (Grosor marco)";
+                    svg.appendChild(txtMargen);
+                }
+            });
         }
 
 
@@ -958,8 +963,10 @@ function actualizarListaHilos() {
             EstadoDiseno.diametroHilo_mm = diaHilo;
 
             // --- NUEVO: Cambio de color visual en la Interfaz ---
-            const leyenda = document.getElementById('leyenda-ranura');
-            if (leyenda) leyenda.style.backgroundColor = materialConductor.colorUI;
+            const leyenda1 = document.getElementById('leyenda-ranura');
+            const leyenda2 = document.getElementById('leyenda-ranura-step2');
+            if (leyenda1) leyenda1.style.backgroundColor = materialConductor.colorUI;
+            if (leyenda2) leyenda2.style.backgroundColor = materialConductor.colorUI;
             
             const txtNombreMat = document.getElementById('res-mat-nombre');
             if (txtNombreMat) {
