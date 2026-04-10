@@ -2386,12 +2386,16 @@ async function cargarPerfilUsuario(user) {
             usuarioActual.nombre = profile.nombre || user.email;
             usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
         } else {
-            usuarioActual.nombre = user.email || 'Alumno';
+            // Caso normal: El usuario se acaba de registrar o no tiene perfil aún
+            console.log("No se encontró perfil en Supabase (o RLS restringido), usando datos de sesión básico.");
+            profileActual = null;
+            usuarioActual.nombre = user.user_metadata?.nombre || user.email || 'Alumno';
             usuarioActual.nivel = NIVELES_USUARIO.BASICO;
             esAdmin = false;
         }
     } catch (err) {
         console.error("Error al cargar perfil:", err);
+        profileActual = null;
         usuarioActual.nombre = user.email || 'Usuario';
         usuarioActual.nivel = NIVELES_USUARIO.BASICO;
         esAdmin = false;
@@ -2514,15 +2518,21 @@ function actualizarMensajeNivel() {
     const el = document.getElementById('mensaje-nivel');
     if (!el) return;
     
-    // Si no hay sesión, ocultar totalmente
+    // Si no hay sesión iniciada, limpiamos el badge
     if (!sessionActiva) {
         el.style.display = 'none';
         el.textContent = "";
         return;
     }
     
-    // Si hay sesión pero no perfil, mostramos el email como respaldo
-    const nombreAMostrar = profileActual ? profileActual.nombre : sessionActiva.user.email;
+    // Si hay sesión pero el perfil aún no ha cargado, usamos el email de respaldo
+    let nombreAMostrar = "Usuario";
+    if (profileActual && profileActual.nombre) {
+        nombreAMostrar = profileActual.nombre;
+    } else if (sessionActiva.user && sessionActiva.user.email) {
+        nombreAMostrar = sessionActiva.user.email;
+    }
+    
     const adminTxt = esAdmin ? ' · 🛡️ ADMIN' : '';
     
     el.style.display = 'flex';
