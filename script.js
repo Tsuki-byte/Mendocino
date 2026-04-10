@@ -2300,36 +2300,39 @@ async function inicializarAuth() {
 }
 
 async function cargarPerfilUsuario(user) {
-                badgeUser.style.display = 'flex';
-                badgeUser.style.background = 'rgba(255,255,255,0.15)';
-                badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
-            }
+    if (!user) return;
+    try {
+        const { data: profile, error } = await dbMendocinoClient
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+            
+        if (profile && !error) {
+            profileActual = profile;
+            esAdmin = profile.rol === 'admin';
+            usuarioActual.nombre = profile.nombre || user.email;
+            usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
         } else {
-            usuarioActual.nombre = user.email || 'Usuario Local';
+            usuarioActual.nombre = user.email || 'Alumno';
             usuarioActual.nivel = NIVELES_USUARIO.BASICO;
             esAdmin = false;
-
-            const badgeUser = document.getElementById('mensaje-nivel');
-            if (badgeUser) {
-                badgeUser.style.display = 'flex';
-                badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
-            }
         }
-    } catch (err) {
-        console.error("Error al cargar perfil, aplicando fallback:", err);
-        usuarioActual.nombre = user?.email || 'Usuario Offline';
-        usuarioActual.nivel = NIVELES_USUARIO.BASICO;
-        esAdmin = false;
-
+        
         const badgeUser = document.getElementById('mensaje-nivel');
         if (badgeUser) {
             badgeUser.style.display = 'flex';
+            badgeUser.style.background = 'rgba(255,255,255,0.15)';
             badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
         }
+    } catch (err) {
+        console.error("Error al cargar perfil:", err);
+        usuarioActual.nombre = user.email || 'Usuario';
+        usuarioActual.nivel = NIVELES_USUARIO.BASICO;
+        esAdmin = false;
+        actualizarMensajeNivel();
     }
-}
-
-let modoRegistroAuth = false;
+}let modoRegistroAuth = false;
 
 function toggleModoAuth(e) {
     if (e) e.preventDefault();
