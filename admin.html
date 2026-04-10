@@ -240,33 +240,50 @@
     <!-- Cliente de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="script.js?v=31"></script>
+    <script src="app-main-v35.js"></script>
 
     <script>
         let fullUsuarios = [];
 
         async function asegurarAdminPanel() {
             try {
-                const { data: { user }, error: authErr } = await dbMendocinoClient.auth.getUser();
+                const client = window.dbMendocinoClient || dbMendocinoClient;
+                const { data: { user }, error: authErr } = await client.auth.getUser();
+                
                 if (authErr || !user) {
+                    console.warn("No hay usuario autenticado, redirigiendo...");
                     window.location.href = 'index.html';
                     return false;
                 }
                 
-                const { data: profile, error: profErr } = await dbMendocinoClient.from('profiles').select('rol').eq('id', user.id).single();
-                const emailEsFallback = typeof EMAILS_ADMIN_FALLBACK !== 'undefined' && EMAILS_ADMIN_FALLBACK.includes(user.email);
-                const esRealAdmin = (profile && profile.rol === 'admin') || emailEsFallback;
-
-                if (emailEsFallback && (!profile || profile.rol !== 'admin')) {
-                    // Auto-promover a administrador en la base de datos para no tener problemas de permisos (RLS)
-                    await dbMendocinoClient.from('profiles').update({ rol: 'admin' }).eq('id', user.id);
+                // Whitelist de emails (definida en app-main-v35.js, pero la tenemos aquí por si falla)
+                const whitelist = ['josecarlosmillandecortes@unizar.es', 'jcmillan@unizar.es', 'cmillan@unizar.es'];
+                const emailEsFallback = whitelist.includes(user.email);
+                
+                // Intentar obtener rol de la DB (puede fallar con 500)
+                let esAdminPorDB = false;
+                try {
+                    const { data: profile } = await client.from('profiles').select('rol').eq('id', user.id).single();
+                    esAdminPorDB = (profile && profile.rol === 'admin');
+                    
+                    if (emailEsFallback && !esAdminPorDB) {
+                        console.log("Auto-promoviendo en DB por whitelist...");
+                        await client.from('profiles').upsert({ id: user.id, email: user.email, rol: 'admin' });
+                        esAdminPorDB = true;
+                    }
+                } catch (dbErr) {
+                    console.error("Error consultando DB para admin, usando fallback de email:", dbErr);
                 }
 
+                const esRealAdmin = esAdminPorDB || emailEsFallback;
+
                 if (!esRealAdmin) {
-                    alert('Acceso denegado. Se requiere cuenta de administrador.');
+                    alert('Acceso denegado. Se requiere cuenta de administrador. Detectado: ' + user.email);
                     window.location.href = 'index.html';
                     return false;
                 }
+                
+                console.log("Acceso admin concedido para:", user.email);
                 return true;
             } catch(e) {
                 console.error("Critical error in asegurarAdminPanel", e);
