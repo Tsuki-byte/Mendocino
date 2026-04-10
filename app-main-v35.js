@@ -728,10 +728,10 @@ function cargarMotor(config) {
                 pathRotor.setAttribute("stroke-width", "1");
                 svg.appendChild(pathRotor);
 
-                // --- DIBUJO DEL BOBINADO (NARANJA) ---
+                // --- DIBUJO DEL BOBINADO (NARANJA / ROJO SI > 100%) ---
                 const fo = EstadoDiseno.factorOcupacion || 0;
                 if (fo > 0) {
-                    const colorBobinado = "#d35400";
+                    const colorBobinado = fo > 1.0 ? "#c0392b" : "#d35400";
                     const profBobinadoPx = Ds * escala * Math.min(fo, 1.2); // Limitamos visualmente
                     
                     for (let i = 0; i < N; i++) {
@@ -962,11 +962,14 @@ function actualizarListaHilos() {
             
             EstadoDiseno.diametroHilo_mm = diaHilo;
 
-            // --- NUEVO: Cambio de color visual en la Interfaz ---
+            // --- NUEVO: Cambio de color visual en la Interfaz (Alerta si > 100%) ---
+            const foActual = (EstadoDiseno.factorOcupacion || 0);
+            const colorAlerta = foActual > 1.0 ? "#c0392b" : "#d35400";
+
             const leyenda1 = document.getElementById('leyenda-ranura');
             const leyenda2 = document.getElementById('leyenda-ranura-step2');
-            if (leyenda1) leyenda1.style.backgroundColor = "#d35400";
-            if (leyenda2) leyenda2.style.backgroundColor = "#d35400";
+            if (leyenda1) leyenda1.style.backgroundColor = colorAlerta;
+            if (leyenda2) leyenda2.style.backgroundColor = colorAlerta;
             
             const txtNombreMat = document.getElementById('res-mat-nombre');
             if (txtNombreMat) {
