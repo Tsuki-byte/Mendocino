@@ -1481,7 +1481,7 @@ function calcularPasoMagnetico() {
                         <div class="proyecto-card">
                             <div class="proyecto-card__media">
                                 <video controls preload="metadata" loading="lazy">
-                                    <source src="${proyecto.video_url || 'videos/motor1.mp4'}" type="video/mp4">
+                                    <source src="${proyecto.video_url || ''}" type="video/mp4">
                                     Tu navegador no soporta el video.
                                 </video>
                             </div>
@@ -2430,20 +2430,21 @@ async function cargarPerfilUsuario(user) {
 
     try {
         const client = window.dbMendocinoClient || dbMendocinoClient;
+        // Optimizamos la consulta para evitar posibles errores 500 por columnas calculadas o inexistentes
         const { data: profile, error } = await client
             .from('profiles')
-            .select('*')
+            .select('id, nombre, nivel, rol')
             .eq('id', user.id)
             .single();
             
         if (profile && !error) {
             profileActual = profile;
-            // Si el perfil dice que es admin, o ya lo detectamos por email
-            esAdmin = esAdmin || profile.rol === 'admin';
+            // Si el perfil tiene rol admin, o ya lo detectamos por email whitelist
+            esAdmin = esAdmin || (profile.rol === 'admin');
             usuarioActual.nombre = profile.nombre || user.email;
             usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
         } else {
-            console.warn("DEBUG [Perfil]: No se pudo cargar perfil de DB (posible Error 500), usando fallback.");
+            // Error controlado o fila no existente: el whitelist por email ya nos protege arriba
             profileActual = null;
             usuarioActual.nombre = user.user_metadata?.nombre || user.email || 'Alumno';
             usuarioActual.nivel = NIVELES_USUARIO.BASICO;
