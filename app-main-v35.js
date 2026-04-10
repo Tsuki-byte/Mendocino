@@ -731,7 +731,7 @@ function cargarMotor(config) {
                 // --- DIBUJO DEL BOBINADO (NARANJA) ---
                 const fo = EstadoDiseno.factorOcupacion || 0;
                 if (fo > 0) {
-                    const colorBobinado = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || "#d35400";
+                    const colorBobinado = "#d35400";
                     const profBobinadoPx = Ds * escala * Math.min(fo, 1.2); // Limitamos visualmente
                     
                     for (let i = 0; i < N; i++) {
@@ -965,8 +965,8 @@ function actualizarListaHilos() {
             // --- NUEVO: Cambio de color visual en la Interfaz ---
             const leyenda1 = document.getElementById('leyenda-ranura');
             const leyenda2 = document.getElementById('leyenda-ranura-step2');
-            if (leyenda1) leyenda1.style.backgroundColor = materialConductor.colorUI;
-            if (leyenda2) leyenda2.style.backgroundColor = materialConductor.colorUI;
+            if (leyenda1) leyenda1.style.backgroundColor = "#d35400";
+            if (leyenda2) leyenda2.style.backgroundColor = "#d35400";
             
             const txtNombreMat = document.getElementById('res-mat-nombre');
             if (txtNombreMat) {
