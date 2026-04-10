@@ -1065,13 +1065,38 @@ function actualizarListaHilos() {
                 document.getElementById('lon-espira').value = lonEspira.toFixed(4);
                 EstadoDiseno.longitudEspira_m = lonEspira;
 
+                // --- CÁLCULO DE ESPIRAS Y FACTOR DE OCUPACIÓN ---
                 const lonTotalIdeal = (EstadoDiseno.resistenciaPanelObjetivo * (seccionHilo * 1e-6)) / materialConductor.resistividad;
                 const espirasCalculadas = Math.round(lonTotalIdeal / lonEspira);
-                document.getElementById('espiras').value = espirasCalculadas;
                 
+                document.getElementById('espiras').value = espirasCalculadas;
+                document.getElementById('res-espiras-final').textContent = espirasCalculadas;
                 EstadoDiseno.espirasPorDevanado = espirasCalculadas;
 
-                document.getElementById('res-espiras-final').textContent = espirasCalculadas;
+                const areaRanura = EstadoDiseno.areaRanura_mm2 || (EstadoDiseno.anchoRanura_mm * EstadoDiseno.altoRanura_mm); 
+                if (areaRanura > 0 && espirasCalculadas > 0) {
+                    const areaEfectiva = espirasCalculadas * seccionHilo * 1.25; 
+                    const foActual = areaEfectiva / areaRanura;
+                    EstadoDiseno.factorOcupacion = foActual;
+                    
+                    // --- FEEDBACK VISUAL INSTANTÁNEO ---
+                    const esExceso = foActual >= 1.0;
+                    const colorAlerta = esExceso ? "#e74c3c" : "#d35400";
+                    const opacidadAlerta = esExceso ? "1.0" : "0.8";
+
+                    // 1. Leyendas
+                    const leyendas = ['leyenda-ranura', 'leyenda-ranura-step2'];
+                    leyendas.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.style.backgroundColor = colorAlerta;
+                            el.style.opacity = opacidadAlerta;
+                        }
+                    });
+
+                    // 2. Gráfico Rotor
+                    dibujarRotorSVG();
+                }
 
                 const fmm = espirasCalculadas * (EstadoDiseno.intensidadPanel_mA / 1000);
                 EstadoDiseno.fmm_Av = fmm;
@@ -2449,12 +2474,10 @@ async function inicializarAuth() {
                     cargarPerfilUsuario(session.user).catch(e => console.error("DEBUG [Auth]: Error en perfil:", e));
                     
                     console.log("DEBUG [Auth]: Iniciando carga de datos globales...");
-                    cargarDatosGlobales()
-                        .then(() => {
-                            console.log("DEBUG [Auth]: Datos globales listos, renderizando UI...");
-                            renderizarUI();
-                        })
-                        .catch(e => console.error("DEBUG [Auth]: Fallo en carga global:", e));
+                    // CRÍTICO: AWAIT para evitar condición de carrera con la restauración del progreso
+                    await cargarDatosGlobales();
+                    console.log("DEBUG [Auth]: Datos globales listos, renderizando UI...");
+                    renderizarUI();
                     
                     actualizarPanelAdminUI();
                     aplicarNivelUsuario();
