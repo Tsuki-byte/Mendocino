@@ -1420,7 +1420,7 @@ function calcularPasoMagnetico() {
                                         ${resumen.total ? `<small> · ${resumen.total} voto${resumen.total === 1 ? '' : 's'}</small>` : ''}
                                     </div>
                                     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-                                        <button class="btn-config" style="width: 100%;" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar config</button>
+                                        <button class="btn-config" style="width: 100%; font-size:12px; height:38px; font-weight:600; padding:0;" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar en calculadora</button>
                                         <a href="${proyecto.video_url}" download class="btn-download" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; width:100%; height:38px; font-size:12px; font-weight:600; padding:0; background-color:#10b981;">
                                             ⬇️ Descargar vídeo
                                         </a>
