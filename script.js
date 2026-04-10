@@ -750,7 +750,7 @@ function cargarMotor(config) {
 
             // Usamos la dimensión mayor para que el 'padding' sea siempre uniforme y nada se deforme
             const maxDim = Math.max(L_total, W_total);
-            const pad = maxDim * 0.30; // 30% de espacio extra alrededor para que quepan holgadamente los textos
+            const pad = maxDim * 0.45; // Aumentamos el padding para evitar que los textos largos se corten
             
             const vbWidth = L_total + pad * 2;
             const vbHeight = W_total + pad * 2;
@@ -843,11 +843,9 @@ function cargarMotor(config) {
 
                 const txtMargen = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 txtMargen.setAttribute("x", pad + (margen / 2));
-                // Lo subimos un poco más (0.5) para que el texto grande no pise la línea
                 txtMargen.setAttribute("y", yCotaMargen - (fontSize * 0.5));
-                // Quitamos la reducción y lo hacemos un 10% más grande que el resto (1.1)
                 txtMargen.setAttribute("style", `font-size: ${fontSize * 1.1}px; font-family: sans-serif; fill: #e74c3c; text-anchor: middle; font-weight: bold;`);
-                txtMargen.textContent = "Grosor marco (m): " + margen + " mm";
+                txtMargen.textContent = "m:" + margen + " mm";
                 svg.appendChild(txtMargen);
             }
         }
@@ -1137,14 +1135,20 @@ function calcularPasoMagnetico() {
                 EstadoDiseno.factorOcupacion = factorRelleno / 100;
                 
                 // Redibujar para mostrar el bobinado naranja
-                const caras = parseInt(document.getElementById('caras').value);
+                const caras = EstadoDiseno.numeroCaras;
                 const tipoRanura = document.getElementById('ranura-tipo').value;
-                const Wp = parseFloat(document.getElementById('db-panel-a').value) || 0;
-                const Ws = parseFloat(document.getElementById('ranura-ancho').value) || 0;
-                const Ds = parseFloat(document.getElementById('ranura-alto').value) || 0;
+                const Wp = EstadoDiseno.anchoPanel;
+                const Ws = EstadoDiseno.anchoRanura_mm;
+                const Ds = EstadoDiseno.altoRanura_mm;
                 const R = EstadoDiseno.diametroRotor / 2;
-                const angP = (2 * Math.PI / caras) * (Wp / (Wp + Ws));
-                const angS = (2 * Math.PI / caras) * (Ws / (Wp + Ws));
+                
+                // Calculamos WpTotal sumando el margen
+                const WpTotal = Wp + (2 * EstadoDiseno.margenMarco_mm);
+                const sumaAnchuras = WpTotal + Ws;
+                
+                const anguloTotalRadianes = (2 * Math.PI) / caras;
+                const angP = anguloTotalRadianes * (WpTotal / sumaAnchuras);
+                const angS = anguloTotalRadianes * (Ws / sumaAnchuras);
                 
                 dibujarRotorSVG(caras, tipoRanura, Wp, Ws, Ds, R, angP, angS);
                 dibujarPanelSVG(EstadoDiseno.longitudPanel, Wp, EstadoDiseno.margenMarco_mm);
