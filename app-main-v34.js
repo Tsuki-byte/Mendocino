@@ -2420,6 +2420,14 @@ async function inicializarAuth() {
 
 async function cargarPerfilUsuario(user) {
     if (!user) return;
+    
+    // Verificación preliminar de admin por email (robusta ante fallos de DB)
+    const esAdminPorEmail = EMAILS_ADMIN_FALLBACK.includes(user.email);
+    if (esAdminPorEmail) {
+        console.log("DEBUG [Perfil]: Admin detectado por email fallback.");
+        esAdmin = true;
+    }
+
     try {
         const client = window.dbMendocinoClient || dbMendocinoClient;
         const { data: profile, error } = await client
@@ -2430,32 +2438,25 @@ async function cargarPerfilUsuario(user) {
             
         if (profile && !error) {
             profileActual = profile;
-            esAdmin = profile.rol === 'admin';
+            // Si el perfil dice que es admin, o ya lo detectamos por email
+            esAdmin = esAdmin || profile.rol === 'admin';
             usuarioActual.nombre = profile.nombre || user.email;
             usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
         } else {
-            // Caso normal: El usuario se acaba de registrar o no tiene perfil aún
-            console.log("No se encontró perfil en Supabase (o RLS restringido), usando datos de sesión básico.");
+            console.warn("DEBUG [Perfil]: No se pudo cargar perfil de DB (posible Error 500), usando fallback.");
             profileActual = null;
             usuarioActual.nombre = user.user_metadata?.nombre || user.email || 'Alumno';
             usuarioActual.nivel = NIVELES_USUARIO.BASICO;
-            esAdmin = false;
         }
     } catch (err) {
-        console.error("Error al cargar perfil:", err);
+        console.error("DEBUG [Perfil]: Error crítico cargando perfil:", err);
         profileActual = null;
         usuarioActual.nombre = user.email || 'Usuario';
         usuarioActual.nivel = NIVELES_USUARIO.BASICO;
-        esAdmin = false;
     } finally {
-        const badgeUser = document.getElementById('mensaje-nivel');
-        if (badgeUser) {
-            badgeUser.style.display = 'flex';
-            badgeUser.style.background = 'rgba(255,255,255,0.15)';
-            badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
-        }
+        actualizarPanelAdminUI(); // Aseguramos que el botón se actualice tras el intento de carga
+        actualizarMensajeNivel();
     }
-
 }
 
 
@@ -2518,12 +2519,18 @@ const EMAILS_ADMIN_FALLBACK = ['josecarlosmillandecortes@unizar.es', 'jcmillan@u
 
 function actualizarPanelAdminUI() {
     const btnIrAdmin = document.getElementById('btn-ir-admin');
+    const userEmail = sessionActiva?.user?.email;
 
     // El usuario es admin si tiene el rol O si su email está en la lista blanca
-    const esRealAdmin = esAdmin || (sessionActiva && EMAILS_ADMIN_FALLBACK.includes(sessionActiva.user.email));
+    const esRealAdmin = esAdmin || (userEmail && EMAILS_ADMIN_FALLBACK.includes(userEmail));
+    
+    console.log("DEBUG [AdminUI]: Verificando acceso admin. Email:", userEmail, "esRealAdmin:", esRealAdmin);
 
     if (btnIrAdmin) {
         btnIrAdmin.style.display = esRealAdmin ? 'inline-flex' : 'none';
+        if (esRealAdmin) {
+            console.log("DEBUG [AdminUI]: Mostrando botón de administración.");
+        }
     }
 
     actualizarMensajeNivel();
