@@ -1421,7 +1421,7 @@ function calcularPasoMagnetico() {
                                     </div>
                                     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
                                         <button class="btn-config" style="width: 100%;" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar config</button>
-                                        <a href="${proyecto.video_url}" download class="btn-toolbar btn-toolbar-secundario" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; width:100%; height:38px; font-size:12px; font-weight:600; padding:0;">
+                                        <a href="${proyecto.video_url}" download class="btn-download" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; width:100%; height:38px; font-size:12px; font-weight:600; padding:0; background-color:#10b981;">
                                             ⬇️ Descargar vídeo
                                         </a>
                                     </div>
