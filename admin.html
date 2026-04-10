@@ -223,27 +223,33 @@
         let fullUsuarios = [];
 
         async function asegurarAdminPanel() {
-            const { data: { user } } = await dbMendocinoClient.auth.getUser();
-            if (!user) {
+            try {
+                const { data: { user }, error: authErr } = await dbMendocinoClient.auth.getUser();
+                if (authErr || !user) {
+                    window.location.href = 'index.html';
+                    return false;
+                }
+                
+                const { data: profile, error: profErr } = await dbMendocinoClient.from('profiles').select('rol').eq('id', user.id).single();
+                const emailEsFallback = typeof EMAILS_ADMIN_FALLBACK !== 'undefined' && EMAILS_ADMIN_FALLBACK.includes(user.email);
+                const esRealAdmin = (profile && profile.rol === 'admin') || emailEsFallback;
+
+                if (emailEsFallback && (!profile || profile.rol !== 'admin')) {
+                    // Auto-promover a administrador en la base de datos para no tener problemas de permisos (RLS)
+                    await dbMendocinoClient.from('profiles').update({ rol: 'admin' }).eq('id', user.id);
+                }
+
+                if (!esRealAdmin) {
+                    alert('Acceso denegado. Se requiere cuenta de administrador.');
+                    window.location.href = 'index.html';
+                    return false;
+                }
+                return true;
+            } catch(e) {
+                console.error("Critical error in asegurarAdminPanel", e);
                 window.location.href = 'index.html';
                 return false;
             }
-            
-            const { data: profile } = await dbMendocinoClient.from('profiles').select('rol').eq('id', user.id).single();
-            const emailEsFallback = typeof EMAILS_ADMIN_FALLBACK !== 'undefined' && EMAILS_ADMIN_FALLBACK.includes(user.email);
-            const esRealAdmin = (profile && profile.rol === 'admin') || emailEsFallback;
-
-            if (emailEsFallback && (!profile || profile.rol !== 'admin')) {
-                // Auto-promover a administrador en la base de datos para no tener problemas de permisos (RLS)
-                await dbMendocinoClient.from('profiles').update({ rol: 'admin' }).eq('id', user.id);
-            }
-
-            if (!esRealAdmin) {
-                alert('Acceso denegado. Se requiere cuenta de administrador.');
-                window.location.href = 'index.html';
-                return false;
-            }
-            return true;
         }
 
         async function cargarUsuarios() {
@@ -253,6 +259,11 @@
             const { data, error } = await dbMendocinoClient.from('profiles').select('*').order('nombre', { ascending: true });
             
             if (error) {
+                console.error('Error cargando alumnos:', error);
+                contenedor.innerHTML = `<div style="padding:40px; text-align:center; color:#b91c1c;">
+                    ❌ Error al conectar con la base de datos:<br><code>${error.message}</code><br><br>
+                    <small>Comprueba las políticas RLS de Supabase o abre la consola del navegador para más detalles.</small>
+                </div>`;
                 mostrarToast('Error cargando alumnos: ' + error.message, 'error');
                 return;
             }

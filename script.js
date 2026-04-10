@@ -2220,109 +2220,128 @@ function mostrarUIAutenticada() {
 
 
 async function inicializarAuth() {
-    // Escuchar cambios (para futuras sesiones, login, logout)
-    dbMendocinoClient.auth.onAuthStateChange(async (event, session) => {
-        console.log("Evento Auth:", event, !!session);
-        try {
-            sessionActiva = session;
-            
-            if (session) {
-                document.getElementById('modal-auth').style.display = 'none';
-                await cargarPerfilUsuario(session.user);
-                await cargarDatosGlobales();
-                renderizarUI();
-                actualizarPanelAdminUI();
-                aplicarNivelUsuario();
-                mostrarUIAutenticada();
-            } else {
-                profileActual = null;
-                esAdmin = false;
-                ocultarUIHastaAutenticacion();
-                actualizarMensajeNivel();
-                const btnIr = document.getElementById('btn-ir-admin');
-                if (btnIr) btnIr.style.display = 'none';
-            }
-        } catch (err) {
-            console.error("Error en el evento Auth:", err);
-            sessionActiva = null;
-            document.getElementById('modal-auth').style.display = 'flex';
-            const errorMsg = document.getElementById('auth-error');
-            if (errorMsg) {
-                errorMsg.textContent = "Hubo un problema al cargar tu sesión. Recomendamos acceder mediante un servidor (desactivar file://).";
-                errorMsg.style.display = 'block';
-            }
-            actualizarMensajeNivel();
-        } finally {
-            authInicializada = true;
-        }
-    });
+    return new Promise((resolve) => {
+        let authInicialEventsHandled = false;
 
-    // Forzar comprobación inmediata al cargar (para que window.onload no se bloquee)
-    try {
-        // MÁS ESTRICTO: Usar getUser() en lugar de getSession() para verificar con el servidor
-        const { data: { user }, error } = await dbMendocinoClient.auth.getUser();
-        
-        if (error || !user) {
-            console.warn("Sesión no válida o usuario borrado:", error?.message);
-            sessionActiva = null;
-            profileActual = null;
-            ocultarUIHastaAutenticacion();
-        } else {
-            // Si el usuario existe, recuperamos la sesión actual del almacenamiento local (segura tras getUser)
-            const { data: { session } } = await dbMendocinoClient.auth.getSession();
-            sessionActiva = session;
-            await cargarPerfilUsuario(user);
-            await cargarDatosGlobales();
-            renderizarUI();
-            mostrarUIAutenticada();
-        }
-    } catch (err) {
-        console.error("Excepción en verificación inicial:", err);
-        sessionActiva = null;
-        profileActual = null;
-        ocultarUIHastaAutenticacion();
-        
-        // Mostrar posible error al usuario
-        const errorMsg = document.getElementById('auth-error');
-        if (errorMsg) {
-            errorMsg.textContent = "Error de conexión. Si estás abriendo el archivo localmente (file://), usa un servidor web local.";
-            errorMsg.style.display = 'block';
-        }
-    }
-    
-    authInicializada = true;
+        // Escuchar cambios (para futuras sesiones, login, logout y carga inicial)
+        const { data: authListener } = dbMendocinoClient.auth.onAuthStateChange(async (event, session) => {
+            console.log("Evento Auth:", event, !!session);
+            try {
+                sessionActiva = session;
+                
+                if (session) {
+                    const modalAuth = document.getElementById('modal-auth');
+                    if (modalAuth) modalAuth.style.display = 'none';
+                    
+                    await cargarPerfilUsuario(session.user);
+                    await cargarDatosGlobales();
+                    renderizarUI();
+                    actualizarPanelAdminUI();
+                    aplicarNivelUsuario();
+                    mostrarUIAutenticada();
+                } else {
+                    profileActual = null;
+                    esAdmin = false;
+                    ocultarUIHastaAutenticacion();
+                    actualizarMensajeNivel();
+                    const btnIr = document.getElementById('btn-ir-admin');
+                    if (btnIr) btnIr.style.display = 'none';
+                }
+            } catch (err) {
+                console.error("Error en el evento Auth:", err);
+                sessionActiva = null;
+                const modalAuth = document.getElementById('modal-auth');
+                if (modalAuth) modalAuth.style.display = 'flex';
+                
+                const errorMsg = document.getElementById('auth-error');
+                if (errorMsg) {
+                    errorMsg.textContent = "Hubo un problema al cargar tu sesión. Recomendamos acceder mediante un servidor web local.";
+                    errorMsg.style.display = 'block';
+                }
+                actualizarMensajeNivel();
+            } finally {
+                if (!authInicialEventsHandled) {
+                    authInicialEventsHandled = true;
+                    authInicializada = true;
+                    resolve();
+                }
+            }
+        });
+
+        // Supabase v2 sometimes takes a cycle to trigger INITIAL_SESSION, 
+        // fall back manually just in case it takes too long or fails to trigger.
+        setTimeout(async () => {
+             if (!authInicialEventsHandled) {
+                 console.warn("Forzando lectura de sesión (timeout de fallback)");
+                 try {
+                     const { data: { session } } = await dbMendocinoClient.auth.getSession();
+                     sessionActiva = session;
+                     if(session) {
+                         const modalAuth = document.getElementById('modal-auth');
+                         if (modalAuth) modalAuth.style.display = 'none';
+                         await cargarPerfilUsuario(session.user);
+                         await cargarDatosGlobales();
+                         renderizarUI();
+                         actualizarPanelAdminUI();
+                         aplicarNivelUsuario();
+                         mostrarUIAutenticada();
+                     } else {
+                         ocultarUIHastaAutenticacion();
+                     }
+                 } catch(e) {
+                     console.error("Fallback de sesión fallido", e);
+                     ocultarUIHastaAutenticacion();
+                 } finally {
+                     authInicialEventsHandled = true;
+                     authInicializada = true;
+                     resolve();
+                 }
+             }
+        }, 1500);
+    });
 }
 
 async function cargarPerfilUsuario(user) {
-    const { data: profile, error } = await dbMendocinoClient
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-        
-    if (profile) {
-        profileActual = profile;
-        esAdmin = profile.rol === 'admin';
-        usuarioActual.nombre = profile.nombre || user.email;
-        usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
-        
-        // MOSTRAR badge solo ahora con el nombre real
-        const badgeUser = document.getElementById('mensaje-nivel');
-        if (badgeUser) {
-            badgeUser.style.display = 'flex';
-            badgeUser.style.background = 'rgba(255,255,255,0.15)';
-            badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
+    try {
+        const { data: profile, error } = await dbMendocinoClient
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+            
+        if (profile && !error) {
+            profileActual = profile;
+            esAdmin = profile.rol === 'admin';
+            usuarioActual.nombre = profile.nombre || user.email;
+            usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
+            
+            const badgeUser = document.getElementById('mensaje-nivel');
+            if (badgeUser) {
+                badgeUser.style.display = 'flex';
+                badgeUser.style.background = 'rgba(255,255,255,0.15)';
+                badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
+            }
+        } else {
+            usuarioActual.nombre = user.email || 'Usuario Local';
+            usuarioActual.nivel = NIVELES_USUARIO.BASICO;
+            esAdmin = false;
+
+            const badgeUser = document.getElementById('mensaje-nivel');
+            if (badgeUser) {
+                badgeUser.style.display = 'flex';
+                badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
+            }
         }
-    } else {
-        usuarioActual.nombre = user.email;
+    } catch (err) {
+        console.error("Error al cargar perfil, aplicando fallback:", err);
+        usuarioActual.nombre = user?.email || 'Usuario Offline';
         usuarioActual.nivel = NIVELES_USUARIO.BASICO;
         esAdmin = false;
 
-        // Mostrar badge con email de respaldo si no hay perfil en la tabla
         const badgeUser = document.getElementById('mensaje-nivel');
         if (badgeUser) {
             badgeUser.style.display = 'flex';
-            badgeUser.textContent = `👤 ${user.email}`;
+            badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
         }
     }
 }
@@ -2550,6 +2569,12 @@ function cargarUsuarioActualDesdeStorage() {
 }
 
 window.onload = async function() {
+    // Si estamos en el panel de administración, script.js no debe inicializar
+    // la app principal (elementos como modal-auth, lista-paneles, etc. no existen aquí)
+    if (window.location.pathname.includes('admin.html')) {
+        return;
+    }
+
     ocultarUIHastaAutenticacion();
     inicializarAplicacionBase();
     await inicializarAuth();
