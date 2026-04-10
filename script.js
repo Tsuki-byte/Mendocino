@@ -678,20 +678,20 @@ function cargarMotor(config) {
                     const dirX = Math.cos(thetaBisectriz);
                     const dirY = Math.sin(thetaBisectriz);
 
-                    // Puntos base de la ranura (en el perímetro)
-                    const b1x = centro + radioMaxPx * Math.cos(theta2);
-                    const b1y = centro + radioMaxPx * Math.sin(theta2);
-                    const b2x = centro + radioMaxPx * Math.cos(theta3);
-                    const b2y = centro + radioMaxPx * Math.sin(theta3);
+                    // Puntos del fondo de la ranura (lo más cerca del eje)
+                    const f1x = centro + RfondoPx * Math.cos(theta2);
+                    const f1y = centro + RfondoPx * Math.sin(theta2);
+                    const f2x = centro + RfondoPx * Math.cos(theta3);
+                    const f2y = centro + RfondoPx * Math.sin(theta3);
 
-                    // Puntos de "fondo" del bobinado
-                    const f1x = b1x - dirX * profBobinadoPx;
-                    const f1y = b1y - dirY * profBobinadoPx;
-                    const f2x = b2x - dirX * profBobinadoPx;
-                    const f2y = b2y - dirY * profBobinadoPx;
+                    // Puntos exteriores del bobinado (creciendo hacia el perímetro)
+                    const o1x = f1x + dirX * profBobinadoPx;
+                    const o1y = f1y + dirY * profBobinadoPx;
+                    const o2x = f2x + dirX * profBobinadoPx;
+                    const o2y = f2y + dirY * profBobinadoPx;
 
                     const polyBobinado = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-                    polyBobinado.setAttribute("points", `${b1x},${b1y} ${f1x},${f1y} ${f2x},${f2y} ${b2x},${b2y}`);
+                    polyBobinado.setAttribute("points", `${f1x},${f1y} ${o1x},${o1y} ${o2x},${o2y} ${f2x},${f2y}`);
                     polyBobinado.setAttribute("fill", colorBobinado);
                     polyBobinado.setAttribute("opacity", "0.8");
                     svg.appendChild(polyBobinado);
