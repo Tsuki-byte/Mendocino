@@ -80,6 +80,7 @@ function cargarMotor(config) {
         return;
     }
 
+    console.log("Cargando motor con config:", config);
     cambiarPagina('calc');
 
     const caras = document.getElementById('caras');
@@ -94,8 +95,9 @@ function cargarMotor(config) {
 
     if (caras) caras.value = config.caras ?? 4;
 
-    let panelValue = config.panel;
-    if (config.panelNombre) {
+    // --- Lógica de Panel ---
+    let panelValue = config.panel; 
+    if (config.panelNombre && dbPaneles.length > 0) {
         const idxPorNombre = dbPaneles.findIndex(p => p.nombre === config.panelNombre);
         if (idxPorNombre >= 0) {
             panelValue = String(idxPorNombre);
@@ -110,15 +112,46 @@ function cargarMotor(config) {
     if (ranuraAlto) ranuraAlto.value = config.ranuraAlto ?? 3.5;
     if (ranuraTipo) ranuraTipo.value = config.ranuraTipo ?? 'trapecio';
 
+    // --- Lógica de Material e Hilo ---
     if (materialHilo) materialHilo.value = config.material ?? 'cobre';
-    actualizarListaHilos();
+    actualizarListaHilos(); // Regenerar las opciones del select de hilos
 
     if (diaHilo && config.hilo !== undefined) {
-        diaHilo.value = String(config.hilo);
+        // Buscamos el valor exacto del hilo en el select
+        const diaBuscado = parseFloat(config.hilo);
+        let encontrado = false;
+        for (let i = 0; i < diaHilo.options.length; i++) {
+            if (Math.abs(parseFloat(diaHilo.options[i].value) - diaBuscado) < 0.001) {
+                diaHilo.selectedIndex = i;
+                encontrado = true;
+                break;
+            }
+        }
+        // Si no está, lo añadimos temporalmente para que el motor cargue bien los cálculos
+        if (!encontrado) {
+            const nuevaOp = new Option(`${diaBuscado.toFixed(3)} mm (Proyecto)`, diaBuscado);
+            diaHilo.add(nuevaOp);
+            diaHilo.value = diaBuscado;
+        }
     }
 
     if (calidad && config.calidad) {
         calidad.value = config.calidad;
+    }
+
+    // --- Lógica de Imanes (si aplica en el paso 4) ---
+    if (config.imanRotorNombre || config.imanBaseNombre) {
+        const selBase = document.getElementById('lev-base-iman');
+        const selRotor = document.getElementById('lev-rotor-iman');
+        
+        if (selBase && config.imanBaseNombre) {
+             const idx = dbImanes.findIndex(im => im.nombre === config.imanBaseNombre);
+             if (idx >= 0) selBase.value = idx;
+        }
+        if (selRotor && config.imanRotorNombre) {
+             const idx = dbImanes.findIndex(im => im.nombre === config.imanRotorNombre);
+             if (idx >= 0) selRotor.value = idx;
+        }
     }
 
     if (config.informe) {
@@ -136,13 +169,11 @@ function cargarMotor(config) {
         if (elNivel) elNivel.textContent = config.resumen.nivel || '--';
     }
 
-    actualizarResumenPaso1();
-    calcularPaso2();
-    calcularPaso3();
-    precargarPasoMagnetico();
-    calcularPasoMagnetico();
-    actualizarModeloAxial();
-    generarInformeAutomatico();
+    // Disparar cálculos en cascada con un pequeño delay para asegurar estabilidad del DOM
+    setTimeout(() => {
+        actualizarResumenPaso1();
+        // Los pasos siguientes se llaman en cadena desde allí
+    }, 50);
 }
 
 
@@ -190,113 +221,42 @@ function cargarMotor(config) {
         ];
 
 
-        const proyectosDestacados = [
-            {
-                id: 'proyecto-rapido-4c',
-                titulo: 'Rotor de 4 caras · alta velocidad',
-                subtitulo: 'Diseño ligero, rápido y muy sensible a la iluminación.',
-                video: 'videos/motor1.mp4',
-                etiquetas: ['Alta velocidad', 'Baja inercia', 'Arranque suave'],
-                ficha: {
-                    panel: '53x18 · 0,4V 101mA',
-                    hilo: 'Cu Ø 0.15 mm',
-                    espiras: '28',
-                    velocidad: '~2027 RPM',
-                    peso: '~38 g'
-                },
-                notas: [
-                    'Tiene pocas espiras, así que la resistencia del devanado es baja y la respuesta es muy viva.',
-                    'La baja masa del rotor favorece que acelere con rapidez y que reaccione enseguida a la luz.',
-                    'A cambio, el par disponible es menor que en configuraciones con más cobre.'
-                ],
-                explicacion: 'Gira más deprisa porque combina poca inercia con una oposición eléctrica reducida. Es ideal cuando se busca velocidad visual y respuesta rápida.',
-                config: { caras: 4, panel: 1, material: 'cobre', hilo: 0.15, margen: 0, ranuraAncho: 6.5, ranuraAlto: 3.5, ranuraTipo: 'trapecio', calidad: '0.40' }
-            },
-            {
-                id: 'proyecto-equilibrado-4c',
-                titulo: 'Rotor de 4 caras · equilibrio potencia/velocidad',
-                subtitulo: 'Muy buen compromiso entre velocidad, par y facilidad de construcción.',
-                video: 'videos/motor2.mp4',
-                etiquetas: ['Equilibrado', 'Uso general', 'Par medio'],
-                ficha: {
-                    panel: '53x18 · 0,4V 101mA',
-                    hilo: 'Cu Ø 0.25 mm',
-                    espiras: '79',
-                    velocidad: '~1997 RPM',
-                    peso: '~53 g'
-                },
-                notas: [
-                    'Más espiras mejoran la fuerza magnetomotriz y el par.',
-                    'Sigue siendo un rotor razonablemente ligero, por lo que no pierde demasiada velocidad.',
-                    'Es una base excelente para quien fabrica su primer Mendocino serio.'
-                ],
-                explicacion: 'No es el más rápido ni el más lento: funciona tan bien porque reparte de forma muy equilibrada masa, cobre y empuje magnético.',
-                config: { caras: 4, panel: 1, material: 'cobre', hilo: 0.25, margen: 0, ranuraAncho: 6.5, ranuraAlto: 3.5, ranuraTipo: 'trapecio', calidad: '0.40' }
-            },
-            {
-                id: 'proyecto-par-4c',
-                titulo: 'Rotor de 4 caras · más par y menos velocidad',
-                subtitulo: 'Configuración orientada a un giro más reposado y con más empuje.',
-                video: 'videos/motor3.mp4',
-                etiquetas: ['Mayor par', 'Menos velocidad', 'Arranque estable'],
-                ficha: {
-                    panel: '53x18 · 0,4V 101mA',
-                    hilo: 'Cu Ø 0.28 mm',
-                    espiras: '99',
-                    velocidad: '~1253 RPM',
-                    peso: '~60 g'
-                },
-                notas: [
-                    'El aumento de espiras sube la capacidad de generar campo magnético.',
-                    'La velocidad baja porque aumenta la masa y la energía se reparte en más cobre.',
-                    'Resulta útil para entender cómo cambia el comportamiento al priorizar par frente a RPM.'
-                ],
-                explicacion: 'Corre menos porque hay más cobre y más inercia, pero gana estabilidad y empuje magnético. Es una versión muy didáctica para comparar comportamientos.',
-                config: { caras: 4, panel: 1, material: 'cobre', hilo: 0.28, margen: 0, ranuraAncho: 6.5, ranuraAlto: 3.5, ranuraTipo: 'trapecio', calidad: '0.40' }
-            },
-            {
-                id: 'proyecto-16c-inercia',
-                titulo: 'Rotor de 16 caras · gran inercia y giro muy suave',
-                subtitulo: 'Rotor masivo, muy vistoso y con comportamiento estable.',
-                video: 'videos/motor4.mp4',
-                etiquetas: ['Gran inercia', 'Muy suave', 'Baja velocidad'],
-                ficha: {
-                    panel: '157x13 · 0,35V 134mA',
-                    hilo: 'Cu Ø 0.55 mm',
-                    espiras: '64',
-                    velocidad: '~110 RPM',
-                    peso: '~1359 g'
-                },
-                notas: [
-                    'Las muchas caras suavizan la entrega de par y el giro parece muy continuo.',
-                    'La inercia es enorme, por eso tarda más en arrancar pero también mantiene mejor el movimiento.',
-                    'Es un diseño ideal para mostrar cómo influye la masa del rotor en la dinámica.'
-                ],
-                explicacion: 'Gira más despacio porque el panel mueve una masa mucho mayor. Su punto fuerte no es la rapidez sino la estabilidad del giro y el efecto visual.',
-                config: { caras: 16, panel: 12, material: 'cobre', hilo: 0.550, margen: 2.7, ranuraAncho: 5.4, ranuraAlto: 7, ranuraTipo: 'trapecio', calidad: '0.40' }
-            }
-        ];
+        const proyectosDestacados = []; // Ahora se cargan desde Supabase
 
         // --- CARGA DE DATOS (MIGRADO A SUPABASE) ---
         let dbPaneles = [], dbHilos = [], dbImanes = [];
+        let dbPanelesPublicos = [], dbHilosPublicos = [], dbImanesPublicos = [];
         
         async function cargarDatosGlobales() {
             try {
                 if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
                     const uid = sessionActiva.user.id;
                     
+                    // 1. Cargar datos del usuario
                     const { data: paneles, error: errP } = await dbMendocinoClient.from('paneles').select('*').eq('usuario_id', uid);
                     const { data: hilos, error: errH } = await dbMendocinoClient.from('hilos').select('*').eq('usuario_id', uid);
                     const { data: imanes, error: errI } = await dbMendocinoClient.from('imanes').select('*').eq('usuario_id', uid);
                     
-                    if (!errP && paneles && paneles.length > 0) dbPaneles = paneles;
-                    else dbPaneles = JSON.parse(localStorage.getItem('dbPaneles')) || [...defaultPaneles];
-                    
-                    if (!errH && hilos && hilos.length > 0) dbHilos = hilos.map(h => parseFloat(h.diametro));
-                    else dbHilos = JSON.parse(localStorage.getItem('dbHilos')) || [...defaultHilos];
-                    
-                    if (!errI && imanes && imanes.length > 0) dbImanes = imanes;
-                    else dbImanes = JSON.parse(localStorage.getItem('dbImanes')) || [...defaultImanes];
+                    // 2. Cargar datos públicos (disponibles para todos)
+                    const { data: pPub, error: errPP } = await dbMendocinoClient.from('paneles').select('*').eq('es_publico', true);
+                    const { data: hPub, error: errHP } = await dbMendocinoClient.from('hilos').select('*').eq('es_publico', true);
+                    const { data: iPub, error: errIP } = await dbMendocinoClient.from('imanes').select('*').eq('es_publico', true);
+
+                    dbPanelesPublicos = pPub || [];
+                    dbHilosPublicos = (hPub || []).map(h => parseFloat(h.diametro));
+                    dbImanesPublicos = iPub || [];
+
+                    // Combinar (con prioridad a los del usuario si hay duplicados por nombre, aunque no debería haber conflictos críticos)
+                    // Para los hilos, combinamos y quitamos duplicados
+                    dbPaneles = [...(paneles || []), ...dbPanelesPublicos];
+                    dbHilos = [...new Set([...(hilos || []).map(h => parseFloat(h.diametro)), ...dbHilosPublicos])];
+                    dbImanes = [...(imanes || []), ...dbImanesPublicos];
+
+                    // Fallback a locales si no hay nada en la nube (primer inicio)
+                    if (dbPaneles.length === 0) dbPaneles = JSON.parse(localStorage.getItem('dbPaneles')) || [...defaultPaneles];
+                    if (dbHilos.length === 0) dbHilos = JSON.parse(localStorage.getItem('dbHilos')) || [...defaultHilos];
+                    if (dbImanes.length === 0) dbImanes = JSON.parse(localStorage.getItem('dbImanes')) || [...defaultImanes];
+
                 } else {
                     throw new Error("Supabase no definido o sin sesión");
                 }
@@ -1168,17 +1128,31 @@ function calcularPasoMagnetico() {
 
         // --- FUNCIONES PARA GUARDAR Y CARGAR LOCALMENTE ---
 
-                        // --- FUNCIONES AVANZADAS PARA GUARDAR/CARGAR VARIOS MOTORES ---
-
-        // Función de apoyo para leer la base de datos del navegador
-        function obtenerMotoresGuardados() {
+        async function obtenerMotoresGuardados() {
+            let motoresFinales = {};
+            
+            // 1. Cargar de LocalStorage primero (fallback/persistente)
             try {
-                const datos = localStorage.getItem('listaMotoresMendocino');
-                return datos ? JSON.parse(datos) : {};
-            } catch (e) {
-                console.error("Error leyendo configuraciones guardadas:", e);
-                return {};
+                const datosLocal = localStorage.getItem('listaMotoresMendocino');
+                if (datosLocal) motoresFinales = JSON.parse(datosLocal);
+            } catch (e) { console.warn("Error local:", e); }
+
+            // 2. Si hay sesión, cargar de Supabase y fusionar
+            if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
+                try {
+                    const { data: motoresCloud, error } = await dbMendocinoClient
+                        .from('motores')
+                        .select('titulo, config')
+                        .eq('usuario_id', sessionActiva.user.id);
+                    
+                    if (!error && motoresCloud) {
+                        motoresCloud.forEach(m => {
+                            motoresFinales[m.titulo] = m.config;
+                        });
+                    }
+                } catch (e) { console.error("Error sincronizando nube:", e); }
             }
+            return motoresFinales;
         }
 
         
@@ -1218,16 +1192,20 @@ function calcularPasoMagnetico() {
     misMotores[nombreMotor] = miConfiguracion;
     localStorage.setItem('listaMotoresMendocino', JSON.stringify(misMotores));
 
-    if (typeof supabase !== 'undefined' && supabase) {
-        const usr = usuarioActual && usuarioActual.nombre ? usuarioActual.nombre : 'demo';
-        const id_unico = usr + '-' + new Date().getTime();
-        await dbMendocinoClient.from('motores').insert([{
-            id_unico: id_unico,
-            titulo: nombreMotor,
-            config: miConfiguracion,
-            usuario_creador: usr
-        }]);
-    }
+        if (typeof supabase !== 'undefined' && supabase) {
+            const usrId = sessionActiva?.user?.id;
+            const usrNombre = usuarioActual?.nombre || 'Alumno';
+            const id_unico = (usuarioActual?.nombre || 'demo') + '-' + new Date().getTime();
+            
+            await dbMendocinoClient.from('motores').insert([{
+                id_unico: id_unico,
+                titulo: nombreMotor,
+                config: miConfiguracion,
+                usuario_id: usrId,
+                autor_nombre: usrNombre,
+                es_publico: false // Por defecto privado hasta que el admin lo publique
+            }]);
+        }
 
     mostrarToast(`Motor "${nombreMotor}" guardado correctamente.`, 'ok');
 }
@@ -1361,72 +1339,97 @@ function calcularPasoMagnetico() {
             mostrarToast('Gracias por tu voto.', 'ok');
         }
 
-        function renderizarProyectos() {
+        async function renderizarProyectos() {
             const contenedor = obtenerElemento('contenedor-proyectos');
             if (!contenedor) return;
 
-            const valoraciones = obtenerValoracionesProyectos();
-            const votosUsuario = obtenerVotosUsuario();
+            contenedor.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#64748b;">⏳ Cargando galería de proyectos...</div>';
 
-            contenedor.innerHTML = proyectosDestacados.map((proyecto) => {
-                const resumen = calcularResumenVotos(valoraciones[proyecto.id]);
-                const votoUsuario = votosUsuario[proyecto.id] || 0;
+            try {
+                // 1. Obtener proyectos públicos de Supabase
+                const { data: proyectos, error } = await dbMendocinoClient
+                    .from('motores')
+                    .select('*')
+                    .eq('es_publico', true)
+                    .order('creado_en', { ascending: false });
 
-                return `
-                    <article class="proyecto-card">
-                        <div class="proyecto-card__media">
-                            <video controls preload="metadata">
-                                <source src="${proyecto.video}" type="video/mp4">
-                                Tu navegador no soporta el video.
-                            </video>
-                        </div>
-                        <div class="proyecto-card__body">
-                            <h3 class="proyecto-card__title">${proyecto.titulo}</h3>
-                            <p class="proyecto-card__subtitle">${proyecto.subtitulo}</p>
+                if (error) throw error;
+                if (!proyectos || proyectos.length === 0) {
+                    contenedor.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#64748b;">No hay proyectos públicos disponibles en este momento.</div>';
+                    return;
+                }
 
-                            <div class="proyecto-badges">
-                                ${proyecto.etiquetas.map(tag => `<span class="proyecto-badge">${tag}</span>`).join('')}
+                const valoraciones = obtenerValoracionesProyectos();
+                const votosUsuario = obtenerVotosUsuario();
+
+                contenedor.innerHTML = proyectos.map((proyecto) => {
+                    const resumen = calcularResumenVotos(valoraciones[proyecto.id_unico]);
+                    const votoUsuario = votosUsuario[proyecto.id_unico] || 0;
+                    const autor = proyecto.autor_nombre ? `<span class="proyecto-autor">👤 Por: ${proyecto.autor_nombre}</span>` : '';
+
+                    return `
+                        <article class="proyecto-card">
+                            <div class="proyecto-card__media">
+                                <video controls preload="metadata" loading="lazy">
+                                    <source src="${proyecto.video_url || 'videos/motor1.mp4'}" type="video/mp4">
+                                    Tu navegador no soporta el video.
+                                </video>
                             </div>
+                            <div class="proyecto-card__body">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                                    <h3 class="proyecto-card__title" style="margin:0;">${proyecto.titulo}</h3>
+                                    ${autor}
+                                </div>
+                                <p class="proyecto-card__subtitle">${proyecto.subtitulo || ''}</p>
 
-                            <div class="proyecto-bloque">
-                                <h4>⚙️ Características generales</h4>
-                                <div class="proyecto-ficha">
-                                    <div class="proyecto-ficha__fila"><span>Panel</span><strong>${proyecto.ficha.panel}</strong></div>
-                                    <div class="proyecto-ficha__fila"><span>Hilo</span><strong>${proyecto.ficha.hilo}</strong></div>
-                                    <div class="proyecto-ficha__fila"><span>Espiras</span><strong>${proyecto.ficha.espiras}</strong></div>
-                                    <div class="proyecto-ficha__fila"><span>Velocidad</span><strong>${proyecto.ficha.velocidad}</strong></div>
-                                    <div class="proyecto-ficha__fila"><span>Peso</span><strong>${proyecto.ficha.peso}</strong></div>
+                                <div class="proyecto-badges">
+                                    ${(proyecto.etiquetas || []).map(tag => `<span class="proyecto-badge">${tag}</span>`).join('')}
+                                </div>
+
+                                <div class="proyecto-bloque">
+                                    <h4>⚙️ Características generales</h4>
+                                    <div class="proyecto-ficha">
+                                        <div class="proyecto-ficha__fila"><span>Panel</span><strong>${proyecto.ficha?.panel || '--'}</strong></div>
+                                        <div class="proyecto-ficha__fila"><span>Hilo</span><strong>${proyecto.ficha?.hilo || '--'}</strong></div>
+                                        <div class="proyecto-ficha__fila"><span>Espiras</span><strong>${proyecto.ficha?.espiras || '--'}</strong></div>
+                                        <div class="proyecto-ficha__fila"><span>Velocidad</span><strong>${proyecto.ficha?.velocidad || '--'}</strong></div>
+                                        <div class="proyecto-ficha__fila"><span>Peso</span><strong>${proyecto.ficha?.peso || '--'}</strong></div>
+                                    </div>
+                                </div>
+
+                                ${proyecto.notas ? `
+                                <div class="proyecto-bloque">
+                                    <h4>🧠 Notas técnicas anexas</h4>
+                                    <ul>
+                                        ${proyecto.notas.map(nota => `<li>${nota}</li>`).join('')}
+                                    </ul>
+                                </div>` : ''}
+
+                                <div class="proyecto-bloque">
+                                    <h4>🔬 Comentario técnico general</h4>
+                                    <p>${proyecto.explicacion || ''}</p>
+                                </div>
+
+                                <div class="proyecto-bloque proyecto-acciones">
+                                    <h4>⭐ Ranking de la comunidad</h4>
+                                    <div class="proyecto-votos">
+                                        ${[1,2,3,4,5].map(n => `<button class="btn-voto ${votoUsuario === n ? 'activo' : ''}" onclick="votarProyecto('${proyecto.id_unico}', ${n})">${n}★</button>`).join('')}
+                                    </div>
+                                    <div class="proyecto-ranking">
+                                        <strong>${resumen.total ? resumen.media.toFixed(2) : 'Sin votos'}</strong>
+                                        ${resumen.total ? `<small> · ${resumen.total} voto${resumen.total === 1 ? '' : 's'}</small>` : ''}
+                                    </div>
+                                    <button class="btn-config" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar config</button>
                                 </div>
                             </div>
+                        </article>
+                    `;
+                }).join('');
 
-                            <div class="proyecto-bloque">
-                                <h4>🧠 Notas técnicas anexas</h4>
-                                <ul>
-                                    ${proyecto.notas.map(nota => `<li>${nota}</li>`).join('')}
-                                </ul>
-                            </div>
-
-                            <div class="proyecto-bloque">
-                                <h4>🔬 Comentario técnico general</h4>
-                                <p>${proyecto.explicacion}</p>
-                            </div>
-
-                            <div class="proyecto-bloque proyecto-acciones">
-                                <h4>⭐ Ranking de la comunidad</h4>
-                                <div class="proyecto-votos">
-                                    ${[1,2,3,4,5].map(n => `<button class="btn-voto ${votoUsuario === n ? 'activo' : ''}" onclick="votarProyecto('${proyecto.id}', ${n})">${n}★</button>`).join('')}
-                                </div>
-                                <div class="proyecto-ranking">
-                                    <strong>${resumen.total ? resumen.media.toFixed(2) : 'Sin votos'}</strong>
-                                    ${resumen.total ? `<small> · ${resumen.total} voto${resumen.total === 1 ? '' : 's'}</small>` : ''}
-                                </div>
-                                <a href="${proyecto.video}" download class="btn-download">⬇️ Descargar vídeo</a>
-                                <button class="btn-config" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar config</button>
-                            </div>
-                        </div>
-                    </article>
-                `;
-            }).join('');
+            } catch (e) {
+                console.error("Error cargando galería:", e);
+                contenedor.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#ef4444;">Error al conectar con la galería: ${e.message}</div>`;
+            }
         }
 
         // --- INICIALIZACIÓN BASE ---

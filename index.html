@@ -17,7 +17,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motor Mendocino - Calculadora y Datos</title>
-        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="styles.css?v=1.2">
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -102,9 +102,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
 
             <div class="nav-right">
-                <div class="grupo-config-nav" style="display: flex; gap: 6px;">
-                    <button class="btn-toolbar-nav" type="button" onclick="guardarConfiguracionLocal()" title="Guardar Configuración">💾</button>
-                    <button class="btn-toolbar-nav" type="button" onclick="cargarConfiguracionLocal()" title="Cargar Configuración">📂</button>
+                <div class="grupo-config-nav" style="display: flex; gap: 10px;">
+                    <button class="btn-toolbar-nav" type="button" onclick="guardarConfiguracionLocal()" title="Guardar proyecto">
+                        <span>Guardar</span> 💾
+                    </button>
+                    <button class="btn-toolbar-nav" type="button" onclick="cargarConfiguracionLocal()" title="Mis diseños">
+                        <span>Mis diseños</span> 📂
+                    </button>
                 </div>
 
                 <div class="v-separator"></div>

@@ -176,7 +176,8 @@
             <div class="sidebar-brand">⚙️ Mendocino</div>
             <nav>
                 <a href="index.html" class="nav-item">🏠 Volver a la App</a>
-                <a href="#" class="nav-item active">👥 Alumnos</a>
+                <a href="#" id="nav-alumnos" class="nav-item active" onclick="cambiarSeccionAdmin('alumnos')">👥 Alumnos</a>
+                <a href="#" id="nav-proyectos" class="nav-item" onclick="cambiarSeccionAdmin('proyectos')">🚀 Galería Pública</a>
                 <a href="#" class="nav-item" onclick="mostrarToast('Fase de informes en desarrollo', 'info')">📊 Informes</a>
             </nav>
             <div style="margin-top:auto;">
@@ -185,31 +186,49 @@
         </aside>
 
         <main class="admin-main">
-            <header class="page-header">
-                <div class="page-title">
-                    <h1>Gestionar Alumnos</h1>
-                    <p>Panel central para ver niveles y accesos de los usuarios.</p>
-                </div>
-                <div id="badge-admin-actual" class="admin-badge">Admin</div>
-            </header>
+            <div id="seccion-alumnos">
+                <header class="page-header">
+                    <div class="page-title">
+                        <h1>Gestionar Alumnos</h1>
+                        <p>Panel central para ver niveles y accesos de los usuarios.</p>
+                    </div>
+                    <div id="badge-admin-actual" class="admin-badge">Admin</div>
+                </header>
 
-            <div class="stat-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="count-total">0</div>
-                    <div class="stat-label">Total Alumnos</div>
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="count-total">0</div>
+                        <div class="stat-label">Total Alumnos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="count-admins">0</div>
+                        <div class="stat-label">Administradores</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="count-admins">0</div>
-                    <div class="stat-label">Administradores</div>
+
+                <div class="data-card">
+                    <div class="table-toolbar">
+                        <input type="text" id="search-users" placeholder="Buscar por nombre o email..." onkeyup="filtrarUsuarios()" style="padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px; width: 300px;">
+                        <span id="contador-usuarios" style="font-weight: 600; color: #64748b;">Cargando...</span>
+                    </div>
+                    <div id="contenedor-lista-usuarios"></div>
                 </div>
             </div>
 
-            <div class="data-card">
-                <div class="table-toolbar">
-                    <input type="text" id="search-users" placeholder="Buscar por nombre o email..." onkeyup="filtrarUsuarios()" style="padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px; width: 300px;">
-                    <span id="contador-usuarios" style="font-weight: 600; color: #64748b;">Cargando...</span>
+            <div id="seccion-proyectos" style="display:none;">
+                <header class="page-header">
+                    <div class="page-title">
+                        <h1>Galería Pública y Proyectos</h1>
+                        <p>Gestiona qué diseños son visibles para todos los alumnos.</p>
+                    </div>
+                </header>
+
+                <div class="data-card">
+                    <div class="table-toolbar">
+                        <p style="margin:0; color:#64748b;">Aquí aparecen todos los motores guardados en el sistema.</p>
+                    </div>
+                    <div id="contenedor-lista-motores-admin"></div>
                 </div>
-                <div id="contenedor-lista-usuarios"></div>
             </div>
         </main>
     </div>
@@ -252,8 +271,23 @@
             }
         }
 
+        function cambiarSeccionAdmin(seccion) {
+            document.getElementById('seccion-alumnos').style.display = seccion === 'alumnos' ? 'block' : 'none';
+            document.getElementById('seccion-proyectos').style.display = seccion === 'proyectos' ? 'block' : 'none';
+            
+            document.getElementById('nav-alumnos').classList.toggle('active', seccion === 'alumnos');
+            document.getElementById('nav-proyectos').classList.toggle('active', seccion === 'proyectos');
+
+            if (seccion === 'proyectos') {
+                cargarTodosLosMotores();
+            } else {
+                cargarUsuarios();
+            }
+        }
+
         async function cargarUsuarios() {
             const contenedor = document.getElementById('contenedor-lista-usuarios');
+            if (!contenedor) return;
             contenedor.innerHTML = '<div style="padding:40px; text-align:center;">Cargando base de datos...</div>';
             
             const { data, error } = await dbMendocinoClient.from('profiles').select('*').order('nombre', { ascending: true });
@@ -261,10 +295,8 @@
             if (error) {
                 console.error('Error cargando alumnos:', error);
                 contenedor.innerHTML = `<div style="padding:40px; text-align:center; color:#b91c1c;">
-                    ❌ Error al conectar con la base de datos:<br><code>${error.message}</code><br><br>
-                    <small>Comprueba las políticas RLS de Supabase o abre la consola del navegador para más detalles.</small>
+                    ❌ Error al conectar con la base de datos:<br><code>${error.message}</code>
                 </div>`;
-                mostrarToast('Error cargando alumnos: ' + error.message, 'error');
                 return;
             }
 
@@ -274,13 +306,18 @@
         }
 
         function actualizarEstadisticas() {
-            document.getElementById('count-total').textContent = fullUsuarios.length;
-            document.getElementById('count-admins').textContent = fullUsuarios.filter(u => u.rol === 'admin').length;
-            document.getElementById('contador-usuarios').textContent = `${fullUsuarios.length} alumnos`;
+            const elTotal = document.getElementById('count-total');
+            const elAdmins = document.getElementById('count-admins');
+            const elContador = document.getElementById('contador-usuarios');
+            
+            if (elTotal) elTotal.textContent = fullUsuarios.length;
+            if (elAdmins) elAdmins.textContent = fullUsuarios.filter(u => u.rol === 'admin').length;
+            if (elContador) elContador.textContent = `${fullUsuarios.length} alumnos`;
         }
 
         function renderizarTabla(lista) {
             const contenedor = document.getElementById('contenedor-lista-usuarios');
+            if (!contenedor) return;
             
             if (lista.length === 0) {
                 contenedor.innerHTML = '<div style="padding:40px; text-align:center; color:#64748b;">No se encontraron resultados.</div>';
@@ -346,40 +383,106 @@
 
         async function guardarNivelDesdePanel(id, nuevoNivel) {
             const { error } = await dbMendocinoClient.from('profiles').update({ nivel: nuevoNivel }).eq('id', id);
-
             if (error) {
                 alert('No se pudo guardar: ' + error.message);
-                cargarUsuarios(); // Revertir
+                cargarUsuarios();
                 return;
             }
             mostrarToast('Nivel actualizado correctamente', 'ok');
         }
 
         async function eliminarUsuarioDesdePanel(id, nombre) {
-            // Un admin no puede borrarse a sí mismo desde el panel para evitar bloqueos
             const { data: { user } } = await dbMendocinoClient.auth.getUser();
             if (user.id === id) {
-                alert('No puedes eliminarte a ti mismo desde este panel.');
+                alert('No puedes eliminarte a ti mismo.');
                 return;
             }
-
-            if (!confirm(`¿Estás seguro de que quieres dar de baja a ${nombre}? El alumno ya no tendrá acceso a la calculadora.`)) {
-                return;
-            }
+            if (!confirm(`¿Estás seguro de que quieres dar de baja a ${nombre}?`)) return;
 
             const { error } = await dbMendocinoClient.from('profiles').delete().eq('id', id);
-
             if (error) {
                 mostrarToast('Error al eliminar: ' + error.message, 'error');
                 return;
             }
-
-            mostrarToast('Usuario eliminado del sistema local.', 'ok');
+            mostrarToast('Usuario eliminado.', 'ok');
             cargarUsuarios();
         }
 
         function escaparTexto(texto) {
             return String(texto).replace(/'/g, "\\'");
+        }
+
+        async function cargarTodosLosMotores() {
+            const contenedor = document.getElementById('contenedor-lista-motores-admin');
+            if (!contenedor) return;
+            contenedor.innerHTML = '<div style="padding:40px; text-align:center;">Consultando motores en el sistema...</div>';
+
+            const { data: motores, error } = await dbMendocinoClient
+                .from('motores')
+                .select('*')
+                .order('creado_en', { ascending: false });
+
+            if (error) {
+                contenedor.innerHTML = `<div style="padding:40px; text-align:center; color:#ef4444;">Error: ${error.message}</div>`;
+                return;
+            }
+
+            if (!motores || motores.length === 0) {
+                contenedor.innerHTML = '<div style="padding:40px; text-align:center; color:#64748b;">No hay motores guardados aún.</div>';
+                return;
+            }
+
+            contenedor.innerHTML = `
+                <table class="admin-tabla">
+                    <thead>
+                        <tr>
+                            <th>Título / Diseño</th>
+                            <th>Autor Original</th>
+                            <th>Estado Galería</th>
+                            <th style="text-align:right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${motores.map(m => `
+                            <tr>
+                                <td>
+                                    <div style="font-weight:700;">${m.titulo}</div>
+                                    <div style="font-size:12px; color:#64748b;">ID: ${m.id_unico}</div>
+                                </td>
+                                <td>${m.autor_nombre || m.usuario_creador || 'Desconocido'}</td>
+                                <td>
+                                    <span class="badge ${m.es_publico ? 'badge-user' : 'badge-admin'}" style="background-color:${m.es_publico ? '#dcfce7' : '#f1f5f9'}; color:${m.es_publico ? '#15803d' : '#64748b'};">
+                                        ${m.es_publico ? '🌐 PÚBLICO' : '🔒 PRIVADO'}
+                                    </span>
+                                </td>
+                                <td style="text-align:right;">
+                                    <button class="btn-action" style="background:${m.es_publico ? '#64748b' : '#3b82f6'}; font-size:11px; padding:5px 10px;" onclick="togglePublico('${m.id}', ${m.es_publico}, '${m.config?.panelNombre}', '${m.config?.hilo}')">
+                                        ${m.es_publico ? 'Quitar de Galería' : 'Hacer Público'}
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function togglePublico(id, estadoActual, panelNombre, hiloDia) {
+            const nuevoEstado = !estadoActual;
+            try {
+                const { error: errM } = await dbMendocinoClient.from('motores').update({ es_publico: nuevoEstado }).eq('id', id);
+                if (errM) throw errM;
+
+                if (nuevoEstado) {
+                    if (panelNombre) await dbMendocinoClient.from('paneles').update({ es_publico: true }).eq('nombre', panelNombre);
+                    if (hiloDia) await dbMendocinoClient.from('hilos').update({ es_publico: true }).eq('diametro', parseFloat(hiloDia));
+                }
+
+                mostrarToast(`Diseño ${nuevoEstado ? 'compartido' : 'retirado'}`, 'ok');
+                cargarTodosLosMotores();
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+            }
         }
 
         async function salirModoAdminDesdePanel() {
