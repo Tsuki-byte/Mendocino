@@ -2251,7 +2251,7 @@ function abrirPanelAdmin() {
     }
 
     // Redirigimos directamente a la página completa de administración
-    window.location.href = 'admin.html';
+    window.location.href = 'admin-v35.html';
 }
 
 function salirModoAdmin() {
@@ -2381,7 +2381,7 @@ async function inicializarAuth() {
                     console.log("DEBUG [Auth]: Flujo de entrada completado.");
                 } else {
                     console.log("DEBUG [Auth]: No se detectó sesión activa.");
-                    if (!window.location.pathname.includes('admin.html')) {
+                    if (!window.location.pathname.includes('admin-v35.html')) {
                         ocultarUIHastaAutenticacion();
                     }
                 }
@@ -2620,7 +2620,7 @@ function cargarUsuarioActualDesdeStorage() {
 window.onload = async function() {
     // Si estamos en el panel de administración, script.js no debe inicializar
     // la app principal (elementos como modal-auth, lista-paneles, etc. no existen aquí)
-    if (window.location.pathname.includes('admin.html')) {
+    if (window.location.pathname.includes('admin-v35.html')) {
         return;
     }
 
