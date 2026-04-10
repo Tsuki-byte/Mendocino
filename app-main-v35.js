@@ -2691,7 +2691,7 @@ function guardarProgresoCalculadora() {
     try {
         const inputs = [
             'caras', 'margen-placa', 'ranura-ancho', 'ranura-alto', 'ranura-tipo', 
-            'panel', 'material-hilo', 'dia-hilo-select', 'calidad-bobinado', 
+            'material-hilo', 'dia-hilo-select', 'calidad-bobinado', 
             'campo-b', 'radio-efectivo-mm', 'campo-b-levitacion', 
             'longitud-activa-levitacion-mm', 'factor-orientacion-levitacion'
         ];
@@ -2715,6 +2715,12 @@ function guardarProgresoCalculadora() {
             }
         });
 
+        // Guardar nombre del panel en lugar del índice (más robusto)
+        const elPanel = document.getElementById('panel');
+        if (elPanel && elPanel.selectedIndex >= 0) {
+            estado.valores['panelNombre'] = elPanel.options[elPanel.selectedIndex].text;
+        }
+
         localStorage.setItem('progresoMendocino', JSON.stringify(estado));
     } catch (e) {
         console.error("Error guardando progreso:", e);
@@ -2731,6 +2737,9 @@ function cargarProgresoCalculadora() {
 
         console.log("DEBUG [Storage]: Cargando progreso guardado...", estado);
 
+        // 0. Asegurar que la UI esté renderizada antes de poblar (para tener opciones en los selectores)
+        if (typeof renderizarUI === 'function') renderizarUI();
+
         // 1. Restaurar Material del hilo primero (porque condiciona el selector de diámetros)
         const idMat = 'material-hilo';
         const elMat = document.getElementById(idMat);
@@ -2744,12 +2753,24 @@ function cargarProgresoCalculadora() {
 
         // 2. Restaurar el resto de valores
         Object.keys(estado.valores).forEach(id => {
-            if (id === idMat) return; // Ya lo hemos procesado
+            if (id === idMat || id === 'panelNombre') return; // Ya lo hemos procesado o es especial
             const el = document.getElementById(id);
             if (el) {
                 el.value = estado.valores[id];
             }
         });
+
+        // 2.5 Restaurar Panel por Nombre (más robusto que índice)
+        const panelNombre = estado.valores['panelNombre'];
+        const elPanel = document.getElementById('panel');
+        if (elPanel && panelNombre) {
+            for (let i = 0; i < elPanel.options.length; i++) {
+                if (elPanel.options[i].text === panelNombre) {
+                    elPanel.selectedIndex = i;
+                    break;
+                }
+            }
+        }
 
         // 3. Restaurar el paso
         if (estado.pasoActual > 1) {
