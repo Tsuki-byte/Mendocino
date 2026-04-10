@@ -221,11 +221,15 @@
                         <h1>Galería Pública y Proyectos</h1>
                         <p>Gestiona qué diseños son visibles para todos los alumnos.</p>
                     </div>
+                    <div>
+                        <button id="btn-migrar-todo" class="btn-action" style="background:#10b981; padding:10px 15px;" onclick="migrarTodosLosVideos()">📦 Migrar todo a Supabase</button>
+                    </div>
                 </header>
 
                 <div class="data-card">
                     <div class="table-toolbar">
                         <p style="margin:0; color:#64748b;">Aquí aparecen todos los motores guardados en el sistema.</p>
+                        <input type="file" id="upload-video-input" accept="video/mp4" style="display:none" onchange="procesarSubidaVideo(this)">
                     </div>
                     <div id="contenedor-lista-motores-admin"></div>
                 </div>
@@ -456,15 +460,104 @@
                                     </span>
                                 </td>
                                 <td style="text-align:right;">
-                                    <button class="btn-action" style="background:${m.es_publico ? '#64748b' : '#3b82f6'}; font-size:11px; padding:5px 10px;" onclick="togglePublico('${m.id}', ${m.es_publico}, '${m.config?.panelNombre}', '${m.config?.hilo}')">
-                                        ${m.es_publico ? 'Quitar de Galería' : 'Hacer Público'}
-                                    </button>
+                                    <div style="display:flex; gap:8px; justify-content:flex-end;">
+                                        <button class="btn-icon" title="Subir o cambiar vídeo" onclick="solicitarSubidaVideo('${m.id}', '${m.id_unico}')">
+                                            📁
+                                        </button>
+                                        <button class="btn-action" style="background:${m.es_publico ? '#64748b' : '#3b82f6'}; font-size:11px; padding:5px 10px;" onclick="togglePublico('${m.id}', ${m.es_publico}, '${m.config?.panelNombre}', '${m.config?.hilo}')">
+                                            ${m.es_publico ? 'Quitar' : 'Hacer Público'}
+                                        </button>
+                                    </div>
+                                    <div id="progress-${m.id}" style="display:none; margin-top:5px;">
+                                        <div style="width:100%; height:4px; background:#e2e8f0; border-radius:2px; overflow:hidden;">
+                                            <div id="bar-${m.id}" style="width:0%; height:100%; background:var(--admin-accent); transition:0.3s;"></div>
+                                        </div>
+                                        <div id="status-${m.id}" style="font-size:10px; color:#64748b; margin-top:2px;">Subiendo...</div>
+                                    </div>
                                 </td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
             `;
+        }
+
+        let idProyectoEnSubida = null;
+        let idUnicoEnSubida = null;
+
+        function solicitarSubidaVideo(id, idUnico) {
+            idProyectoEnSubida = id;
+            idUnicoEnSubida = idUnico;
+            document.getElementById('upload-video-input').click();
+        }
+
+        async function procesarSubidaVideo(input) {
+            if (!input.files || input.files.length === 0 || !idProyectoEnSubida) return;
+            const archivo = input.files[0];
+            
+            // Validar extensión
+            if (!archivo.name.toLowerCase().endsWith('.mp4')) {
+                mostrarToast('Solo se permiten archivos .mp4', 'error');
+                return;
+            }
+
+            // Validar tamaño (p.ej. 50MB)
+            if (archivo.size > 50 * 1024 * 1024) {
+                mostrarToast('El vídeo supera los 50MB permitidos', 'error');
+                return;
+            }
+
+            const elProgreso = document.getElementById(`progress-${idProyectoEnSubida}`);
+            const elBarra = document.getElementById(`bar-${idProyectoEnSubida}`);
+            const elStatus = document.getElementById(`status-${idProyectoEnSubida}`);
+            
+            if (elProgreso) elProgreso.style.display = 'block';
+
+            try {
+                // Generar nombre de archivo basado en el ID único
+                const extension = archivo.name.split('.').pop();
+                const nombreLimpio = `${idUnicoEnSubida}.${extension}`;
+                const ruta = `videos/${nombreLimpio}`;
+
+                // 1. Subir al Storage (Bucket: motores)
+                // Usamos upsert:true para sobreescribir si ya existe
+                const { data, error: uploadError } = await dbMendocinoClient.storage
+                    .from('motores')
+                    .upload(ruta, archivo, { 
+                        cacheControl: '3600',
+                        upsert: true 
+                    });
+
+                if (uploadError) throw uploadError;
+
+                // 2. Obtener URL Pública
+                const { data: { publicUrl } } = dbMendocinoClient.storage
+                    .from('motores')
+                    .getPublicUrl(ruta);
+
+                // 3. Actualizar la base de datos
+                const { error: dbError } = await dbMendocinoClient
+                    .from('motores')
+                    .update({ video_url: publicUrl })
+                    .eq('id', idProyectoEnSubida);
+
+                if (dbError) throw dbError;
+
+                if (elBarra) elBarra.style.width = '100%';
+                if (elStatus) elStatus.textContent = '¡Completado!';
+                mostrarToast('Vídeo subido y vinculado correctamente', 'ok');
+                
+                setTimeout(() => cargarTodosLosMotores(), 1500);
+
+            } catch (e) {
+                console.error("Error en subida:", e);
+                mostrarToast('Error en la subida: ' + e.message, 'error');
+                if (elStatus) elStatus.textContent = 'Error';
+            } finally {
+                input.value = ''; // Limpiar input
+                idProyectoEnSubida = null;
+                idUnicoEnSubida = null;
+            }
         }
 
         async function togglePublico(id, estadoActual, panelNombre, hiloDia) {
@@ -483,6 +576,71 @@
             } catch (e) {
                 mostrarToast('Error: ' + e.message, 'error');
             }
+        }
+
+        async function migrarTodosLosVideos() {
+            const btn = document.getElementById('btn-migrar-todo');
+            if (!confirm('Este proceso buscará vídeos en GitHub, los subirá a Supabase y actualizará los enlaces. ¿Continuar?')) return;
+            
+            btn.disabled = true;
+            btn.textContent = 'Migrando... ⏳';
+
+            const { data: motores, error } = await dbMendocinoClient.from('motores').select('*');
+            if (error) {
+                mostrarToast('Error al obtener motores: ' + error.message, 'error');
+                btn.disabled = false;
+                return;
+            }
+
+            let migrados = 0;
+            let errores = 0;
+
+            for (const m of motores) {
+                // Solo migrar si la URL es de GitHub (relativa o absoluta a github.io)
+                if (m.video_url && (m.video_url.startsWith('videos/') || m.video_url.includes('github.io'))) {
+                    try {
+                        console.log(`Migrando: ${m.titulo}...`);
+                        
+                        // 1. Descargar el vídeo desde la URL actual
+                        const urlDescarga = m.video_url.startsWith('videos/') ? `https://tsuki-byte.github.io/Mendocino/${m.video_url}` : m.video_url;
+                        const response = await fetch(urlDescarga);
+                        if (!response.ok) throw new Error('No se pudo descargar el archivo de GitHub');
+                        const blob = await response.blob();
+                        const archivo = new File([blob], `${m.id_unico}.mp4`, { type: 'video/mp4' });
+
+                        // 2. Subir a Supabase Storage
+                        const ruta = `videos/${m.id_unico}.mp4`;
+                        const { error: uploadError } = await dbMendocinoClient.storage
+                            .from('motores')
+                            .upload(ruta, archivo, { upsert: true });
+
+                        if (uploadError) throw uploadError;
+
+                        // 3. Obtener URL Pública
+                        const { data: { publicUrl } } = dbMendocinoClient.storage
+                            .from('motores')
+                            .getPublicUrl(ruta);
+
+                        // 4. Actualizar Base de Datos
+                        const { error: dbError } = await dbMendocinoClient
+                            .from('motores')
+                            .update({ video_url: publicUrl })
+                            .eq('id', m.id);
+
+                        if (dbError) throw dbError;
+
+                        migrados++;
+                    } catch (err) {
+                        console.error(`Error migrando ${m.titulo}:`, err);
+                        errores++;
+                    }
+                }
+            }
+
+            btn.disabled = false;
+            btn.textContent = '📦 Migrar todo a Supabase';
+            mostrarToast(`Migración finalizada: ${migrados} éxitos, ${errores} errores.`, migrados > 0 ? 'ok' : 'error');
+            cargarTodosLosMotores();
         }
 
         async function salirModoAdminDesdePanel() {
