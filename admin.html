@@ -319,9 +319,17 @@
             if (elContador) elContador.textContent = `${fullUsuarios.length} alumnos`;
         }
 
-        function renderizarTabla(lista) {
+        let currentUserId = null;
+
+        async function renderizarTabla(lista) {
             const contenedor = document.getElementById('contenedor-lista-usuarios');
             if (!contenedor) return;
+            
+            // Obtener el ID del admin actual para protegerlo
+            if (!currentUserId) {
+                const { data: { user } } = await dbMendocinoClient.auth.getUser();
+                currentUserId = user?.id;
+            }
             
             if (lista.length === 0) {
                 contenedor.innerHTML = '<div style="padding:40px; text-align:center; color:#64748b;">No se encontraron resultados.</div>';
@@ -351,9 +359,13 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge ${u.rol === 'admin' ? 'badge-admin' : 'badge-user'}">
-                                        ${u.rol === 'admin' ? 'Admin' : 'Alumno'}
-                                    </span>
+                                    <select onchange="guardarRolDesdePanel('${u.id}', this.value, '${escaparTexto(u.nombre)}')" 
+                                            class="badge ${u.id === currentUserId ? 'badge-admin' : (u.rol === 'admin' ? 'badge-admin' : 'badge-user')}"
+                                            style="border:none; cursor:pointer; font-family:inherit; padding: 4px 8px;"
+                                            ${u.id === currentUserId ? 'disabled title="No puedes cambiar tu propio rol"' : ''}>
+                                        <option value="alumno" ${u.rol === 'alumno' ? 'selected' : ''}>Alumno</option>
+                                        <option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Admin</option>
+                                    </select>
                                 </td>
                                 <td>
                                     <select onchange="guardarNivelDesdePanel('${u.id}', this.value)" style="padding:5px; border-radius:5px; border:1px solid #cbd5e1; width: 120px;">
@@ -393,6 +405,29 @@
                 return;
             }
             mostrarToast('Nivel actualizado correctamente', 'ok');
+        }
+
+        async function guardarRolDesdePanel(id, nuevoRol, nombre) {
+            if (nuevoRol === 'admin') {
+                if (!confirm(`¿Estás seguro de que quieres PROMOVER a ${nombre} a Administrador? Tendrá acceso total.`)) {
+                    cargarUsuarios();
+                    return;
+                }
+            } else {
+                if (!confirm(`¿Estás seguro de que quieres DEGRADAR a ${nombre} a Alumno?`)) {
+                    cargarUsuarios();
+                    return;
+                }
+            }
+
+            const { error } = await dbMendocinoClient.from('profiles').update({ rol: nuevoRol }).eq('id', id);
+            if (error) {
+                mostrarToast('Error al actualizar rol: ' + error.message, 'error');
+                cargarUsuarios();
+                return;
+            }
+            mostrarToast('Rol actualizado correctamente', 'ok');
+            cargarUsuarios();
         }
 
         async function eliminarUsuarioDesdePanel(id, nombre) {
