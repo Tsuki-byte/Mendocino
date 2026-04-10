@@ -1421,8 +1421,8 @@ function calcularPasoMagnetico() {
                                         ${resumen.total ? `<small> · ${resumen.total} voto${resumen.total === 1 ? '' : 's'}</small>` : ''}
                                     </div>
                                     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-                                        <button class="btn-config" style="width: 100%; font-size:14px; height:42px; font-weight:700; padding:0; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none;" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar en calculadora</button>
-                                        <a href="${proyecto.video_url}" download class="btn-download" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; height:42px; font-size:14px; font-weight:700; padding:0; background-color:#10b981;">
+                                        <button class="btn-config" style="width: 100%; font-family: inherit !important; font-size:14px; height:42px; font-weight:700 !important; padding:0; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar en calculadora</button>
+                                        <a href="${proyecto.video_url}" download class="btn-download" style="text-decoration:none; font-family: inherit !important; display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; height:42px; font-size:14px; font-weight:700 !important; padding:0; background-color:#10b981; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
                                             ⬇️ Descargar vídeo
                                         </a>
                                     </div>
