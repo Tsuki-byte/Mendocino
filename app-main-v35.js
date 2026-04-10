@@ -41,7 +41,10 @@ window.EstadoDiseno = {
     par_Nm: 0,
     campoB_T: 0,
     longitudActiva_m: 0,
-    factorOcupacion: 0
+    factorOcupacion: 0,
+    radioCircunscrito: 0,
+    anguloPanel: 0,
+    anguloRanura: 0
 };
 
 // === FUNCIONES DE AUTENTICACIÓN GLOBALES ===
@@ -636,7 +639,11 @@ function cargarMotor(config) {
             document.getElementById('res-panel-ff').textContent = ff.toFixed(3);
             document.getElementById('res-panel-r').textContent = EstadoDiseno.resistenciaPanelObjetivo.toFixed(2) + ' Ω';
 
-            dibujarRotorSVG(EstadoDiseno.numeroCaras, tipoRanura, Wp, Ws, Ds, radioCircunscrito, angP, angS);
+            EstadoDiseno.radioCircunscrito = radioCircunscrito;
+            EstadoDiseno.anguloPanel = angP;
+            EstadoDiseno.anguloRanura = angS;
+
+            dibujarRotorSVG();
             // Dibujar la vista superior del panel
             dibujarPanelSVG(EstadoDiseno.longitudPanel, Wp, EstadoDiseno.margenMarco_mm);
             calcularPaso2();
@@ -647,7 +654,16 @@ function cargarMotor(config) {
         }
 
         // --- DIBUJO GEOMÉTRICO (SVG) ---
-        function dibujarRotorSVG(N, tipoRanura, Wp, Ws, Ds, R, angP, angS) {
+        function dibujarRotorSVG() {
+            const N = EstadoDiseno.numeroCaras;
+            const tipoRanura = document.getElementById('ranura-tipo')?.value || 'rect';
+            const Wp = EstadoDiseno.anchoPanel;
+            const Ws = EstadoDiseno.anchoRanura_mm;
+            const Ds = EstadoDiseno.altoRanura_mm;
+            const R = EstadoDiseno.radioCircunscrito;
+            const angP = EstadoDiseno.anguloPanel;
+            const angS = EstadoDiseno.anguloRanura;
+
             const ids = ['rotor-svg', 'rotor-svg-step2'];
             
             ids.forEach(id => {
@@ -1207,6 +1223,9 @@ function calcularPasoMagnetico() {
                     // Guardar para el dibujo
                     EstadoDiseno.factorOcupacion = factorRelleno / 100;
                     
+                    // Redibujar el rotor para actualizar el color de alerta
+                    dibujarRotorSVG();
+
                     const alerta = document.getElementById('alerta-ranura');
                     const cabePorArea = areaEfectiva <= areaRanura;
 
