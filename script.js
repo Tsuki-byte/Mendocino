@@ -2429,17 +2429,6 @@ async function cargarPerfilUsuario(user) {
             badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
         }
     }
-}let modoRegistroAuth = false;
-
-function toggleModoAuth(e) {
-    if (e) e.preventDefault();
-    modoRegistroAuth = !modoRegistroAuth;
-    document.getElementById('auth-nombre-group').style.display = modoRegistroAuth ? 'block' : 'none';
-    document.getElementById('btn-auth-accion').textContent = modoRegistroAuth ? 'Registrarse' : 'Iniciar Sesión';
-    document.getElementById('link-toggle-auth').textContent = modoRegistroAuth ? '¿Ya tienes cuenta? Inicia sesión aquí.' : '¿No tienes cuenta? Registrate aquí.';
-    document.getElementById('auth-error').style.display = 'none';
-    document.getElementById('auth-success').style.display = 'none';
-}
 
 
 async function cerrarSesion() {
