@@ -80,7 +80,6 @@ function cargarMotor(config) {
         return;
     }
 
-    console.log("Cargando motor con config:", config);
     cambiarPagina('calc');
 
     const caras = document.getElementById('caras');
@@ -95,9 +94,8 @@ function cargarMotor(config) {
 
     if (caras) caras.value = config.caras ?? 4;
 
-    // --- Lógica de Panel ---
-    let panelValue = config.panel; 
-    if (config.panelNombre && dbPaneles.length > 0) {
+    let panelValue = config.panel;
+    if (config.panelNombre) {
         const idxPorNombre = dbPaneles.findIndex(p => p.nombre === config.panelNombre);
         if (idxPorNombre >= 0) {
             panelValue = String(idxPorNombre);
@@ -112,46 +110,15 @@ function cargarMotor(config) {
     if (ranuraAlto) ranuraAlto.value = config.ranuraAlto ?? 3.5;
     if (ranuraTipo) ranuraTipo.value = config.ranuraTipo ?? 'trapecio';
 
-    // --- Lógica de Material e Hilo ---
     if (materialHilo) materialHilo.value = config.material ?? 'cobre';
-    actualizarListaHilos(); // Regenerar las opciones del select de hilos
+    actualizarListaHilos();
 
     if (diaHilo && config.hilo !== undefined) {
-        // Buscamos el valor exacto del hilo en el select
-        const diaBuscado = parseFloat(config.hilo);
-        let encontrado = false;
-        for (let i = 0; i < diaHilo.options.length; i++) {
-            if (Math.abs(parseFloat(diaHilo.options[i].value) - diaBuscado) < 0.001) {
-                diaHilo.selectedIndex = i;
-                encontrado = true;
-                break;
-            }
-        }
-        // Si no está, lo añadimos temporalmente para que el motor cargue bien los cálculos
-        if (!encontrado) {
-            const nuevaOp = new Option(`${diaBuscado.toFixed(3)} mm (Proyecto)`, diaBuscado);
-            diaHilo.add(nuevaOp);
-            diaHilo.value = diaBuscado;
-        }
+        diaHilo.value = String(config.hilo);
     }
 
     if (calidad && config.calidad) {
         calidad.value = config.calidad;
-    }
-
-    // --- Lógica de Imanes (si aplica en el paso 4) ---
-    if (config.imanRotorNombre || config.imanBaseNombre) {
-        const selBase = document.getElementById('lev-base-iman');
-        const selRotor = document.getElementById('lev-rotor-iman');
-        
-        if (selBase && config.imanBaseNombre) {
-             const idx = dbImanes.findIndex(im => im.nombre === config.imanBaseNombre);
-             if (idx >= 0) selBase.value = idx;
-        }
-        if (selRotor && config.imanRotorNombre) {
-             const idx = dbImanes.findIndex(im => im.nombre === config.imanRotorNombre);
-             if (idx >= 0) selRotor.value = idx;
-        }
     }
 
     if (config.informe) {
@@ -169,11 +136,13 @@ function cargarMotor(config) {
         if (elNivel) elNivel.textContent = config.resumen.nivel || '--';
     }
 
-    // Disparar cálculos en cascada con un pequeño delay para asegurar estabilidad del DOM
-    setTimeout(() => {
-        actualizarResumenPaso1();
-        // Los pasos siguientes se llaman en cadena desde allí
-    }, 50);
+    actualizarResumenPaso1();
+    calcularPaso2();
+    calcularPaso3();
+    precargarPasoMagnetico();
+    calcularPasoMagnetico();
+    actualizarModeloAxial();
+    generarInformeAutomatico();
 }
 
 
@@ -221,51 +190,101 @@ function cargarMotor(config) {
         ];
 
 
-        const proyectosDestacados = []; // Ahora se cargan desde Supabase
-
-        // --- CARGA DE DATOS (MIGRADO A SUPABASE) ---
-        let dbPaneles = [], dbHilos = [], dbImanes = [];
-        let dbPanelesPublicos = [], dbHilosPublicos = [], dbImanesPublicos = [];
-        
-        async function cargarDatosGlobales() {
-            try {
-                if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
-                    const uid = sessionActiva.user.id;
-                    
-                    // 1. Cargar datos del usuario
-                    const { data: paneles, error: errP } = await dbMendocinoClient.from('paneles').select('*').eq('usuario_id', uid);
-                    const { data: hilos, error: errH } = await dbMendocinoClient.from('hilos').select('*').eq('usuario_id', uid);
-                    const { data: imanes, error: errI } = await dbMendocinoClient.from('imanes').select('*').eq('usuario_id', uid);
-                    
-                    // 2. Cargar datos públicos (disponibles para todos)
-                    const { data: pPub, error: errPP } = await dbMendocinoClient.from('paneles').select('*').eq('es_publico', true);
-                    const { data: hPub, error: errHP } = await dbMendocinoClient.from('hilos').select('*').eq('es_publico', true);
-                    const { data: iPub, error: errIP } = await dbMendocinoClient.from('imanes').select('*').eq('es_publico', true);
-
-                    dbPanelesPublicos = pPub || [];
-                    dbHilosPublicos = (hPub || []).map(h => parseFloat(h.diametro));
-                    dbImanesPublicos = iPub || [];
-
-                    // Combinar (con prioridad a los del usuario si hay duplicados por nombre, aunque no debería haber conflictos críticos)
-                    // Para los hilos, combinamos y quitamos duplicados
-                    dbPaneles = [...(paneles || []), ...dbPanelesPublicos];
-                    dbHilos = [...new Set([...(hilos || []).map(h => parseFloat(h.diametro)), ...dbHilosPublicos])];
-                    dbImanes = [...(imanes || []), ...dbImanesPublicos];
-
-                    // Fallback a locales si no hay nada en la nube (primer inicio)
-                    if (dbPaneles.length === 0) dbPaneles = JSON.parse(localStorage.getItem('dbPaneles')) || [...defaultPaneles];
-                    if (dbHilos.length === 0) dbHilos = JSON.parse(localStorage.getItem('dbHilos')) || [...defaultHilos];
-                    if (dbImanes.length === 0) dbImanes = JSON.parse(localStorage.getItem('dbImanes')) || [...defaultImanes];
-
-                } else {
-                    throw new Error("Supabase no definido o sin sesión");
-                }
-            } catch (e) {
-                console.warn("Fallo cargando de Supabase, usando LocalStorage:", e);
-                dbPaneles = JSON.parse(localStorage.getItem('dbPaneles')) || [...defaultPaneles];
-                dbHilos = JSON.parse(localStorage.getItem('dbHilos')) || [...defaultHilos];
-                dbImanes = JSON.parse(localStorage.getItem('dbImanes')) || [...defaultImanes];
+        const proyectosDestacados = [
+            {
+                id: 'proyecto-rapido-4c',
+                titulo: 'Rotor de 4 caras · alta velocidad',
+                subtitulo: 'Diseño ligero, rápido y muy sensible a la iluminación.',
+                video: 'videos/motor1.mp4',
+                etiquetas: ['Alta velocidad', 'Baja inercia', 'Arranque suave'],
+                ficha: {
+                    panel: '53x18 · 0,4V 101mA',
+                    hilo: 'Cu Ø 0.15 mm',
+                    espiras: '28',
+                    velocidad: '~2027 RPM',
+                    peso: '~38 g'
+                },
+                notas: [
+                    'Tiene pocas espiras, así que la resistencia del devanado es baja y la respuesta es muy viva.',
+                    'La baja masa del rotor favorece que acelere con rapidez y que reaccione enseguida a la luz.',
+                    'A cambio, el par disponible es menor que en configuraciones con más cobre.'
+                ],
+                explicacion: 'Gira más deprisa porque combina poca inercia con una oposición eléctrica reducida. Es ideal cuando se busca velocidad visual y respuesta rápida.',
+                config: { caras: 4, panel: 1, material: 'cobre', hilo: 0.15, margen: 0, ranuraAncho: 6.5, ranuraAlto: 3.5, ranuraTipo: 'trapecio', calidad: '0.40' }
+            },
+            {
+                id: 'proyecto-equilibrado-4c',
+                titulo: 'Rotor de 4 caras · equilibrio potencia/velocidad',
+                subtitulo: 'Muy buen compromiso entre velocidad, par y facilidad de construcción.',
+                video: 'videos/motor2.mp4',
+                etiquetas: ['Equilibrado', 'Uso general', 'Par medio'],
+                ficha: {
+                    panel: '53x18 · 0,4V 101mA',
+                    hilo: 'Cu Ø 0.25 mm',
+                    espiras: '79',
+                    velocidad: '~1997 RPM',
+                    peso: '~53 g'
+                },
+                notas: [
+                    'Más espiras mejoran la fuerza magnetomotriz y el par.',
+                    'Sigue siendo un rotor razonablemente ligero, por lo que no pierde demasiada velocidad.',
+                    'Es una base excelente para quien fabrica su primer Mendocino serio.'
+                ],
+                explicacion: 'No es el más rápido ni el más lento: funciona tan bien porque reparte de forma muy equilibrada masa, cobre y empuje magnético.',
+                config: { caras: 4, panel: 1, material: 'cobre', hilo: 0.25, margen: 0, ranuraAncho: 6.5, ranuraAlto: 3.5, ranuraTipo: 'trapecio', calidad: '0.40' }
+            },
+            {
+                id: 'proyecto-par-4c',
+                titulo: 'Rotor de 4 caras · más par y menos velocidad',
+                subtitulo: 'Configuración orientada a un giro más reposado y con más empuje.',
+                video: 'videos/motor3.mp4',
+                etiquetas: ['Mayor par', 'Menos velocidad', 'Arranque estable'],
+                ficha: {
+                    panel: '53x18 · 0,4V 101mA',
+                    hilo: 'Cu Ø 0.28 mm',
+                    espiras: '99',
+                    velocidad: '~1253 RPM',
+                    peso: '~60 g'
+                },
+                notas: [
+                    'El aumento de espiras sube la capacidad de generar campo magnético.',
+                    'La velocidad baja porque aumenta la masa y la energía se reparte en más cobre.',
+                    'Resulta útil para entender cómo cambia el comportamiento al priorizar par frente a RPM.'
+                ],
+                explicacion: 'Corre menos porque hay más cobre y más inercia, pero gana estabilidad y empuje magnético. Es una versión muy didáctica para comparar comportamientos.',
+                config: { caras: 4, panel: 1, material: 'cobre', hilo: 0.28, margen: 0, ranuraAncho: 6.5, ranuraAlto: 3.5, ranuraTipo: 'trapecio', calidad: '0.40' }
+            },
+            {
+                id: 'proyecto-16c-inercia',
+                titulo: 'Rotor de 16 caras · gran inercia y giro muy suave',
+                subtitulo: 'Rotor masivo, muy vistoso y con comportamiento estable.',
+                video: 'videos/motor4.mp4',
+                etiquetas: ['Gran inercia', 'Muy suave', 'Baja velocidad'],
+                ficha: {
+                    panel: '157x13 · 0,35V 134mA',
+                    hilo: 'Cu Ø 0.55 mm',
+                    espiras: '64',
+                    velocidad: '~110 RPM',
+                    peso: '~1359 g'
+                },
+                notas: [
+                    'Las muchas caras suavizan la entrega de par y el giro parece muy continuo.',
+                    'La inercia es enorme, por eso tarda más en arrancar pero también mantiene mejor el movimiento.',
+                    'Es un diseño ideal para mostrar cómo influye la masa del rotor en la dinámica.'
+                ],
+                explicacion: 'Gira más despacio porque el panel mueve una masa mucho mayor. Su punto fuerte no es la rapidez sino la estabilidad del giro y el efecto visual.',
+                config: { caras: 16, panel: 12, material: 'cobre', hilo: 0.550, margen: 2.7, ranuraAncho: 5.4, ranuraAlto: 7, ranuraTipo: 'trapecio', calidad: '0.40' }
             }
+        ];
+
+        // --- CARGA DE DATOS ---
+        let dbPaneles, dbHilos, dbImanes;
+        try {
+            dbPaneles = JSON.parse(localStorage.getItem('dbPaneles')) || [...defaultPaneles];
+            dbHilos = JSON.parse(localStorage.getItem('dbHilos')) || [...defaultHilos];
+            dbImanes = JSON.parse(localStorage.getItem('dbImanes')) || [...defaultImanes];
+        } catch (e) {
+            dbPaneles = [...defaultPaneles]; dbHilos = [...defaultHilos]; dbImanes = [...defaultImanes];
         }
 
         function guardarDatos() {
@@ -353,25 +372,18 @@ function cargarMotor(config) {
             }
         }
 
-        async function añadirHilo() {
+        function añadirHilo() {
             const inputVal = document.getElementById('db-hilo-dia').value;
             const dia = parsearNumero(inputVal);
             if (isNaN(dia) || dia <= 0) { alert("Error: Introduce un diámetro válido."); return; }
             if (dbHilos.includes(dia)) { alert("Error: Este diámetro ya existe."); return; }
-            
-            if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
-                await dbMendocinoClient.from('hilos').insert([{ usuario_id: sessionActiva.user.id, diametro: dia }]);
-                await cargarDatosGlobales();
-                renderizarUI();
-            } else {
-                dbHilos.push(dia);
-                guardarDatos();
-            }
+            dbHilos.push(dia);
+            guardarDatos();
             document.getElementById('db-hilo-dia').value = '';
             mostrarToast(`Hilo Ø ${dia} mm añadido correctamente.`, 'ok');
         }
 
-        async function añadirPanel() {
+        function añadirPanel() {
             const nombre = document.getElementById('db-panel-nombre').value;
             const voc = parsearNumero(document.getElementById('db-panel-voc').value);
             const isc = parsearNumero(document.getElementById('db-panel-isc').value);
@@ -381,26 +393,17 @@ function cargarMotor(config) {
             const a = parsearNumero(document.getElementById('db-panel-a').value);
 
             if (!nombre || [voc, isc, v, i, l, a].some(n => isNaN(n) || n <= 0)) {
-                alert("Error: Todos los valores del panel deben ser numéricos y mayores que 0.");
-                return;
-            }
-            
-            const nuevoObj = { usuario_id: sessionActiva.user.id, nombre, voc, isc, v, i, l, a };
+            alert("Error: Todos los valores del panel deben ser numéricos y mayores que 0.");
+            return;
+}
 
-            if (typeof supabase !== 'undefined' && supabase) {
-                await dbMendocinoClient.from('paneles').insert([nuevoObj]);
-                await cargarDatosGlobales();
-                renderizarUI();
-            } else {
-                dbPaneles.push({ nombre, voc, isc, v, i, l, a });
-                guardarDatos();
-            }
-            
+            dbPaneles.push({ nombre, voc, isc, v, i, l, a });
+            guardarDatos();
             document.querySelectorAll('#page-db input').forEach(inpt => inpt.value = '');
             mostrarToast(`Panel "${nombre}" añadido correctamente.`, 'ok');
         }
 
-        async function añadirIman() {
+        function añadirIman() {
             const nombre = document.getElementById('db-iman-nombre').value;
             const forma = document.getElementById('db-iman-forma').value;
             const br = parsearNumero(document.getElementById('db-iman-br').value);
@@ -413,48 +416,15 @@ function cargarMotor(config) {
                 return;
             }
 
-            const nuevoObj = { usuario_id: sessionActiva.user.id, nombre, forma, l, a, h, br };
-            
-            if (typeof supabase !== 'undefined' && supabase) {
-                await dbMendocinoClient.from('imanes').insert([nuevoObj]);
-                await cargarDatosGlobales();
-                renderizarUI();
-            } else {
-                dbImanes.push({ nombre, forma, l, a, h, br });
-                guardarDatos();
-            }
+            dbImanes.push({ nombre, forma, l, a, h, br });
+            guardarDatos();
             document.querySelectorAll('#db-iman-nombre, #db-iman-br, #db-iman-l, #db-iman-a, #db-iman-h').forEach(el => el.value = '');
             mostrarToast(`Imán "${nombre}" añadido correctamente.`, 'ok');
         }
 
-        async function borrarPanel(index) { 
-            if (typeof supabase !== 'undefined' && supabase && dbPaneles[index] && dbPaneles[index].id) {
-                await dbMendocinoClient.from('paneles').delete().eq('id', dbPaneles[index].id);
-                await cargarDatosGlobales();
-                renderizarUI();
-            } else {
-                dbPaneles.splice(index, 1); guardarDatos(); 
-            }
-        }
-        async function borrarHilo(index) { 
-            if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
-                const uid = sessionActiva.user.id;
-                await dbMendocinoClient.from('hilos').delete().eq('usuario_id', uid).eq('diametro', dbHilos[index]);
-                await cargarDatosGlobales();
-                renderizarUI();
-            } else {
-                dbHilos.splice(index, 1); guardarDatos(); 
-            }
-        }
-        async function borrarIman(index) { 
-            if (typeof supabase !== 'undefined' && supabase && dbImanes[index] && dbImanes[index].id) {
-                await dbMendocinoClient.from('imanes').delete().eq('id', dbImanes[index].id);
-                await cargarDatosGlobales();
-                renderizarUI();
-            } else {
-                dbImanes.splice(index, 1); guardarDatos(); 
-            }
-        }
+        function borrarPanel(index) { dbPaneles.splice(index, 1); guardarDatos(); }
+        function borrarHilo(index) { dbHilos.splice(index, 1); guardarDatos(); }
+        function borrarIman(index) { dbImanes.splice(index, 1); guardarDatos(); }
 
         // --- NAVEGACIÓN ---
         function cambiarPagina(pagina) {
@@ -1128,35 +1098,21 @@ function calcularPasoMagnetico() {
 
         // --- FUNCIONES PARA GUARDAR Y CARGAR LOCALMENTE ---
 
-        async function obtenerMotoresGuardados() {
-            let motoresFinales = {};
-            
-            // 1. Cargar de LocalStorage primero (fallback/persistente)
-            try {
-                const datosLocal = localStorage.getItem('listaMotoresMendocino');
-                if (datosLocal) motoresFinales = JSON.parse(datosLocal);
-            } catch (e) { console.warn("Error local:", e); }
+                        // --- FUNCIONES AVANZADAS PARA GUARDAR/CARGAR VARIOS MOTORES ---
 
-            // 2. Si hay sesión, cargar de Supabase y fusionar
-            if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
-                try {
-                    const { data: motoresCloud, error } = await dbMendocinoClient
-                        .from('motores')
-                        .select('titulo, config')
-                        .eq('usuario_id', sessionActiva.user.id);
-                    
-                    if (!error && motoresCloud) {
-                        motoresCloud.forEach(m => {
-                            motoresFinales[m.titulo] = m.config;
-                        });
-                    }
-                } catch (e) { console.error("Error sincronizando nube:", e); }
+        // Función de apoyo para leer la base de datos del navegador
+        function obtenerMotoresGuardados() {
+            try {
+                const datos = localStorage.getItem('listaMotoresMendocino');
+                return datos ? JSON.parse(datos) : {};
+            } catch (e) {
+                console.error("Error leyendo configuraciones guardadas:", e);
+                return {};
             }
-            return motoresFinales;
         }
 
         
-        async function guardarConfiguracionLocal() {
+        function guardarConfiguracionLocal() {
         const nombreMotor = prompt("📝 Ponle un nombre a esta configuración (ej: 'Motor rápido 4 caras'):");
         if (!nombreMotor || nombreMotor.trim() === "") return;
 
@@ -1188,30 +1144,15 @@ function calcularPasoMagnetico() {
             fechaGuardado: new Date().toLocaleString('es-ES')
         };
 
-    const misMotores = await obtenerMotoresGuardados();
+    const misMotores = obtenerMotoresGuardados();
     misMotores[nombreMotor] = miConfiguracion;
     localStorage.setItem('listaMotoresMendocino', JSON.stringify(misMotores));
-
-        if (typeof supabase !== 'undefined' && supabase) {
-            const usrId = sessionActiva?.user?.id;
-            const usrNombre = usuarioActual?.nombre || 'Alumno';
-            const id_unico = (usuarioActual?.nombre || 'demo') + '-' + new Date().getTime();
-            
-            await dbMendocinoClient.from('motores').insert([{
-                id_unico: id_unico,
-                titulo: nombreMotor,
-                config: miConfiguracion,
-                usuario_id: usrId,
-                autor_nombre: usrNombre,
-                es_publico: false // Por defecto privado hasta que el admin lo publique
-            }]);
-        }
 
     mostrarToast(`Motor "${nombreMotor}" guardado correctamente.`, 'ok');
 }
 
-    async function cargarConfiguracionLocal() {
-    const misMotores = await obtenerMotoresGuardados();
+    function cargarConfiguracionLocal() {
+    const misMotores = obtenerMotoresGuardados();
 
     const listaDiv = document.getElementById('lista-configs');
     const modal = document.getElementById('modal-configs');
@@ -1339,111 +1280,82 @@ function calcularPasoMagnetico() {
             mostrarToast('Gracias por tu voto.', 'ok');
         }
 
-        async function renderizarProyectos() {
+        function renderizarProyectos() {
             const contenedor = obtenerElemento('contenedor-proyectos');
             if (!contenedor) return;
 
-            contenedor.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#64748b;">⏳ Cargando galería de proyectos...</div>';
+            const valoraciones = obtenerValoracionesProyectos();
+            const votosUsuario = obtenerVotosUsuario();
 
-            try {
-                // 1. Obtener proyectos públicos de Supabase
-                const { data: proyectos, error } = await dbMendocinoClient
-                    .from('motores')
-                    .select('*')
-                    .eq('es_publico', true)
-                    .order('creado_en', { ascending: false });
+            contenedor.innerHTML = proyectosDestacados.map((proyecto) => {
+                const resumen = calcularResumenVotos(valoraciones[proyecto.id]);
+                const votoUsuario = votosUsuario[proyecto.id] || 0;
 
-                if (error) throw error;
-                if (!proyectos || proyectos.length === 0) {
-                    contenedor.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#64748b;">No hay proyectos públicos disponibles en este momento.</div>';
-                    return;
-                }
+                return `
+                    <article class="proyecto-card">
+                        <div class="proyecto-card__media">
+                            <video controls preload="metadata">
+                                <source src="${proyecto.video}" type="video/mp4">
+                                Tu navegador no soporta el video.
+                            </video>
+                        </div>
+                        <div class="proyecto-card__body">
+                            <h3 class="proyecto-card__title">${proyecto.titulo}</h3>
+                            <p class="proyecto-card__subtitle">${proyecto.subtitulo}</p>
 
-                const valoraciones = obtenerValoracionesProyectos();
-                const votosUsuario = obtenerVotosUsuario();
-
-                contenedor.innerHTML = proyectos.map((proyecto) => {
-                    const resumen = calcularResumenVotos(valoraciones[proyecto.id_unico]);
-                    const votoUsuario = votosUsuario[proyecto.id_unico] || 0;
-                    const autor = proyecto.autor_nombre ? `<span class="proyecto-autor">👤 Por: ${proyecto.autor_nombre}</span>` : '';
-
-                    return `
-                        <article class="proyecto-card">
-                            <div class="proyecto-card__media">
-                                <video controls preload="metadata" loading="lazy">
-                                    <source src="${proyecto.video_url || 'videos/motor1.mp4'}" type="video/mp4">
-                                    Tu navegador no soporta el video.
-                                </video>
+                            <div class="proyecto-badges">
+                                ${proyecto.etiquetas.map(tag => `<span class="proyecto-badge">${tag}</span>`).join('')}
                             </div>
-                            <div class="proyecto-card__body">
-                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                                    <h3 class="proyecto-card__title" style="margin:0;">${proyecto.titulo}</h3>
-                                    ${autor}
-                                </div>
-                                <p class="proyecto-card__subtitle">${proyecto.subtitulo || ''}</p>
 
-                                <div class="proyecto-badges">
-                                    ${(proyecto.etiquetas || []).map(tag => `<span class="proyecto-badge">${tag}</span>`).join('')}
-                                </div>
-
-                                <div class="proyecto-bloque">
-                                    <h4>⚙️ Características generales</h4>
-                                    <div class="proyecto-ficha">
-                                        <div class="proyecto-ficha__fila"><span>Panel</span><strong>${proyecto.ficha?.panel || '--'}</strong></div>
-                                        <div class="proyecto-ficha__fila"><span>Hilo</span><strong>${proyecto.ficha?.hilo || '--'}</strong></div>
-                                        <div class="proyecto-ficha__fila"><span>Espiras</span><strong>${proyecto.ficha?.espiras || '--'}</strong></div>
-                                        <div class="proyecto-ficha__fila"><span>Velocidad</span><strong>${proyecto.ficha?.velocidad || '--'}</strong></div>
-                                        <div class="proyecto-ficha__fila"><span>Peso</span><strong>${proyecto.ficha?.peso || '--'}</strong></div>
-                                    </div>
-                                </div>
-
-                                ${proyecto.notas ? `
-                                <div class="proyecto-bloque">
-                                    <h4>🧠 Notas técnicas anexas</h4>
-                                    <ul>
-                                        ${proyecto.notas.map(nota => `<li>${nota}</li>`).join('')}
-                                    </ul>
-                                </div>` : ''}
-
-                                <div class="proyecto-bloque">
-                                    <h4>🔬 Comentario técnico general</h4>
-                                    <p>${proyecto.explicacion || ''}</p>
-                                </div>
-
-                                <div class="proyecto-bloque proyecto-acciones">
-                                    <h4>⭐ Ranking de la comunidad</h4>
-                                    <div class="proyecto-votos">
-                                        ${[1,2,3,4,5].map(n => `<button class="btn-voto ${votoUsuario === n ? 'activo' : ''}" onclick="votarProyecto('${proyecto.id_unico}', ${n})">${n}★</button>`).join('')}
-                                    </div>
-                                    <div class="proyecto-ranking">
-                                        <strong>${resumen.total ? resumen.media.toFixed(2) : 'Sin votos'}</strong>
-                                        ${resumen.total ? `<small> · ${resumen.total} voto${resumen.total === 1 ? '' : 's'}</small>` : ''}
-                                    </div>
-                                    <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-                                        <button class="btn-config" style="width: 100%;" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar config</button>
-                                        <a href="${proyecto.video_url}" download class="btn-toolbar btn-toolbar-secundario" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; width:100%; height:38px; font-size:12px; font-weight:600; padding:0;">
-                                            ⬇️ Descargar vídeo
-                                        </a>
-                                    </div>
+                            <div class="proyecto-bloque">
+                                <h4>⚙️ Características generales</h4>
+                                <div class="proyecto-ficha">
+                                    <div class="proyecto-ficha__fila"><span>Panel</span><strong>${proyecto.ficha.panel}</strong></div>
+                                    <div class="proyecto-ficha__fila"><span>Hilo</span><strong>${proyecto.ficha.hilo}</strong></div>
+                                    <div class="proyecto-ficha__fila"><span>Espiras</span><strong>${proyecto.ficha.espiras}</strong></div>
+                                    <div class="proyecto-ficha__fila"><span>Velocidad</span><strong>${proyecto.ficha.velocidad}</strong></div>
+                                    <div class="proyecto-ficha__fila"><span>Peso</span><strong>${proyecto.ficha.peso}</strong></div>
                                 </div>
                             </div>
-                        </article>
-                    `;
-                }).join('');
 
-            } catch (e) {
-                console.error("Error cargando galería:", e);
-                contenedor.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#ef4444;">Error al conectar con la galería: ${e.message}</div>`;
-            }
+                            <div class="proyecto-bloque">
+                                <h4>🧠 Notas técnicas anexas</h4>
+                                <ul>
+                                    ${proyecto.notas.map(nota => `<li>${nota}</li>`).join('')}
+                                </ul>
+                            </div>
+
+                            <div class="proyecto-bloque">
+                                <h4>🔬 Comentario técnico general</h4>
+                                <p>${proyecto.explicacion}</p>
+                            </div>
+
+                            <div class="proyecto-bloque proyecto-acciones">
+                                <h4>⭐ Ranking de la comunidad</h4>
+                                <div class="proyecto-votos">
+                                    ${[1,2,3,4,5].map(n => `<button class="btn-voto ${votoUsuario === n ? 'activo' : ''}" onclick="votarProyecto('${proyecto.id}', ${n})">${n}★</button>`).join('')}
+                                </div>
+                                <div class="proyecto-ranking">
+                                    <strong>${resumen.total ? resumen.media.toFixed(2) : 'Sin votos'}</strong>
+                                    ${resumen.total ? `<small> · ${resumen.total} voto${resumen.total === 1 ? '' : 's'}</small>` : ''}
+                                </div>
+                                <a href="${proyecto.video}" download class="btn-download">⬇️ Descargar vídeo</a>
+                                <button class="btn-config" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar config</button>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
         }
 
-        // --- INICIALIZACIÓN BASE ---
-        function inicializarAplicacionBase() {
+        // --- INICIALIZACIÓN ---
+        window.onload = function() {
             inicializarNavegacionProfesional();
+            renderizarUI();
             renderizarProyectos();
             poblarSelectoresLevitacion();
             actualizarModeloAxial();
-        }
+        };
 
 
         function finalizarConfiguracion() {
@@ -2133,14 +2045,33 @@ function aplicarVisibilidadPorNivel() {
     });
 }
 
+function actualizarPanelAdminUI() {
+    const panelAdmin = document.getElementById('panel-admin');
+    if (panelAdmin) {
+        panelAdmin.style.display = esAdmin ? 'block' : 'none';
+    }
+
+    const adminUsuario = document.getElementById('admin-usuario');
+    if (adminUsuario && usuarioActual.nombre) {
+        adminUsuario.value = usuarioActual.nombre;
+    }
+
+    const btnIrAdmin = document.getElementById('btn-ir-admin');
+    if (btnIrAdmin) {
+        btnIrAdmin.style.display = esAdmin ? 'inline-flex' : 'none';
+    }
+
+    const btnSalirAdmin = document.getElementById('btn-salir-admin');
+    if (btnSalirAdmin) {
+        btnSalirAdmin.style.display = esAdmin ? 'inline-flex' : 'none';
+    }
+}
+
 function abrirPanelAdmin() {
-    const esRealAdmin = esAdmin || (sessionActiva && EMAILS_ADMIN_FALLBACK.includes(sessionActiva.user.email));
-    if (!esRealAdmin) {
+    if (!esAdmin) {
         mostrarToast('Debes acceder como administrador.', 'aviso');
         return;
     }
-
-    // Redirigimos directamente a la página completa de administración
     window.location.href = 'admin.html';
 }
 
@@ -2202,377 +2133,145 @@ function adminEliminarUsuario(nombre) {
 }
 
 
-// === PARCHE USUARIOS / ADMIN SUPABASE AUTH ===
-let esAdmin = false;
-let sessionActiva = null;
-let profileActual = null;
-let authInicializada = false;
+// === PARCHE USUARIOS / ADMIN ===
+const CLAVE_ADMIN_MOTOR = 'mendocino-admin';
+const STORAGE_USUARIOS_MOTOR = 'usuariosMotorMendocino';
+let esAdmin = sessionStorage.getItem('adminMotorMendocino') === '1';
 
-function ocultarUIHastaAutenticacion() {
-    const modal = document.getElementById('modal-auth');
-    if (modal) modal.style.display = 'flex';
-    document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active'));
-}
-
-function inicializarAplicacionBase() {
-    inicializarNavegacionProfesional();
-    // Preparar UI inicial sin datos
-    renderizarUI();
-}
-
-function mostrarUIAutenticada() {
-    const modal = document.getElementById('modal-auth');
-    if (modal) modal.style.display = 'none';
-    cambiarPagina('calc');
-}
-
-
-async function inicializarAuth() {
-    console.log("Iniciando inicializarAuth...");
-    return new Promise((resolve) => {
-        let authInicialEventsHandled = false;
-
-        // Intentar obtener el cliente de Supabase (con reintento si falla la carga)
-        const getClient = () => window.dbMendocinoClient || (typeof dbMendocinoClient !== 'undefined' ? dbMendocinoClient : null);
-        
-        const client = getClient();
-        if (!client) {
-            console.error("CRÍTICO: Cliente Supabase no encontrado al inicializar.");
-            resolve(); return;
-        }
-
-        // Suscribirse a cambios de estado
-        client.auth.onAuthStateChange(async (event, session) => {
-            console.log("Supabase Auth Event:", event, !!session);
-            
-            try {
-                sessionActiva = session;
-                
-                if (session) {
-                    console.log("Sesión detectada, configurando UI...");
-                    const modalAuth = document.getElementById('modal-auth');
-                    if (modalAuth) modalAuth.style.display = 'none';
-                    
-                    // No bloqueamos todo el arranque por los datos del perfil
-                    cargarPerfilUsuario(session.user).catch(e => console.error("Error cargando perfil:", e));
-                    cargarDatosGlobales().then(() => renderizarUI()).catch(e => console.error("Error cargando datos:", e));
-                    
-                    actualizarPanelAdminUI();
-                    aplicarNivelUsuario();
-                    mostrarUIAutenticada();
-                } else {
-                    console.log("No hay sesión activa.");
-                    if (!window.location.pathname.includes('admin.html')) {
-                        ocultarUIHastaAutenticacion();
-                    }
-                }
-            } catch (err) {
-                console.error("Error procesando evento Auth:", err);
-            } finally {
-                if (!authInicialEventsHandled) {
-                    authInicialEventsHandled = true;
-                    authInicializada = true;
-                    resolve();
-                }
-            }
-        });
-
-        // Timeout de seguridad: Si Supabase no responde nada en 2 segundos, continuamos
-        setTimeout(async () => {
-            if (!authInicialEventsHandled) {
-                console.warn("Auth timeout fallback activado.");
-                try {
-                    const { data: { session } } = await client.auth.getSession();
-                    sessionActiva = session;
-                    if (session) {
-                        mostrarUIAutenticada();
-                    }
-                } catch (e) {
-                    console.error("Error en fallback getSession:", e);
-                } finally {
-                    authInicialEventsHandled = true;
-                    authInicializada = true;
-                    resolve();
-                }
-            }
-        }, 2000);
-    });
-}
-
-async function cargarPerfilUsuario(user) {
-    if (!user) return;
+function obtenerUsuariosGuardados() {
     try {
-        const client = window.dbMendocinoClient || dbMendocinoClient;
-        const { data: profile, error } = await client
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-            
-        if (profile && !error) {
-            profileActual = profile;
-            esAdmin = profile.rol === 'admin';
-            usuarioActual.nombre = profile.nombre || user.email;
-            usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
-        } else {
-            usuarioActual.nombre = user.email || 'Alumno';
-            usuarioActual.nivel = NIVELES_USUARIO.BASICO;
-            esAdmin = false;
-        }
-    } catch (err) {
-        console.error("Error al cargar perfil:", err);
-        usuarioActual.nombre = user.email || 'Usuario';
-        usuarioActual.nivel = NIVELES_USUARIO.BASICO;
-        esAdmin = false;
-    } finally {
-        const badgeUser = document.getElementById('mensaje-nivel');
-        if (badgeUser) {
-            badgeUser.style.display = 'flex';
-            badgeUser.style.background = 'rgba(255,255,255,0.15)';
-            badgeUser.textContent = `👤 ${usuarioActual.nombre}`;
-        }
-    }
-}let modoRegistroAuth = false;
-
-function toggleModoAuth(e) {
-    if (e) e.preventDefault();
-    modoRegistroAuth = !modoRegistroAuth;
-    document.getElementById('auth-nombre-group').style.display = modoRegistroAuth ? 'block' : 'none';
-    document.getElementById('btn-auth-accion').textContent = modoRegistroAuth ? 'Registrarse' : 'Iniciar Sesión';
-    document.getElementById('link-toggle-auth').textContent = modoRegistroAuth ? '¿Ya tienes cuenta? Inicia sesión aquí.' : '¿No tienes cuenta? Registrate aquí.';
-    document.getElementById('auth-error').style.display = 'none';
-    document.getElementById('auth-success').style.display = 'none';
-}
-
-async function ejecutarAuth() {
-    const email = document.getElementById('auth-email').value.trim();
-    const password = document.getElementById('auth-password').value.trim();
-    const errorMsg = document.getElementById('auth-error');
-    const successMsg = document.getElementById('auth-success');
-    
-    errorMsg.style.display = 'none';
-    successMsg.style.display = 'none';
-    
-    if (!email || !password) {
-        errorMsg.textContent = "Por favor completa el correo y contraseña.";
-        errorMsg.style.display = 'block';
-        return;
-    }
-    
-    try {
-        if (modoRegistroAuth) {
-            const nombre = document.getElementById('auth-nombre').value.trim();
-            if (!nombre) throw new Error("Debes introducir tu nombre para registrarte.");
-            
-            const btn = document.getElementById('btn-auth-accion');
-            btn.textContent = "Registrando..."; btn.disabled = true;
-            
-            const { data, error } = await dbMendocinoClient.auth.signUp({
-                email: email,
-                password: password,
-                options: { data: { nombre: nombre } }
-            });
-            
-            btn.textContent = "Registrarse"; btn.disabled = false;
-            if (error) throw error;
-            
-            if (data.user && data.user.identities && data.user.identities.length === 0) {
-                 throw new Error("Este correo ya está registrado, intenta iniciar sesión.");
-            }
-            if (!data.session) {
-                successMsg.textContent = "Registro exitoso. Si exige confirmación, revisa tu email.";
-                successMsg.style.display = 'block';
-            }
-        } else {
-            const btn = document.getElementById('btn-auth-accion');
-            btn.textContent = "Iniciando..."; btn.disabled = true;
-            const { data, error } = await dbMendocinoClient.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
-            btn.textContent = "Iniciar Sesión"; btn.disabled = false;
-            
-            if (error) {
-                if (error.message.includes('Invalid login credentials')) {
-                    throw new Error("Credenciales inválidas. Comprueba tu correo y contraseña.");
-                } else if (error.message.includes('Email not confirmed')) {
-                    throw new Error("Por favor, confirma tu correo electrónico primero.");
-                }
-                throw error;
-            }
-        }
+        const data = JSON.parse(localStorage.getItem(STORAGE_USUARIOS_MOTOR));
+        return (data && typeof data === 'object') ? data : {};
     } catch (e) {
-        errorMsg.textContent = e.message;
-        errorMsg.style.display = 'block';
-        const btn = document.getElementById('btn-auth-accion');
-        btn.textContent = modoRegistroAuth ? 'Registrarse' : 'Iniciar Sesión'; 
-        btn.disabled = false;
+        return {};
     }
 }
 
-async function cerrarSesion() {
-    try {
-        console.log("Iniciando cierre de sesión robusto...");
-        
-        // 1. Limpieza local inmediata e infalible
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        // Forzamos la desaparición del badge por si el reload tarda
-        const el = document.getElementById('mensaje-nivel');
-        if (el) el.style.display = 'none';
-
-        // 2. Intentamos avisar al servidor, pero no bloqueamos el flujo si falla
-        try {
-            await dbMendocinoClient.auth.signOut();
-        } catch (authErr) {
-            console.warn("Error enviando signOut al servidor (probablemente sesión ya inválida):", authErr);
-        }
-        
-        // 3. Recarga total de la página para resetear el estado
-        window.location.href = window.location.pathname + "?v=" + new Date().getTime();
-        
-    } catch (e) {
-        console.error("Error crítico al salir:", e);
-        localStorage.clear();
-        window.location.href = window.location.pathname;
-    }
+function guardarUsuariosGuardados(usuarios) {
+    localStorage.setItem(STORAGE_USUARIOS_MOTOR, JSON.stringify(usuarios || {}));
 }
 
 function actualizarMensajeNivel() {
     const el = document.getElementById('mensaje-nivel');
     if (!el) return;
-    
-    // Si no hay sesión, ocultar totalmente
-    if (!sessionActiva) {
-        el.style.display = 'none';
-        el.textContent = "";
-        return;
-    }
-    
-    // Si hay sesión pero no perfil, mostramos el email como respaldo
-    const nombreAMostrar = profileActual ? profileActual.nombre : sessionActiva.user.email;
-    const adminTxt = esAdmin ? ' · 🛡️ ADMIN' : '';
-    
-    el.style.display = 'flex';
-    el.style.background = 'rgba(255,255,255,0.15)';
-    el.textContent = `👤 ${nombreAMostrar}${adminTxt}`;
+    const nombre = usuarioActual?.nombre || 'Alumno';
+    const nivel = usuarioActual?.nivel || NIVELES_USUARIO.BASICO;
+    const adminTxt = esAdmin ? ' · admin activo' : '';
+    el.textContent = `Usuario: ${nombre} · nivel: ${nivel}${adminTxt}`;
 }
 
-const EMAILS_ADMIN_FALLBACK = ['josecarlosmillandecortes@unizar.es', 'jcmillan@unizar.es', 'cmillan@unizar.es']; 
+function cargarUsuarioActualDesdeStorage() {
+    const usuarios = obtenerUsuariosGuardados();
+    const ultimo = localStorage.getItem('ultimoUsuarioMotorMendocino');
+
+    if (ultimo && usuarios[ultimo]) {
+        usuarioActual.nombre = ultimo;
+        usuarioActual.nivel = usuarios[ultimo].nivel || NIVELES_USUARIO.BASICO;
+        localStorage.setItem('nivelUsuarioMotor', usuarioActual.nivel);
+    } else if (!usuarioActual.nombre) {
+        usuarioActual.nombre = 'Alumno';
+    }
+
+    const inputUsuario = document.getElementById('input-usuario');
+    if (inputUsuario && usuarioActual.nombre && usuarioActual.nombre !== 'demo') {
+        inputUsuario.value = usuarioActual.nombre;
+    }
+}
+
+function entrarComoUsuario() {
+    const input = document.getElementById('input-usuario');
+    const nombre = adminNormalizarNombre(input ? input.value : '');
+    if (!nombre) {
+        mostrarToast('Introduce un nombre de alumno.', 'aviso');
+        return;
+    }
+
+    const usuarios = obtenerUsuariosGuardados();
+    if (!usuarios[nombre]) {
+        usuarios[nombre] = { nivel: NIVELES_USUARIO.BASICO };
+        guardarUsuariosGuardados(usuarios);
+    }
+
+    usuarioActual.nombre = nombre;
+    usuarioActual.nivel = usuarios[nombre].nivel || NIVELES_USUARIO.BASICO;
+    localStorage.setItem('ultimoUsuarioMotorMendocino', nombre);
+    localStorage.setItem('nivelUsuarioMotor', usuarioActual.nivel);
+
+    aplicarNivelUsuario();
+    actualizarPanelAdminUI();
+    mostrarToast(`Sesión iniciada como ${nombre}.`, 'ok');
+}
+
+function iniciarModoAdmin() {
+    const input = document.getElementById('admin-clave');
+    const clave = input ? input.value : '';
+    if (clave !== CLAVE_ADMIN_MOTOR) {
+        mostrarToast('Clave de administrador incorrecta.', 'error');
+        return;
+    }
+
+    esAdmin = true;
+    sessionStorage.setItem('adminMotorMendocino', '1');
+    if (input) input.value = '';
+    actualizarPanelAdminUI();
+    aplicarNivelUsuario();
+    mostrarToast('Modo administrador activado.', 'ok');
+}
+
+function cambiarNivelUsuario(nuevoNivel) {
+    if (!CONFIG_NIVELES[nuevoNivel]) return;
+
+    usuarioActual.nivel = nuevoNivel;
+    localStorage.setItem('nivelUsuarioMotor', nuevoNivel);
+
+    if (usuarioActual?.nombre) {
+        const usuarios = obtenerUsuariosGuardados();
+        usuarios[usuarioActual.nombre] = { ...(usuarios[usuarioActual.nombre] || {}), nivel: nuevoNivel };
+        guardarUsuariosGuardados(usuarios);
+    }
+
+    aplicarNivelUsuario();
+    mostrarToast(`Nivel cambiado a: ${nuevoNivel}`, 'ok');
+}
 
 function actualizarPanelAdminUI() {
+    esAdmin = sessionStorage.getItem('adminMotorMendocino') === '1' || esAdmin;
+
     const btnIrAdmin = document.getElementById('btn-ir-admin');
+    if (btnIrAdmin) btnIrAdmin.style.display = esAdmin ? 'inline-flex' : 'none';
 
-    // El usuario es admin si tiene el rol O si su email está en la lista blanca
-    const esRealAdmin = esAdmin || (sessionActiva && EMAILS_ADMIN_FALLBACK.includes(sessionActiva.user.email));
+    const btnSalirAdmin = document.getElementById('btn-salir-admin');
+    if (btnSalirAdmin) btnSalirAdmin.style.display = esAdmin ? 'inline-flex' : 'none';
 
-    if (btnIrAdmin) {
-        btnIrAdmin.style.display = esRealAdmin ? 'inline-flex' : 'none';
-    }
+    const bloqueSelector = document.getElementById('bloque-selector-nivel');
+    if (bloqueSelector) bloqueSelector.style.display = esAdmin ? 'block' : 'none';
+
+    const selectorNivel = document.getElementById('selector-nivel');
+    if (selectorNivel) selectorNivel.value = usuarioActual?.nivel || NIVELES_USUARIO.BASICO;
 
     actualizarMensajeNivel();
 }
 
-function cerrarModalAdmin() {
-    const modalAdmin = document.getElementById('modal-admin');
-    if (modalAdmin) {
-        modalAdmin.style.display = 'none';
-    }
-}
-
-async function cargarListaAlumnosAdmin() {
-    const listBody = document.getElementById('lista-alumnos-body');
-    const totalStat = document.getElementById('stat-total-alumnos');
-    
-    listBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Cargando clase...</td></tr>';
-    
-    try {
-        const { data: alumnos, error } = await dbMendocinoClient
-            .from('profiles')
-            .select('*')
-            .order('nombre', { ascending: true });
-            
-        if (error) throw error;
-        
-        totalStat.textContent = alumnos.length;
-        listBody.innerHTML = '';
-        
-        alumnos.forEach(alumno => {
-            const row = document.createElement('tr');
-            row.style.borderBottom = '1px solid #f1f2f6';
-            
-            row.innerHTML = `
-                <td style="padding: 12px; font-weight: bold; color: #2c3e50;">${alumno.nombre || 'Sin nombre'}</td>
-                <td style="padding: 12px; color: #64748b; font-size: 14px;">${alumno.email}</td>
-                <td style="padding: 12px;">
-                    <select id="nivel-selector-${alumno.id}" style="padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer;">
-                        <option value="basico" ${alumno.nivel === 'basico' ? 'selected' : ''}>Básico</option>
-                        <option value="avanzado" ${alumno.nivel === 'avanzado' ? 'selected' : ''}>Avanzado</option>
-                        <option value="experto" ${alumno.nivel === 'experto' ? 'selected' : ''}>Experto</option>
-                    </select>
-                </td>
-                <td style="padding: 12px;">
-                    <button onclick="actualizarNivelAlumno('${alumno.id}', '${alumno.nombre}')" style="background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">
-                        Guardar
-                    </button>
-                </td>
-            `;
-            listBody.appendChild(row);
-        });
-        
-    } catch (e) {
-        listBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color: #ef4444;">Error: ${e.message}</td></tr>`;
-    }
-}
-
-async function actualizarNivelAlumno(id, nombre) {
-    const selector = document.getElementById(`nivel-selector-${id}`);
-    const nuevoNivel = selector.value;
-    
-    try {
-        const { error } = await dbMendocinoClient
-            .from('profiles')
-            .update({ nivel: nuevoNivel })
-            .eq('id', id);
-            
-        if (error) throw error;
-        
-        mostrarToast(`Nivel de ${nombre} actualizado correctamente.`, 'ok');
-        
-        // Si el admin se cambia el nivel a sí mismo, aplicar cambios localmente
-        if (id === sessionActiva.user.id) {
-            usuarioActual.nivel = nuevoNivel;
-            aplicarNivelUsuario();
-        }
-    } catch (e) {
-        mostrarToast(`Error al actualizar: ${e.message}`, 'error');
-    }
-}
-
-function cargarUsuarioActualDesdeStorage() {
-    // Reemplazada por cargarPerfilUsuario
-}
-
-window.onload = async function() {
-    // Si estamos en el panel de administración, script.js no debe inicializar
-    // la app principal (elementos como modal-auth, lista-paneles, etc. no existen aquí)
-    if (window.location.pathname.includes('admin.html')) {
+function abrirPanelAdmin() {
+    if (!adminEstaActivo() && !esAdmin) {
+        mostrarToast('Debes acceder como administrador.', 'aviso');
         return;
     }
+    window.location.href = 'admin.html';
+}
 
-    ocultarUIHastaAutenticacion();
-    inicializarAplicacionBase();
-    await inicializarAuth();
+function salirModoAdmin() {
+    esAdmin = false;
+    sessionStorage.removeItem('adminMotorMendocino');
+    actualizarPanelAdminUI();
+    aplicarNivelUsuario();
+    mostrarToast('Modo administrador cerrado.', 'info');
+}
 
-    // Si después de inicializar no hay sesión, aseguramos que el modal se vea
-    if (!sessionActiva) {
-        const modalAuth = document.getElementById('modal-auth');
-        if (modalAuth) {
-            modalAuth.style.display = 'flex';
-        }
-    } else {
-        mostrarUIAutenticada();
-    }
+const _windowOnloadMotor = window.onload;
+window.onload = function() {
+    if (typeof _windowOnloadMotor === 'function') _windowOnloadMotor();
+    cargarUsuarioActualDesdeStorage();
+    actualizarPanelAdminUI();
+    aplicarNivelUsuario();
 };
-

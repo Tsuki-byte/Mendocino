@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración de usuarios - Motor Mendocino</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-wrap { width: min(100%, 980px); margin: 24px auto 40px; }
+        .admin-card { background: rgba(255,255,255,0.96); border-radius: 16px; box-shadow: 0 18px 40px rgba(15,23,42,.08); border: 1px solid rgba(148,163,184,.15); overflow: hidden; }
+        .admin-header { background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%); color: #fff; padding: 22px 24px; }
+        .admin-body { padding: 24px; }
+        .admin-grid { display:grid; grid-template-columns: 320px 1fr; gap: 22px; }
+        .admin-panel { background:#f8fafc; border:1px solid rgba(148,163,184,.18); border-radius:14px; padding:18px; }
+        .admin-panel h3 { margin-top:0; color:#1d4ed8; }
+        .admin-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+        .admin-tabla { width:100%; border-collapse: collapse; background:#fff; border-radius: 12px; overflow:hidden; }
+        .admin-tabla th, .admin-tabla td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align:left; vertical-align: middle; }
+        .admin-tabla th { background:#eff6ff; color:#1e3a8a; font-size: 14px; }
+        .admin-tabla tr:last-child td { border-bottom:none; }
+        .admin-acciones-fila { display:flex; gap:8px; flex-wrap:wrap; }
+        .admin-badge { display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700; background:#e2e8f0; color:#334155; }
+        .admin-vacio { padding:22px; text-align:center; color:#64748b; background:#fff; border:1px dashed #cbd5e1; border-radius:12px; }
+        .btn-mini { border:none; border-radius:8px; padding:8px 10px; cursor:pointer; font-weight:700; }
+        .btn-mini-guardar { background:#16a34a; color:#fff; }
+        .btn-mini-eliminar { background:#dc2626; color:#fff; }
+        .nota-admin { color:#475569; font-size:14px; line-height:1.5; }
+        @media (max-width: 860px) {
+            .admin-grid { grid-template-columns: 1fr; }
+            .admin-tabla, .admin-tabla thead, .admin-tabla tbody, .admin-tabla th, .admin-tabla td, .admin-tabla tr { display:block; width:100%; }
+            .admin-tabla thead { display:none; }
+            .admin-tabla tr { background:#fff; margin-bottom:12px; border:1px solid #e2e8f0; border-radius:12px; padding:10px; }
+            .admin-tabla td { border:none; padding:8px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-navbar">
+        <button class="nav-tab active" type="button" onclick="window.location.href='index.html'">⬅ Volver a la calculadora</button>
+    </div>
+
+    <div class="admin-wrap">
+        <div class="admin-card">
+            <div class="admin-header">
+                <h1 style="margin:0;">👥 Administración de usuarios</h1>
+                <p style="margin:6px 0 0; opacity:.9;">Alta, listado, edición de nivel y eliminación de usuarios guardados en este navegador.</p>
+            </div>
+
+            <div class="admin-body">
+                <div class="admin-grid">
+                    <section class="admin-panel">
+                        <h3>Nuevo usuario</h3>
+                        <div class="form-group">
+                            <label for="nuevo-usuario">Nombre del alumno</label>
+                            <input type="text" id="nuevo-usuario" placeholder="Ej: Ana Pérez">
+                        </div>
+                        <div class="form-group">
+                            <label for="nuevo-nivel">Nivel inicial</label>
+                            <select id="nuevo-nivel">
+                                <option value="basico">Básico</option>
+                                <option value="avanzado">Avanzado</option>
+                                <option value="experto">Experto</option>
+                            </select>
+                        </div>
+                        <button class="btn-action" type="button" onclick="crearUsuarioDesdePanel()">+ Dar de alta usuario</button>
+
+                        <hr style="margin:18px 0; border:0; border-top:1px solid #e2e8f0;">
+
+                        <h3>Sesión</h3>
+                        <p class="nota-admin">Este panel usa la misma base local del navegador. Más adelante se puede migrar a MySQL sin cambiar la idea del panel.</p>
+                        <div class="admin-toolbar">
+                            <button class="btn-toolbar btn-toolbar-secundario" type="button" onclick="window.location.href='index.html'">Volver</button>
+                            <button class="btn-toolbar btn-toolbar-principal" type="button" onclick="salirModoAdminDesdePanel()">Salir admin</button>
+                        </div>
+                    </section>
+
+                    <section class="admin-panel">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                            <h3 style="margin-bottom:8px;">Usuarios guardados</h3>
+                            <span class="admin-badge" id="contador-usuarios">0 usuarios</span>
+                        </div>
+                        <div id="contenedor-lista-usuarios"></div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="contenedor-toast" class="contenedor-toast" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="script.js"></script>
+    <script>
+        function asegurarAdminPanel() {
+            if (typeof adminEstaActivo === 'function' && !adminEstaActivo()) {
+                alert('Debes acceder primero como administrador desde la página principal.');
+                window.location.href = 'index.html';
+                return false;
+            }
+            return true;
+        }
+
+        function renderizarListaUsuariosAdmin() {
+            if (!asegurarAdminPanel()) return;
+
+            const contenedor = document.getElementById('contenedor-lista-usuarios');
+            const contador = document.getElementById('contador-usuarios');
+            const usuarios = (typeof obtenerUsuariosGuardados === 'function') ? obtenerUsuariosGuardados() : {};
+            const nombres = Object.keys(usuarios).sort((a, b) => a.localeCompare(b, 'es'));
+
+            contador.textContent = `${nombres.length} usuario${nombres.length === 1 ? '' : 's'}`;
+
+            if (!nombres.length) {
+                contenedor.innerHTML = '<div class="admin-vacio">Todavía no hay usuarios guardados en este navegador.</div>';
+                return;
+            }
+
+            contenedor.innerHTML = `
+                <table class="admin-tabla">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nivel</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${nombres.map(nombre => `
+                            <tr>
+                                <td><strong>${nombre}</strong></td>
+                                <td>
+                                    <select id="nivel-${codificarId(nombre)}">
+                                        <option value="basico" ${usuarios[nombre].nivel === 'basico' ? 'selected' : ''}>Básico</option>
+                                        <option value="avanzado" ${usuarios[nombre].nivel === 'avanzado' ? 'selected' : ''}>Avanzado</option>
+                                        <option value="experto" ${usuarios[nombre].nivel === 'experto' ? 'selected' : ''}>Experto</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="admin-acciones-fila">
+                                        <button class="btn-mini btn-mini-guardar" type="button" onclick="guardarNivelDesdePanel('${escaparTexto(nombre)}')">Guardar nivel</button>
+                                        <button class="btn-mini btn-mini-eliminar" type="button" onclick="eliminarUsuarioDesdePanel('${escaparTexto(nombre)}')">Eliminar</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function codificarId(texto) {
+            return btoa(unescape(encodeURIComponent(texto))).replace(/=/g, '');
+        }
+
+        function escaparTexto(texto) {
+            return String(texto).replace(/'/g, "\\'");
+        }
+
+        function crearUsuarioDesdePanel() {
+            const nombre = document.getElementById('nuevo-usuario').value.trim();
+            const nivel = document.getElementById('nuevo-nivel').value;
+
+            const res = adminCrearUsuario(nombre, nivel);
+            if (!res.ok) {
+                mostrarToast(res.mensaje, 'error');
+                return;
+            }
+
+            document.getElementById('nuevo-usuario').value = '';
+            document.getElementById('nuevo-nivel').value = 'basico';
+            mostrarToast(res.mensaje, 'ok');
+            renderizarListaUsuariosAdmin();
+        }
+
+        function guardarNivelDesdePanel(nombre) {
+            const select = document.getElementById(`nivel-${codificarId(nombre)}`);
+            const nivel = select ? select.value : 'basico';
+            const res = adminCrearUsuario(nombre, nivel);
+
+            if (!res.ok) {
+                mostrarToast(res.mensaje, 'error');
+                return;
+            }
+
+            if (typeof usuarioActual !== 'undefined' && usuarioActual.nombre === nombre) {
+                usuarioActual.nivel = nivel;
+                localStorage.setItem('ultimoUsuarioMotorMendocino', nombre);
+            }
+
+            mostrarToast(`Nivel de ${nombre} actualizado a ${nivel}.`, 'ok');
+            renderizarListaUsuariosAdmin();
+        }
+
+        function eliminarUsuarioDesdePanel(nombre) {
+            if (!confirm(`¿Eliminar al usuario "${nombre}"?`)) return;
+
+            const res = adminEliminarUsuario(nombre);
+            if (!res.ok) {
+                mostrarToast(res.mensaje, 'error');
+                return;
+            }
+
+            mostrarToast(res.mensaje, 'ok');
+            renderizarListaUsuariosAdmin();
+        }
+
+        function salirModoAdminDesdePanel() {
+            sessionStorage.removeItem('adminMotorMendocino');
+            window.location.href = 'index.html';
+        }
+
+        window.addEventListener('load', () => {
+            if (!asegurarAdminPanel()) return;
+            renderizarListaUsuariosAdmin();
+        });
+    </script>
+</body>
+</html>
