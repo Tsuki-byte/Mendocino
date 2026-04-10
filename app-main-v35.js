@@ -183,14 +183,51 @@ function cargarMotor(config) {
 
     if (caras) caras.value = config.caras ?? 4;
 
-    // --- Lógica de Panel ---
-    let panelValue = config.panel; 
-    if (config.panelNombre && dbPaneles.length > 0) {
+    // --- Lógica de Panel (con auto-importación) ---
+    let panelValue = config.panel;
+    let panelInfo = config.panelData;
+    
+    if (panelInfo && dbPaneles.length > 0) {
+        // Intentar buscar por características técnicas para evitar duplicados si el nombre cambió
+        let idxExistente = dbPaneles.findIndex(p => 
+            p.v === panelInfo.v && 
+            p.i === panelInfo.i && 
+            p.voc === panelInfo.voc && 
+            p.isc === panelInfo.isc &&
+            p.l === panelInfo.l &&
+            p.a === panelInfo.a
+        );
+
+        if (idxExistente === -1) {
+            // No existe, lo añadimos al inventario local
+            console.log("DEBUG [Import]: Añadiendo nueva placa desde proyecto:", panelInfo.nombre);
+            dbPaneles.push({...panelInfo});
+            guardarDatos(); // Guarda en LocalStorage y refresca UI
+            
+            // Si hay sesión activa, también persistimos en la nube para que no se pierda al recargar
+            if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
+                const pParaSubir = { ...panelInfo };
+                delete pParaSubir.id; // Evitar conflictos de ID si el origen tenía uno
+                pParaSubir.usuario_id = sessionActiva.user.id;
+                pParaSubir.es_publico = false;
+                
+                dbMendocinoClient.from('paneles').insert([pParaSubir])
+                    .then(({error}) => {
+                        if (error) console.error("Error sincronizando placa importada:", error);
+                        else console.log("DEBUG [Import]: Placa sincronizada con la nube.");
+                    });
+            }
+            
+            idxExistente = dbPaneles.length - 1;
+        }
+        panelValue = String(idxExistente);
+    } else if (config.panelNombre && dbPaneles.length > 0) {
         const idxPorNombre = dbPaneles.findIndex(p => p.nombre === config.panelNombre);
         if (idxPorNombre >= 0) {
             panelValue = String(idxPorNombre);
         }
     }
+
     if (panelSelect && panelValue !== undefined && panelValue !== null) {
         panelSelect.value = panelValue;
     }
@@ -202,7 +239,9 @@ function cargarMotor(config) {
 
     // --- Lógica de Material e Hilo ---
     if (materialHilo) materialHilo.value = config.material ?? 'cobre';
-    actualizarListaHilos(); // Regenerar las opciones del select de hilos
+    if (typeof actualizarListaHilos === 'function') {
+        actualizarListaHilos(); // Regenerar las opciones del select de hilos
+    }
 
     if (diaHilo && config.hilo !== undefined) {
         // Buscamos el valor exacto del hilo en el select
@@ -1308,6 +1347,7 @@ function calcularPasoMagnetico() {
             caras: document.getElementById('caras').value,
             panel: panelSelect.value,
             panelNombre: panelSelect.options[panelSelect.selectedIndex]?.text || '',
+            panelData: dbPaneles[panelSelect.value] ? {...dbPaneles[panelSelect.value]} : null,
             margen: document.getElementById('margen-placa').value,
             ranuraAncho: document.getElementById('ranura-ancho').value,
             ranuraAlto: document.getElementById('ranura-alto').value,
