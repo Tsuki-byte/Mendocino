@@ -323,13 +323,14 @@ function cargarMotor(config) {
                     const p_mW = p.v * p.i;
                     const r_ohm = p.i > 0 ? p.v / (p.i / 1000) : 0;
                     const ff = (p.voc * p.isc) > 0 ? (p.v * p.i) / (p.voc * p.isc) : 0;
-                    return `<li>
-                        <div style="width:100%;">
+                    return `<li style="font-size: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                        <div style="flex-grow: 1;">
                             <strong>${p.nombre}</strong> (${p.l}x${p.a}mm) 
-                            <button class="btn-delete" style="float:right;" onclick="borrarPanel(${i})">X</button><br>
+                            <br>
                             <small>Voc: ${p.voc}V | Isc: ${p.isc}mA | V: ${p.v}V | I: ${p.i}mA</small><br>
                             <small style="color:var(--primary-color);"><strong>P:</strong> ${p_mW.toFixed(1)}mW | <strong>R ideal:</strong> ${r_ohm.toFixed(1)}Ω | <strong>FF:</strong> ${ff.toFixed(3)}</small>
                         </div>
+                        <button class="btn-delete" onclick="borrarPanel(${i})">X</button>
                     </li>`;
                 }).join('');
 
@@ -1420,8 +1421,8 @@ function calcularPasoMagnetico() {
                                         ${resumen.total ? `<small> · ${resumen.total} voto${resumen.total === 1 ? '' : 's'}</small>` : ''}
                                     </div>
                                     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-                                        <button class="btn-config" style="width: 100%; font-size:13px; height:38px; font-weight:700; padding:0;" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar en calculadora</button>
-                                        <a href="${proyecto.video_url}" download class="btn-download" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; width:100%; height:38px; font-size:13px; font-weight:700; padding:0; background-color:#10b981;">
+                                        <button class="btn-config" style="width: 100%; font-size:14px; height:42px; font-weight:700; padding:0; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none;" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar en calculadora</button>
+                                        <a href="${proyecto.video_url}" download class="btn-download" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; height:42px; font-size:14px; font-weight:700; padding:0; background-color:#10b981;">
                                             ⬇️ Descargar vídeo
                                         </a>
                                     </div>
