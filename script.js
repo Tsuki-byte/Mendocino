@@ -9,6 +9,91 @@ let usuarioActual = {
     nivel: localStorage.getItem('nivelUsuarioMotor') || NIVELES_USUARIO.BASICO
 };
 
+// === VARIABLES GLOBALES CRÍTICAS (MOVIDAS AL INICIO PARA SEGURIDAD) ===
+let esAdmin = false;
+let sessionActiva = null;
+let profileActual = null;
+let authInicializada = false;
+let modoRegistroAuth = false;
+
+const MATERIALES_CONDUCTORES = {
+    cobre: { nombre: "Cobre", densidad: 8.95, resistividad: 1.75e-8, colorUI: "#d35400" },
+    aluminio: { nombre: "Aluminio", densidad: 2.70, resistividad: 2.82e-8, colorUI: "#7f8c8d" }
+};
+
+const EstadoDiseno = {
+    resistenciaPanelObjetivo: 0,
+    diametroRotor: 0,
+    longitudPanel: 0,
+    anchoPanel: 0,
+    numeroCaras: 0,
+    intensidadPanel_mA: 0,
+    espirasPorDevanado: 0,
+    diametroHilo_mm: 0,
+    anchoRanura_mm: 0,
+    altoRanura_mm: 0,
+    areaRanuraUtil_mm2: 0,
+    margenMarco_mm: 0,
+    longitudEspira_m: 0,
+    numDevanados: 0,
+    fmm_Av: 0,
+    fuerzaLorentz_N: 0,
+    par_Nm: 0,
+    campoB_T: 0,
+    longitudActiva_m: 0,
+    factorOcupacion: 0
+};
+
+// === FUNCIONES DE AUTENTICACIÓN (MOVIDAS AL INICIO PARA SEGURIDAD) ===
+function toggleModoAuth(e) {
+    if (e) e.preventDefault();
+    modoRegistroAuth = !modoRegistroAuth;
+    const gNombre = document.getElementById('auth-nombre-group');
+    const bAccion = document.getElementById('btn-auth-accion');
+    const lToggle = document.getElementById('link-toggle-auth');
+    if (gNombre) gNombre.style.display = modoRegistroAuth ? 'block' : 'none';
+    if (bAccion) bAccion.textContent = modoRegistroAuth ? 'Registrarse' : 'Iniciar Sesión';
+    if (lToggle) lToggle.textContent = modoRegistroAuth ? '¿Ya tienes cuenta? Inicia sesión aquí.' : '¿No tienes cuenta? Registrate aquí.';
+}
+
+async function ejecutarAuth() {
+    const email = document.getElementById('auth-email')?.value.trim();
+    const password = document.getElementById('auth-password')?.value.trim();
+    const errorMsg = document.getElementById('auth-error');
+    const successMsg = document.getElementById('auth-success');
+    
+    if (errorMsg) errorMsg.style.display = 'none';
+    if (successMsg) successMsg.style.display = 'none';
+    
+    if (!email || !password) {
+        if (errorMsg) { errorMsg.textContent = "Email y contraseña requeridos"; errorMsg.style.display = 'block'; }
+        return;
+    }
+
+    try {
+        const client = window.dbMendocinoClient;
+        if (!client) throw new Error("Servicio de autenticación no listo");
+
+        if (modoRegistroAuth) {
+            const nombre = document.getElementById('auth-nombre')?.value.trim();
+            const { data, error } = await client.auth.signUp({ 
+                email, 
+                password,
+                options: { data: { nombre: nombre || 'Usuario' } }
+            });
+            if (error) throw error;
+            if (successMsg) { successMsg.textContent = "¡Registro éxito! Revisa tu email o intenta loguear."; successMsg.style.display = 'block'; }
+        } else {
+            const { data, error } = await client.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            // El listener de onAuthStateChange se encargará del resto
+        }
+    } catch (e) {
+        console.error("Error Auth:", e);
+        if (errorMsg) { errorMsg.textContent = e.message; errorMsg.style.display = 'block'; }
+    }
+}
+
 const CONFIG_NIVELES = {
     basico: {
         pasosPermitidos: [1, 2],
@@ -473,33 +558,6 @@ function cargarMotor(config) {
 
 
         // --- LÓGICA DE CÁLCULO ---
-            const MATERIALES_CONDUCTORES = {
-            cobre: { nombre: "Cobre", densidad: 8.95, resistividad: 1.75e-8, colorUI: "#d35400" },   // Naranja/Cobrizo
-            aluminio: { nombre: "Aluminio", densidad: 2.70, resistividad: 2.82e-8, colorUI: "#7f8c8d" } // Gris/Plateado
-        };
-
-        const EstadoDiseno = {
-            resistenciaPanelObjetivo: 0,
-            diametroRotor: 0,
-            longitudPanel: 0,
-            anchoPanel: 0,
-            numeroCaras: 0,
-            intensidadPanel_mA: 0,
-            espirasPorDevanado: 0,
-            diametroHilo_mm: 0,
-            anchoRanura_mm: 0,
-            altoRanura_mm: 0,
-            areaRanuraUtil_mm2: 0,
-            margenMarco_mm: 0,
-            longitudEspira_m: 0,
-            numDevanados: 0,
-            fmm_Av: 0,
-            fuerzaLorentz_N: 0,
-            par_Nm: 0,
-            campoB_T: 0,
-            longitudActiva_m: 0,
-            radioEfectivo_m: 0
-        };
 
         // --- PASO 1: GEOMETRÍA ---
         function actualizarResumenPaso1() {
@@ -2254,31 +2312,6 @@ function adminEliminarUsuario(nombre) {
 }
 
 
-// === PARCHE USUARIOS / ADMIN SUPABASE AUTH ===
-let esAdmin = false;
-let sessionActiva = null;
-let profileActual = null;
-let authInicializada = false;
-
-function ocultarUIHastaAutenticacion() {
-    const modal = document.getElementById('modal-auth');
-    if (modal) modal.style.display = 'flex';
-    document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active'));
-}
-
-function inicializarAplicacionBase() {
-    inicializarNavegacionProfesional();
-    // Preparar UI inicial sin datos
-    renderizarUI();
-}
-
-function mostrarUIAutenticada() {
-    const modal = document.getElementById('modal-auth');
-    if (modal) modal.style.display = 'none';
-    cambiarPagina('calc');
-}
-
-
 async function inicializarAuth() {
     console.log("Iniciando inicializarAuth...");
     return new Promise((resolve) => {
@@ -2408,71 +2441,6 @@ function toggleModoAuth(e) {
     document.getElementById('auth-success').style.display = 'none';
 }
 
-async function ejecutarAuth() {
-    const email = document.getElementById('auth-email').value.trim();
-    const password = document.getElementById('auth-password').value.trim();
-    const errorMsg = document.getElementById('auth-error');
-    const successMsg = document.getElementById('auth-success');
-    
-    errorMsg.style.display = 'none';
-    successMsg.style.display = 'none';
-    
-    if (!email || !password) {
-        errorMsg.textContent = "Por favor completa el correo y contraseña.";
-        errorMsg.style.display = 'block';
-        return;
-    }
-    
-    try {
-        if (modoRegistroAuth) {
-            const nombre = document.getElementById('auth-nombre').value.trim();
-            if (!nombre) throw new Error("Debes introducir tu nombre para registrarte.");
-            
-            const btn = document.getElementById('btn-auth-accion');
-            btn.textContent = "Registrando..."; btn.disabled = true;
-            
-            const { data, error } = await dbMendocinoClient.auth.signUp({
-                email: email,
-                password: password,
-                options: { data: { nombre: nombre } }
-            });
-            
-            btn.textContent = "Registrarse"; btn.disabled = false;
-            if (error) throw error;
-            
-            if (data.user && data.user.identities && data.user.identities.length === 0) {
-                 throw new Error("Este correo ya está registrado, intenta iniciar sesión.");
-            }
-            if (!data.session) {
-                successMsg.textContent = "Registro exitoso. Si exige confirmación, revisa tu email.";
-                successMsg.style.display = 'block';
-            }
-        } else {
-            const btn = document.getElementById('btn-auth-accion');
-            btn.textContent = "Iniciando..."; btn.disabled = true;
-            const { data, error } = await dbMendocinoClient.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
-            btn.textContent = "Iniciar Sesión"; btn.disabled = false;
-            
-            if (error) {
-                if (error.message.includes('Invalid login credentials')) {
-                    throw new Error("Credenciales inválidas. Comprueba tu correo y contraseña.");
-                } else if (error.message.includes('Email not confirmed')) {
-                    throw new Error("Por favor, confirma tu correo electrónico primero.");
-                }
-                throw error;
-            }
-        }
-    } catch (e) {
-        errorMsg.textContent = e.message;
-        errorMsg.style.display = 'block';
-        const btn = document.getElementById('btn-auth-accion');
-        btn.textContent = modoRegistroAuth ? 'Registrarse' : 'Iniciar Sesión'; 
-        btn.disabled = false;
-    }
-}
 
 async function cerrarSesion() {
     try {
