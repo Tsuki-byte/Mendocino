@@ -9,19 +9,19 @@ let usuarioActual = {
     nivel: localStorage.getItem('nivelUsuarioMotor') || NIVELES_USUARIO.BASICO
 };
 
-// === VARIABLES GLOBALES CRÍTICAS (MOVIDAS AL INICIO PARA SEGURIDAD) ===
-let esAdmin = false;
-let sessionActiva = null;
-let profileActual = null;
-let authInicializada = false;
-let modoRegistroAuth = false;
+// === VARIABLES GLOBALES CRÍTICAS ===
+window.esAdmin = false;
+window.sessionActiva = null;
+window.profileActual = null;
+window.authInicializada = false;
+window.modoRegistroAuth = false;
 
-const MATERIALES_CONDUCTORES = {
+window.MATERIALES_CONDUCTORES = {
     cobre: { nombre: "Cobre", densidad: 8.95, resistividad: 1.75e-8, colorUI: "#d35400" },
     aluminio: { nombre: "Aluminio", densidad: 2.70, resistividad: 2.82e-8, colorUI: "#7f8c8d" }
 };
 
-const EstadoDiseno = {
+window.EstadoDiseno = {
     resistenciaPanelObjetivo: 0,
     diametroRotor: 0,
     longitudPanel: 0,
@@ -44,19 +44,20 @@ const EstadoDiseno = {
     factorOcupacion: 0
 };
 
-// === FUNCIONES DE AUTENTICACIÓN (MOVIDAS AL INICIO PARA SEGURIDAD) ===
-function toggleModoAuth(e) {
+// === FUNCIONES DE AUTENTICACIÓN GLOBALES ===
+window.toggleModoAuth = function(e) {
     if (e) e.preventDefault();
-    modoRegistroAuth = !modoRegistroAuth;
+    window.modoRegistroAuth = !window.modoRegistroAuth;
     const gNombre = document.getElementById('auth-nombre-group');
     const bAccion = document.getElementById('btn-auth-accion');
     const lToggle = document.getElementById('link-toggle-auth');
-    if (gNombre) gNombre.style.display = modoRegistroAuth ? 'block' : 'none';
-    if (bAccion) bAccion.textContent = modoRegistroAuth ? 'Registrarse' : 'Iniciar Sesión';
-    if (lToggle) lToggle.textContent = modoRegistroAuth ? '¿Ya tienes cuenta? Inicia sesión aquí.' : '¿No tienes cuenta? Registrate aquí.';
-}
+    if (gNombre) gNombre.style.display = window.modoRegistroAuth ? 'block' : 'none';
+    if (bAccion) bAccion.textContent = window.modoRegistroAuth ? 'Registrarse' : 'Iniciar Sesión';
+    if (lToggle) lToggle.textContent = window.modoRegistroAuth ? '¿Ya tienes cuenta? Inicia sesión aquí.' : '¿No tienes cuenta? Registrate aquí.';
+};
 
-async function ejecutarAuth() {
+window.ejecutarAuth = async function() {
+    console.log("DEBUG: Ejecutando Auth...");
     const email = document.getElementById('auth-email')?.value.trim();
     const password = document.getElementById('auth-password')?.value.trim();
     const errorMsg = document.getElementById('auth-error');
@@ -72,9 +73,9 @@ async function ejecutarAuth() {
 
     try {
         const client = window.dbMendocinoClient;
-        if (!client) throw new Error("Servicio de autenticación no listo");
+        if (!client) throw new Error("Servicio de autenticación no listo. Espera un momento.");
 
-        if (modoRegistroAuth) {
+        if (window.modoRegistroAuth) {
             const nombre = document.getElementById('auth-nombre')?.value.trim();
             const { data, error } = await client.auth.signUp({ 
                 email, 
@@ -82,17 +83,16 @@ async function ejecutarAuth() {
                 options: { data: { nombre: nombre || 'Usuario' } }
             });
             if (error) throw error;
-            if (successMsg) { successMsg.textContent = "¡Registro éxito! Revisa tu email o intenta loguear."; successMsg.style.display = 'block'; }
+            if (successMsg) { successMsg.textContent = "¡Registro éxito! Revisa tu email."; successMsg.style.display = 'block'; }
         } else {
             const { data, error } = await client.auth.signInWithPassword({ email, password });
             if (error) throw error;
-            // El listener de onAuthStateChange se encargará del resto
         }
     } catch (e) {
         console.error("Error Auth:", e);
         if (errorMsg) { errorMsg.textContent = e.message; errorMsg.style.display = 'block'; }
     }
-}
+};
 
 const CONFIG_NIVELES = {
     basico: {
