@@ -1343,20 +1343,38 @@ function dibujarInteraccionMagneticaSVG() {
         svg.appendChild(line); svg.appendChild(arrow);
     }
 
-    // --- 2. IMÁN BASE ---
-    const rectIman = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rectIman.setAttribute('x', cx - imanWidth/2); rectIman.setAttribute('y', imanY);
-    rectIman.setAttribute('width', imanWidth); rectIman.setAttribute('height', imanHeight);
-    rectIman.setAttribute('fill', '#95a5a6'); rectIman.setAttribute('stroke', '#7f8c8d');
-    rectIman.setAttribute('stroke-width', '2'); rectIman.setAttribute('rx', '2');
-    svg.appendChild(rectIman);
+    // --- 2. IMÁN BASE (Bipolo: Norte Rojo / Sur Azul) ---
+    const hMedio = imanHeight / 2;
     
-    const textN = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    textN.setAttribute('x', cx); textN.setAttribute('y', imanY + 15);
-    textN.setAttribute('font-size', '13'); textN.setAttribute('fill', 'white');
-    textN.setAttribute('font-weight', 'bold'); textN.setAttribute('text-anchor', 'middle');
-    textN.textContent = 'N';
-    svg.appendChild(textN);
+    // Parte Norte (Superior - Rojo)
+    const rectN = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rectN.setAttribute('x', cx - imanWidth/2); rectN.setAttribute('y', imanY);
+    rectN.setAttribute('width', imanWidth); rectN.setAttribute('height', hMedio);
+    rectN.setAttribute('fill', '#e74c3c'); rectN.setAttribute('stroke', '#c0392b');
+    rectN.setAttribute('stroke-width', '1'); rectN.setAttribute('rx', '1');
+    svg.appendChild(rectN);
+    
+    const txtN = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txtN.setAttribute('x', cx); txtN.setAttribute('y', imanY + hMedio - 2);
+    txtN.setAttribute('font-size', '11'); txtN.setAttribute('fill', 'white');
+    txtN.setAttribute('font-weight', 'bold'); txtN.setAttribute('text-anchor', 'middle');
+    txtN.textContent = 'N';
+    svg.appendChild(txtN);
+
+    // Parte Sur (Inferior - Azul)
+    const rectS = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rectS.setAttribute('x', cx - imanWidth/2); rectS.setAttribute('y', imanY + hMedio);
+    rectS.setAttribute('width', imanWidth); rectS.setAttribute('height', hMedio);
+    rectS.setAttribute('fill', '#3498db'); rectS.setAttribute('stroke', '#2980b9');
+    rectS.setAttribute('stroke-width', '1'); rectS.setAttribute('rx', '1');
+    svg.appendChild(rectS);
+
+    const txtS = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txtS.setAttribute('x', cx); txtS.setAttribute('y', imanY + imanHeight - 2);
+    txtS.setAttribute('font-size', '11'); txtS.setAttribute('fill', 'white');
+    txtS.setAttribute('font-weight', 'bold'); txtS.setAttribute('text-anchor', 'middle');
+    txtS.textContent = 'S';
+    svg.appendChild(txtS);
 
     // --- 3. ROTOR POLIGONAL CON EJE ---
     const N = EstadoDiseno.numeroCaras || 4;
@@ -1813,18 +1831,38 @@ function dibujarInteraccionLuminicaSVG() {
     eje.setAttribute('stroke', '#7f8c8d');
     svg.appendChild(eje);
 
-    // Imán inferior de referencia
-    const magW = 60; const magH = 12;
-    const magR = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    magR.setAttribute('x', cx - magW/2); magR.setAttribute('y', cy + radioRotorSVG + 10);
-    magR.setAttribute('width', magW); magR.setAttribute('height', magH);
-    magR.setAttribute('fill', '#d35400'); magR.setAttribute('rx', '2');
-    svg.appendChild(magR);
-    const textN = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    textN.setAttribute('x', cx); textN.setAttribute('y', cy + radioRotorSVG + 20);
-    textN.setAttribute('fill', '#fff'); textN.setAttribute('font-size', '10');
-    textN.setAttribute('text-anchor', 'middle'); textN.textContent = 'N';
-    svg.appendChild(textN);
+    // Imán inferior de referencia (Bipolo: Norte Rojo / Sur Azul)
+    const magW = 60; const magH = 16;
+    const hM = magH / 2;
+    const magY = cy + radioRotorSVG + 10;
+
+    // Norte (Rojo)
+    const rectN4 = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rectN4.setAttribute('x', cx - magW/2); rectN4.setAttribute('y', magY);
+    rectN4.setAttribute('width', magW); rectN4.setAttribute('height', hM);
+    rectN4.setAttribute('fill', '#e74c3c'); rectN4.setAttribute('stroke', '#c0392b');
+    svg.appendChild(rectN4);
+    
+    const textN4 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    textN4.setAttribute('x', cx); textN4.setAttribute('y', magY + hM - 2);
+    textN4.setAttribute('fill', '#fff'); textN4.setAttribute('font-size', '9');
+    textN4.setAttribute('font-weight', 'bold'); textN4.setAttribute('text-anchor', 'middle');
+    textN4.textContent = 'N';
+    svg.appendChild(textN4);
+
+    // Sur (Azul)
+    const rectS4 = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rectS4.setAttribute('x', cx - magW/2); rectS4.setAttribute('y', magY + hM);
+    rectS4.setAttribute('width', magW); rectS4.setAttribute('height', hM);
+    rectS4.setAttribute('fill', '#3498db'); rectS4.setAttribute('stroke', '#2980b9');
+    svg.appendChild(rectS4);
+
+    const textS4 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    textS4.setAttribute('x', cx); textS4.setAttribute('y', magY + magH - 2);
+    textS4.setAttribute('fill', '#fff'); textS4.setAttribute('font-size', '9');
+    textS4.setAttribute('font-weight', 'bold'); textS4.setAttribute('text-anchor', 'middle');
+    textS4.textContent = 'S';
+    svg.appendChild(textS4);
 }
 
 // Hook the variables exported by Magnetic to be used as starting values for Lumínico
