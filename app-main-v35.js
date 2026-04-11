@@ -1641,8 +1641,8 @@ function dibujarInteraccionLuminicaSVG() {
     const angP = anguloTotalRadianes * (WpTotal / sumaAnchuras);
     const angS = anguloTotalRadianes * (Ws / sumaAnchuras);
 
-    // Offset de giro real (desde el centro del panel 0)
-    const rotOffset = -(angP + angS) / 2 + (giro * Math.PI / 180);
+    // Offset de giro real (alineado exactamente igual que el cálculo de effs en la lógica)
+    const rotOffset = (giro * Math.PI / 180);
 
     // --- A. DIBUJAR CUERPO DEL ROTOR (Un solo Path 3D) ---
     let dRotor = "";
