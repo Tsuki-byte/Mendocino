@@ -1560,10 +1560,7 @@ function dibujarInteraccionMagneticaSVG() {
 
 
     // --- 4. DEVANADOS Y FUERZAS EN TODAS LAS RANURAS ---
-    const angP = EstadoDiseno.anguloPanel || (Math.PI/2);
-    const angS = EstadoDiseno.anguloRanura || (Math.PI/2);
-    const Rfondo_mm = (EstadoDiseno.diametroRotor/2) - (EstadoDiseno.altoRanura_mm || 0);
-    const RfondoPx = Rfondo_mm * factorEscala;
+    // (angP, angS y RfondoPx ya están calculados arriba)
     
     const maxDevanadoR = (radioRotorSVG - RfondoPx) / 2;
     const devanadoR = Math.max(3, Math.min(8, maxDevanadoR)); 
