@@ -1560,7 +1560,6 @@ function dibujarInteraccionMagneticaSVG() {
 
 
     // --- 4. DEVANADOS Y FUERZAS EN TODAS LAS RANURAS ---
-    const N = EstadoDiseno.numeroCaras || 4;
     const angP = EstadoDiseno.anguloPanel || (Math.PI/2);
     const angS = EstadoDiseno.anguloRanura || (Math.PI/2);
     const Rfondo_mm = (EstadoDiseno.diametroRotor/2) - (EstadoDiseno.altoRanura_mm || 0);
