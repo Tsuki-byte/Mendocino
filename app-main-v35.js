@@ -788,8 +788,8 @@ function cargarMotor(config) {
                 if (fo > 0) {
                     const esExceso = fo >= 1.0;
                     const colorBobinado = esExceso ? "#e74c3c" : "#d35400";
-                    const opacidadBobinado = esExceso ? "1.0" : "0.8"; // Más sólido en alerta
-                    const profBobinadoPx = Ds * escala * Math.min(fo, 1.2); // Limitamos visualmente
+                    const opacidadBobinado = esExceso ? "1.0" : "0.8"; 
+                    const profBobinadoPx = Ds * escala * Math.min(fo, 1.2); 
                     
                     for (let i = 0; i < N; i++) {
                         const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
@@ -799,20 +799,47 @@ function cargarMotor(config) {
                         const dirX = Math.cos(thetaBisectriz);
                         const dirY = Math.sin(thetaBisectriz);
 
-                        // Puntos del fondo de la ranura (lo más cerca del eje)
-                        const f1x = centro + RfondoPx * Math.cos(theta2);
-                        const f1y = centro + RfondoPx * Math.sin(theta2);
-                        const f2x = centro + RfondoPx * Math.cos(theta3);
-                        const f2y = centro + RfondoPx * Math.sin(theta3);
+                        let pVbob = "";
 
-                        // Puntos exteriores del bobinado (creciendo hacia el perímetro)
-                        const o1x = f1x + dirX * profBobinadoPx;
-                        const o1y = f1y + dirY * profBobinadoPx;
-                        const o2x = f2x + dirX * profBobinadoPx;
-                        const o2y = f2y + dirY * profBobinadoPx;
+                        if (tipoRanura === 'trapecio') {
+                            // Puntos base inferiores (en el fondo)
+                            const f1x = centro + RfondoPx * Math.cos(theta2);
+                            const f1y = centro + RfondoPx * Math.sin(theta2);
+                            const f2x = centro + RfondoPx * Math.cos(theta3);
+                            const f2y = centro + RfondoPx * Math.sin(theta3);
+
+                            // Puntos superiores (creciendo radialmente hacia afuera)
+                            const rExt = RfondoPx + profBobinadoPx;
+                            const o1x = centro + rExt * Math.cos(theta2);
+                            const o1y = centro + rExt * Math.sin(theta2);
+                            const o2x = centro + rExt * Math.cos(theta3);
+                            const o2y = centro + rExt * Math.sin(theta3);
+                            
+                            pVbob = `${f1x},${f1y} ${o1x},${o1y} ${o2x},${o2y} ${f2x},${f2y}`;
+                        } else {
+                            // Rectangular: los puntos p2 y p3 son los de la superficie
+                            const p2x = centro + radioMaxPx * Math.cos(theta2);
+                            const p2y = centro + radioMaxPx * Math.sin(theta2);
+                            const p3x = centro + radioMaxPx * Math.cos(theta3);
+                            const p3y = centro + radioMaxPx * Math.sin(theta3);
+
+                            // Fondo de la ranura rectangular
+                            const f1x = p2x - dirX * profPx;
+                            const f1y = p2y - dirY * profPx;
+                            const f2x = p3x - dirX * profPx;
+                            const f2y = p3y - dirY * profPx;
+
+                            // Superficie del bobinado (creciendo paralelo al eje de la ranura)
+                            const o1x = f1x + dirX * profBobinadoPx;
+                            const o1y = f1y + dirY * profBobinadoPx;
+                            const o2x = f2x + dirX * profBobinadoPx;
+                            const o2y = f2y + dirY * profBobinadoPx;
+
+                            pVbob = `${f1x},${f1y} ${o1x},${o1y} ${o2x},${o2y} ${f2x},${f2y}`;
+                        }
 
                         const polyBobinado = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-                        polyBobinado.setAttribute("points", `${f1x},${f1y} ${o1x},${o1y} ${o2x},${o2y} ${f2x},${f2y}`);
+                        polyBobinado.setAttribute("points", pVbob);
                         polyBobinado.setAttribute("fill", colorBobinado);
                         polyBobinado.setAttribute("opacity", opacidadBobinado);
                         svg.appendChild(polyBobinado);
@@ -2447,78 +2474,65 @@ function mostrarUIAutenticada() {
 async function inicializarAuth() {
     console.log("Iniciando inicializarAuth...");
     return new Promise((resolve) => {
-        let authInicialEventsHandled = false;
+        let authProcesada = false;
 
-        // Intentar obtener el cliente de Supabase (con reintento si falla la carga)
-        const getClient = () => window.dbMendocinoClient || (typeof dbMendocinoClient !== 'undefined' ? dbMendocinoClient : null);
-        
-        const client = getClient();
+        const client = window.dbMendocinoClient || (typeof dbMendocinoClient !== 'undefined' ? dbMendocinoClient : null);
         if (!client) {
-            console.error("CRÍTICO: Cliente Supabase no encontrado al inicializar.");
+            console.error("CRÍTICO: Cliente Supabase no encontrado.");
             resolve(); return;
         }
 
-        // Suscribirse a cambios de estado
-        client.auth.onAuthStateChange(async (event, session) => {
-            console.log("DEBUG [Auth]: Evento recibido:", event, "Sesión activa:", !!session);
-            
-            try {
-                sessionActiva = session;
+        // Función unificada de arranque seguro
+        const finalizarArranqueConDatos = async (session) => {
+            if (authProcesada) return;
+            authProcesada = true;
+            authInicializada = true;
+            sessionActiva = session;
+
+            if (session) {
+                console.log("DEBUG [Auth]: Usuario detectado. Cargando ecosistema...");
+                const modalAuth = document.getElementById('modal-auth');
+                if (modalAuth) modalAuth.style.display = 'none';
+
+                cargarPerfilUsuario(session.user).catch(e => console.error("Error perfil:", e));
                 
-                if (session) {
-                    console.log("DEBUG [Auth]: Usuario autenticado, configurando interfaz...");
-                    const modalAuth = document.getElementById('modal-auth');
-                    if (modalAuth) modalAuth.style.display = 'none';
-                    
-                    // No bloqueamos todo el arranque por los datos del perfil
-                    cargarPerfilUsuario(session.user).catch(e => console.error("DEBUG [Auth]: Error en perfil:", e));
-                    
-                    console.log("DEBUG [Auth]: Iniciando carga de datos globales...");
-                    // CRÍTICO: AWAIT para evitar condición de carrera con la restauración del progreso
-                    await cargarDatosGlobales();
-                    console.log("DEBUG [Auth]: Datos globales listos, renderizando UI...");
-                    renderizarUI();
-                    
-                    actualizarPanelAdminUI();
-                    aplicarNivelUsuario();
-                    mostrarUIAutenticada();
-                    console.log("DEBUG [Auth]: Flujo de entrada completado.");
-                } else {
-                    console.log("DEBUG [Auth]: No se detectó sesión activa.");
-                    if (!window.location.pathname.includes('admin-v35.html')) {
-                        ocultarUIHastaAutenticacion();
-                    }
+                // Asegurar carga de componentes
+                await cargarDatosGlobales();
+                renderizarUI();
+                
+                actualizarPanelAdminUI();
+                aplicarNivelUsuario();
+                mostrarUIAutenticada();
+            } else {
+                console.log("DEBUG [Auth]: Sin sesión. Mostrando login.");
+                if (!window.location.pathname.includes('admin-v35.html')) {
+                    ocultarUIHastaAutenticacion();
                 }
-            } catch (err) {
-                console.error("DEBUG [Auth]: Error crítico en evento de autenticación:", err);
-            } finally {
-                if (!authInicialEventsHandled) {
-                    authInicialEventsHandled = true;
-                    authInicializada = true;
-                    resolve();
-                }
+            }
+            resolve();
+        };
+
+        // 1. Canal normal: Cambio de estado de Auth
+        client.auth.onAuthStateChange(async (event, session) => {
+            console.log("DEBUG [Auth]: Evento:", event);
+            if (!authProcesada) {
+                await finalizarArranqueConDatos(session);
             }
         });
 
-        // Timeout de seguridad: Si Supabase no responde nada en 2 segundos, continuamos
+        // 2. Canal de respaldo: Timeout 1.5s (Suficiente para detectar sesión persistente)
         setTimeout(async () => {
-            if (!authInicialEventsHandled) {
-                console.warn("Auth timeout fallback activado.");
+            if (!authProcesada) {
+                console.warn("DEBUG [Auth]: Timeout disparado. Forzando verificación.");
                 try {
                     const { data: { session } } = await client.auth.getSession();
-                    sessionActiva = session;
-                    if (session) {
-                        mostrarUIAutenticada();
-                    }
+                    await finalizarArranqueConDatos(session);
                 } catch (e) {
-                    console.error("Error en fallback getSession:", e);
-                } finally {
-                    authInicialEventsHandled = true;
-                    authInicializada = true;
+                    console.error("Error en fallback:", e);
                     resolve();
                 }
             }
-        }, 2000);
+        }, 1500);
     });
 }
 
