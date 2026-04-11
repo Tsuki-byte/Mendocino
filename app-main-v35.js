@@ -1582,9 +1582,31 @@ function dibujarInteraccionMagneticaSVG() {
     lineC2.setAttribute('stroke', '#fff'); lineC2.setAttribute('stroke-width', '1.5');
     svg.appendChild(lineC2);
 
-    // --- 4. FUERZA LORENTZ VECTOR ---
-    // Recalibración: Para fuerzas típicas de 0.1N a 0.5N
-    const lenF = Math.min(120, 10 + (fuerza * 300)); 
+    // --- 4. FUERZA LORENTZ VECTOR (Escala Cualitativa) ---
+    // El tamaño máximo (100%) es cuando el entrehierro es 0mm.
+    // Calculamos el ratio B_actual / B_max_posible para este imán.
+    let ratioF = 0.5; // Default si no hay imán
+    const selImanF = document.getElementById('iman-motor');
+    if (selImanF && selImanF.value !== '') {
+        const im = dbImanes?.[Number(selImanF.value)];
+        if (im) {
+            const dims = [Number(im.l), Number(im.a), Number(im.h)];
+            const T = Math.min(...dims);
+            const baseDims = dims.filter((_, i) => i !== dims.indexOf(T));
+            const orientacion = document.getElementById('iman-orientacion')?.value || 'long';
+            const L_eff = (orientacion === 'long') ? Math.max(...baseDims) : Math.min(...baseDims);
+            const W_eff = (orientacion === 'long') ? Math.min(...baseDims) : Math.max(...baseDims);
+            
+            // B_max a z=1mm (contacto + margen centro devanado)
+            const B_max = calcularCampoBPrisma(Number(im.br), L_eff, W_eff, T, 1);
+            if (B_max > 0) {
+                ratioF = Math.min(1, campoB / B_max);
+            }
+        }
+    }
+
+    // Longitud visual: mínima 15px, máxima 100px.
+    const lenF = 15 + (ratioF * 85); 
     const fx1 = cx + devanadoR + 3;
     const fy = devanadoY;
     const fx2 = fx1 + lenF;
