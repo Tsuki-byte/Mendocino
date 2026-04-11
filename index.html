@@ -205,30 +205,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <select id="panel" onchange="actualizarResumenPaso1()"></select>
                         </div>
 
-                        <h3 class="titulo-seccion-principal espacio-superior">🧲 3. Imán Motriz (Base)</h3>
-                        <div class="form-group">
-                            <label>Selecciona el Imán de la Base (Bloque)</label>
-                            <select id="iman-motor" onchange="poblarInfoImanMotor(); actualizarResumenPaso1();"></select>
-                        </div>
-
-                        <div class="fila-formulario">
-                            <div class="form-group" style="flex: 1.5;">
-                                <label>Orientación en la base:</label>
-                                <select id="iman-orientacion" onchange="actualizarResumenPaso1()">
-                                    <option value="long">Largo paralelo al eje (3D)</option>
-                                    <option value="trans">Ancho paralelo al eje (3D)</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="flex: 1;">
-                                <label>Entrehierro (mm): <span>Distancia imán-rotor</span></label>
-                                <input type="number" id="iman-distancia" value="2.0" step="0.5" min="0" oninput="actualizarResumenPaso1()">
-                            </div>
-                        </div>
-
-                        <div id="info-iman-motor" style="font-size: 13px; color: #666; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; margin-top: 5px; display: none;">
-                            <!-- Info dinámica del imán -->
-                        </div>
-                        
                         <div class="nav-buttons nav-buttons-fin">
                             <button class="btn-nav btn-next btn-nav-compacto" onclick="cambiarPaso(2)">Siguiente ⮞</button>
                         </div>
@@ -457,10 +433,34 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
         </div>
 
-        <h4 class="subtitulo-seccion">Parámetros del campo magnético</h4>
+        <h4 class="subtitulo-seccion">Configuración del Imán Motriz (Base)</h4>
+        <div class="form-group">
+            <label>Selecciona el Imán (desde tu BD)</label>
+            <select id="iman-motor" onchange="poblarInfoImanMotor(); actualizarResumenPaso1();"></select>
+        </div>
+
+        <div class="fila-formulario">
+            <div class="form-group" style="flex: 1.5;">
+                <label>Orientación:</label>
+                <select id="iman-orientacion" onchange="actualizarResumenPaso1()">
+                    <option value="long">Largo paralelo al eje (Vista 3D)</option>
+                    <option value="trans">Ancho paralelo al eje (Vista 3D)</option>
+                </select>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Entrehierro (mm): <span>Distancia imán-rotor</span></label>
+                <input type="number" id="iman-distancia" value="2.0" step="0.5" min="0" oninput="actualizarResumenPaso1()">
+            </div>
+        </div>
+
+        <div id="info-iman-motor" style="font-size: 13px; color: #666; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; margin: 10px 0;">
+            <!-- Info dinámica del imán -->
+        </div>
+
+        <h4 class="subtitulo-seccion">Parámetros del campo magnético resultante</h4>
         <div class="mag-grid-3">
             <div class="form-group">
-                <label>Campo magnético principal B [T] <small style="display:block; font-weight:normal; color:#666;">(Calculado desde Paso 1)</small></label>
+                <label>Campo magnético principal B [T] <small style="display:block; font-weight:normal; color:#666;">(Calculado automáticamente)</small></label>
                 <input type="number" id="campo-b" value="0.18" min="0" step="0.001" oninput="calcularPasoMagnetico()" class="calculado">
             </div>
 
