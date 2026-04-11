@@ -685,8 +685,9 @@ function cargarMotor(config) {
             dibujarRotorSVG();
             // Dibujar la vista superior del panel
             dibujarPanelSVG(EstadoDiseno.longitudPanel, Wp, EstadoDiseno.margenMarco_mm);
+            // Actualizar cálculos eléctricos y ocupación
             calcularPaso2();
-            calcularPaso3();
+            calcularOcupacionRanura(); 
             precargarPasoMagnetico();
             calcularPasoMagnetico();
 
@@ -1100,31 +1101,6 @@ function actualizarListaHilos() {
                 document.getElementById('res-espiras-final').textContent = espirasCalculadas;
                 EstadoDiseno.espirasPorDevanado = espirasCalculadas;
 
-                const areaRanura = EstadoDiseno.areaRanura_mm2 || (EstadoDiseno.anchoRanura_mm * EstadoDiseno.altoRanura_mm); 
-                if (areaRanura > 0 && espirasCalculadas > 0) {
-                    const areaEfectiva = espirasCalculadas * seccionHilo * 1.25; 
-                    const foActual = areaEfectiva / areaRanura;
-                    EstadoDiseno.factorOcupacion = foActual;
-                    
-                    // --- FEEDBACK VISUAL INSTANTÁNEO ---
-                    const esExceso = foActual >= 1.0;
-                    const colorAlerta = esExceso ? "#e74c3c" : "#d35400";
-                    const opacidadAlerta = esExceso ? "1.0" : "0.8";
-
-                    // 1. Leyendas
-                    const leyendas = ['leyenda-ranura', 'leyenda-ranura-step2'];
-                    leyendas.forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) {
-                            el.style.backgroundColor = colorAlerta;
-                            el.style.opacity = opacidadAlerta;
-                        }
-                    });
-
-                    // 2. Gráfico Rotor
-                    dibujarRotorSVG();
-                }
-
                 const fmm = espirasCalculadas * (EstadoDiseno.intensidadPanel_mA / 1000);
                 EstadoDiseno.fmm_Av = fmm;
                 const elFmm = document.getElementById('res-fmm');
@@ -1134,24 +1110,37 @@ function actualizarListaHilos() {
                 document.getElementById('lon-total').value = lonTotalReal.toFixed(2);
 
                 const rReal = (materialConductor.resistividad * lonTotalReal) / (seccionHilo * 1e-6);
-                document.getElementById('res-devanado').value = rReal.toFixed(2);
+                const elResDev = document.getElementById('res-devanado');
+                if (elResDev) elResDev.value = rReal.toFixed(2);
 
                 const numDevanados = EstadoDiseno.numeroCaras / 2;
                 EstadoDiseno.numDevanados = numDevanados;
-                document.getElementById('num-devanados').value = numDevanados;
+                const elNumDev = document.getElementById('num-devanados');
+                if (elNumDev) elNumDev.value = numDevanados;
 
                 const volumen1_cm3 = seccionHilo * (lonTotalReal * 1000) / 1000;
                 const masa1_g = volumen1_cm3 * materialConductor.densidad;
                 const masaTotal_g = masa1_g * numDevanados;
 
-                document.getElementById('res-mat-nombre').textContent = materialConductor.nombre;
-                document.getElementById('res-lon-espira-resumen').textContent = lonEspira.toFixed(4) + ' m';
-                document.getElementById('res-lon-devanado').textContent = lonTotalReal.toFixed(2) + ' m';
-                document.getElementById('res-peso-devanado').textContent = masa1_g.toFixed(1) + ' g';
-                document.getElementById('res-lon-total-todos').textContent = (lonTotalReal * numDevanados).toFixed(2) + ' m';
-                document.getElementById('res-peso-total-todos').textContent = masaTotal_g.toFixed(1) + ' g';
+                const elMatNombre = document.getElementById('res-mat-nombre');
+                if (elMatNombre) elMatNombre.textContent = materialConductor.nombre;
                 
-                calcularPaso3();
+                const elResLonEspira = document.getElementById('res-lon-espira-resumen');
+                if (elResLonEspira) elResLonEspira.textContent = lonEspira.toFixed(4) + ' m';
+                
+                const elResLonDev = document.getElementById('res-lon-devanado');
+                if (elResLonDev) elResLonDev.textContent = lonTotalReal.toFixed(2) + ' m';
+                
+                const elResPesoDev = document.getElementById('res-peso-devanado');
+                if (elResPesoDev) elResPesoDev.textContent = masa1_g.toFixed(1) + ' g';
+                
+                const elResLonTotal = document.getElementById('res-lon-total-todos');
+                if (elResLonTotal) elResLonTotal.textContent = (lonTotalReal * numDevanados).toFixed(2) + ' m';
+                
+                const elResPesoTotal = document.getElementById('res-peso-total-todos');
+                if (elResPesoTotal) elResPesoTotal.textContent = masaTotal_g.toFixed(1) + ' g';
+
+                calcularOcupacionRanura();
             }
         }
 
@@ -1288,7 +1277,7 @@ function calcularPasoMagnetico() {
 
         // --- PASO 4: ENCAJE EN RANURA ---
 
-        function calcularPaso3() {
+        function calcularOcupacionRanura() {
             const anchoReal = EstadoDiseno.anchoRanura_mm;
             const altoReal = EstadoDiseno.altoRanura_mm;
 

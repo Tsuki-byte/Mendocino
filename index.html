@@ -203,24 +203,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <select id="panel" onchange="actualizarResumenPaso1()"></select>
                         </div>
                         
-                        <h3 class="titulo-seccion-principal espacio-superior">📏 3. Encaje del hilo en ranura</h3>
-                        <p style="font-size: 14px; color: #666; margin-top: -10px;">Ajusta aquí la calidad de bobinado para comprobar desde el inicio si el hilo cabe físicamente en la ranura.</p>
-
-                        <div class="form-group">
-                            <label>Calidad de bobinado (Factor de holgura)</label>
-                            <select id="calidad-bobinado" onchange="calcularPaso3()">
-                                <option value="0.05">Máquina (muy compacto)</option>
-                                <option value="0.10">Muy bueno</option>
-                                <option value="0.20">Manual bueno</option>
-                                <option value="0.30" selected>Manual normal</option>
-                                <option value="0.40">Bobinado desordenado</option>
-                            </select>
-                        </div>
-
-                        <div id="alerta-ranura" style="display: none; background-color: #fdeaea; color: #c0392b; padding: 10px; border-radius: 6px; border-left: 4px solid #c0392b; font-size: 13px; margin-bottom: 15px;">
-                            <strong>⚠️ Cuidado:</strong> El hilo sobresaldrá de la ranura.
-                        </div>
-
                         <div class="nav-buttons nav-buttons-fin">
                             <button class="btn-nav btn-next btn-nav-compacto" onclick="cambiarPaso(2)">Siguiente ⮞</button>
                         </div>
@@ -273,20 +255,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <small style="color: #666; margin-top: -5px; margin-bottom: 10px; text-align: center;">* Objetivo a alcanzar con el devanado.</small>
                         </div>
 
-                        <h3 style="margin-top: 22px;">Encaje en la ranura</h3>
-                        <div style="display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 14px;">
-                            <div class="summary-item"><span>Área Útil Ranura:</span><span class="value" id="res-area-ranura">0 mm²</span></div>
-                            <div class="summary-item"><span>Ancho Ocupado (Estimado):</span><span class="value" id="res-ancho-ocupado">0 mm</span></div>
-                            <div class="summary-item"><span>Alto Ocupado (Estimado):</span><span class="value" id="res-alto-ocupado">0 mm</span></div>
-                            <div class="summary-item" style="background-color: #eef2f5; padding: 10px; border-radius: 6px; margin-top: 5px; border-bottom: none;">
-                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-                                    <span class="value" id="res-factor" style="font-size: 18px;">0 %</span>
-                                    <div style="width: 100px; height: 8px; background: #cbd5e1; border-radius: 4px; overflow: hidden;">
-                                        <div id="visual-factor-bar" style="width: 0%; height: 100%; background: #d35400; transition: width 0.3s ease;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -336,6 +304,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <div class="form-group">
                             <label>Resistencia Real Devanado [Ω]</label>
                             <input type="text" id="res-devanado" class="calculado" readonly>
+                        </div>
+
+                        <h3 class="titulo-seccion-principal espacio-superior">📏 3. Encaje del hilo en ranura</h3>
+                        <p style="font-size: 14px; color: #666; margin-top: -10px;">Ajusta aquí la calidad de bobinado para comprobar si el hilo cabe físicamente en la ranura.</p>
+
+                        <div class="form-group">
+                            <label>Calidad de bobinado (Factor de holgura)</label>
+                            <select id="calidad-bobinado" onchange="calcularOcupacionRanura()">
+                                <option value="0.05">Máquina (muy compacto)</option>
+                                <option value="0.10">Muy bueno</option>
+                                <option value="0.20">Manual bueno</option>
+                                <option value="0.30" selected>Manual normal</option>
+                                <option value="0.40">Bobinado desordenado</option>
+                            </select>
+                        </div>
+
+                        <div id="alerta-ranura" style="display: none; background-color: #fdeaea; color: #c0392b; padding: 10px; border-radius: 6px; border-left: 4px solid #c0392b; font-size: 13px; margin-bottom: 15px;">
+                            <strong>⚠️ Cuidado:</strong> El hilo sobresaldrá de la ranura.
                         </div>
 
                         <div class="nav-buttons">
@@ -398,6 +384,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <div class="summary-item" style="background-color: #eef2f5; padding: 10px; border-radius: 6px; margin-top: 15px; border-bottom: none;">
                             <span style="font-weight:bold;">Espiras por Devanado:</span>
                             <span class="value" id="res-espiras-final" style="font-size: 18px;">0</span>
+                        </div>
+
+                        <h3 style="margin-top: 22px;">📐 Encaje en la ranura</h3>
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 14px;">
+                            <div class="summary-item"><span>Área Útil Ranura:</span><span class="value" id="res-area-ranura">0 mm²</span></div>
+                            <div class="summary-item"><span>Ancho Ocupado (Estimado):</span><span class="value" id="res-ancho-ocupado">0 mm</span></div>
+                            <div class="summary-item"><span>Alto Ocupado (Estimado):</span><span class="value" id="res-alto-ocupado">0 mm</span></div>
+                            <div class="summary-item" style="background-color: #eef2f5; padding: 10px; border-radius: 6px; margin-top: 5px; border-bottom: none;">
+                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                                    <span class="value" id="res-factor" style="font-size: 18px;">0 %</span>
+                                    <div style="width: 100px; height: 8px; background: #cbd5e1; border-radius: 4px; overflow: hidden;">
+                                        <div id="visual-factor-bar" style="width: 0%; height: 100%; background: #d35400; transition: width 0.3s ease;"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
