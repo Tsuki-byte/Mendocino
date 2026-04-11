@@ -724,8 +724,10 @@ function cargarMotor(config) {
                     // z = entrehierro + 1mm (margen conservador al centro del devanado exterior)
                     const z = distImanRotor + 1; 
                     const B_calculado = calcularCampoBPrisma(Number(im.br), L_eff, W_eff, T, z);
+                    const B_max = calcularCampoBPrisma(Number(im.br), L_eff, W_eff, T, 1); // A 0mm gap + 1mm offset
                     
                     EstadoDiseno.campoB_T = B_calculado;
+                    EstadoDiseno.campoB_max = B_max > 0 ? B_max : B_calculado;
                     EstadoDiseno.imanMotorNombre = im.nombre;
                     
                     // Sincronizamos con el input del Paso 3
@@ -1584,24 +1586,13 @@ function dibujarInteraccionMagneticaSVG() {
 
     // --- 4. FUERZA LORENTZ VECTOR (Escala Cualitativa Lineal) ---
     // El tamaño máximo (100%) es cuando el entrehierro es 0mm.
+    // Usamos el B_max calculado en el Paso 1 para este imán concreto.
     let ratioF = 0.5; 
-    const selImanF = document.getElementById('iman-motor');
-    if (selImanF && selImanF.value !== '') {
-        const im = dbImanes?.[Number(selImanF.value)];
-        if (im) {
-            const dims = [Number(im.l), Number(im.a), Number(im.h)];
-            const T = Math.min(...dims);
-            const baseDims = dims.filter((_, i) => i !== dims.indexOf(T));
-            const orientacion = document.getElementById('iman-orientacion')?.value || 'long';
-            const L_eff = (orientacion === 'long') ? Math.max(...baseDims) : Math.min(...baseDims);
-            const W_eff = (orientacion === 'long') ? Math.min(...baseDims) : Math.max(...baseDims);
-            
-            // B_max a z=1mm (contacto + margen centro devanado)
-            const B_max = calcularCampoBPrisma(Number(im.br), L_eff, W_eff, T, 1);
-            if (B_max > 0) {
-                ratioF = Math.min(1, campoB / B_max);
-            }
-        }
+    const B_act = EstadoDiseno.campoB_T || 0;
+    const B_max = EstadoDiseno.campoB_max || B_act || 0.18;
+
+    if (B_max > 0) {
+        ratioF = Math.min(1, B_act / B_max);
     }
 
     // Longitud visual lineal: Max ~123px (diámetro del rotor)
