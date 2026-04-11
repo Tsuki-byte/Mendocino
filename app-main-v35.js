@@ -65,6 +65,7 @@ window.ejecutarAuth = async function() {
     const password = document.getElementById('auth-password')?.value.trim();
     const errorMsg = document.getElementById('auth-error');
     const successMsg = document.getElementById('auth-success');
+    const btnAccion = document.getElementById('btn-auth-accion');
     
     if (errorMsg) errorMsg.style.display = 'none';
     if (successMsg) successMsg.style.display = 'none';
@@ -74,26 +75,58 @@ window.ejecutarAuth = async function() {
         return;
     }
 
+    const textoOriginal = btnAccion ? btnAccion.textContent : 'Iniciar Sesión';
+    if (btnAccion) {
+        btnAccion.textContent = "Procesando...";
+        btnAccion.style.opacity = "0.7";
+        btnAccion.style.pointerEvents = "none";
+    }
+
     try {
         const client = window.dbMendocinoClient;
         if (!client) throw new Error("Servicio de autenticación no listo. Espera un momento.");
 
+        // Timeout preventivo si Supabase no responde
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Tiempo límite excedido. Revisa tu conexión a internet.")), 12000));
+        
+        let authPromise;
         if (window.modoRegistroAuth) {
             const nombre = document.getElementById('auth-nombre')?.value.trim();
-            const { data, error } = await client.auth.signUp({ 
+            authPromise = client.auth.signUp({ 
                 email, 
                 password,
                 options: { data: { nombre: nombre || 'Usuario' } }
             });
-            if (error) throw error;
-            if (successMsg) { successMsg.textContent = "¡Registro éxito! Revisa tu email."; successMsg.style.display = 'block'; }
         } else {
-            const { data, error } = await client.auth.signInWithPassword({ email, password });
-            if (error) throw error;
+            authPromise = client.auth.signInWithPassword({ email, password });
+        }
+
+        const { data, error } = await Promise.race([authPromise, timeoutPromise]);
+
+        if (error) throw error;
+        
+        if (window.modoRegistroAuth && successMsg) { 
+            successMsg.textContent = "¡Registro éxito! Revisa tu email."; 
+            successMsg.style.display = 'block'; 
         }
     } catch (e) {
         console.error("Error Auth:", e);
-        if (errorMsg) { errorMsg.textContent = e.message; errorMsg.style.display = 'block'; }
+        if (errorMsg) { 
+            let msg = e.message;
+            if (msg.includes("Invalid login credentials")) msg = "El usuario o la contraseña no son correctos.";
+            else if (msg.includes("weak_password")) msg = "La contraseña debe tener al menos 6 caracteres.";
+            else if (msg.includes("Failed to fetch")) msg = "Error de red. Comprueba tu conexión a internet.";
+            else if (msg.includes("User already registered")) msg = "El usuario ya está registrado con este correo.";
+            
+            errorMsg.textContent = msg; 
+            errorMsg.style.display = 'block'; 
+        }
+    } finally {
+        if (btnAccion) {
+            btnAccion.textContent = textoOriginal;
+            btnAccion.style.opacity = "1";
+            btnAccion.style.pointerEvents = "auto";
+        }
     }
 };
 
