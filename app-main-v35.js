@@ -1369,20 +1369,20 @@ function dibujarInteraccionMagneticaSVG() {
     const strokeW = Math.min(6, Math.max(1.5, parActivo * 1500)); // Grosor reactivo
     const rx = radioRotorSVG + 18;
     
-    // Curva indicadora de giro (sentido antihorario asumiendo Fuerza derecha)
-    const startX = cx - rx * 0.7; const startY = cy + rx * 0.7;
-    const endX = cx - rx * 0.7;   const endY = cy - rx * 0.7;
+    // Curva indicadora de giro (sentido antihorario, el lado izquierdo baja)
+    const startX = cx - rx * 0.7; const startY = cy - rx * 0.7; // Empieza arriba izquierda
+    const endX = cx - rx * 0.7;   const endY = cy + rx * 0.7;   // Termina abajo izquierda
     const tauPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 1 ${endX} ${endY}`);
+    tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 0 ${endX} ${endY}`);
     tauPath.setAttribute('stroke', '#2ecc71'); tauPath.setAttribute('stroke-width', strokeW);
     tauPath.setAttribute('fill', 'none');
     svg.appendChild(tauPath);
 
-    // Punta de flecha de par
+    // Punta de flecha de par (apuntando hacia abajo)
     const tauArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    tauArrow.setAttribute('points', `${endX},${endY-6} ${endX-5},${endY+4} ${endX+5},${endY+4}`);
+    tauArrow.setAttribute('points', `${endX},${endY+8} ${endX-5},${endY-3} ${endX+5},${endY-3}`);
     tauArrow.setAttribute('fill', '#2ecc71');
-    tauArrow.setAttribute('transform', `rotate(35 ${endX} ${endY})`);
+    tauArrow.setAttribute('transform', `rotate(-35 ${endX} ${endY})`);
     svg.appendChild(tauArrow);
 }
 
