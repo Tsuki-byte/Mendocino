@@ -1505,6 +1505,8 @@ function calcularPasoLuminico() {
     const corrienteMax = window.corrienteDisponibleMagnetica || (parseFloat(document.getElementById('res-panel-isc')?.textContent) || 0.15); 
     const parMax = window.parMotrizMagnetico || 0.005;
 
+    const giro_deg = parseFloat(document.getElementById('lum-giro')?.value) || 0;
+    const luz_deg = parseFloat(document.getElementById('lum-angulo-luz')?.value) || 0;
     const conexion = document.getElementById('lum-conexion')?.value || '0';
     const off = parseInt(conexion); 
 
