@@ -1749,31 +1749,33 @@ function dibujarInteraccionLuminicaSVG() {
         const pl2x = cx + radioRotorSVG * Math.cos(tPlaca2);
         const pl2y = cy + radioRotorSVG * Math.sin(tPlaca2);
 
-        // Placa base
+        // Calculamos el color de la placa en base a la luz que recibe (eff = de 0 a 1)
+        let eff = effs[i];
+        
+        // Color oscuro (Gris apagado) cuando eff = 0: rgb(127, 140, 141)
+        // Color claro (Amarillo solar) cuando eff = 1: rgb(241, 196, 15)
+        let r = Math.round(127 + (241 - 127) * eff);
+        let g = Math.round(140 + (196 - 140) * eff);
+        let b = Math.round(141 + (15 - 141) * eff);
+        let colorSolarBase = `rgb(${r},${g},${b})`;
+        let strokeW = 4;
+
+        if (caraActiva === i || (caraActiva === -2 && eff > 0)) {
+             // Pequeño extra visual para el panel primario activo que genera la corriente
+             strokeW = 5; 
+             if (eff < 0.3) {
+                 // Si está activo pero recibe muy poca luz, forzamos un mínimo de amarillo/naranja
+                 colorSolarBase = '#e67e22';
+             }
+        }
+
         const placaSolBase = document.createElementNS("http://www.w3.org/2000/svg", "line");
         placaSolBase.setAttribute("x1", pl1x); placaSolBase.setAttribute("y1", pl1y);
         placaSolBase.setAttribute("x2", pl2x); placaSolBase.setAttribute("y2", pl2y);
-        placaSolBase.setAttribute("stroke", "#2c3e50"); 
-        placaSolBase.setAttribute("stroke-width", "4");
+        placaSolBase.setAttribute("stroke", colorSolarBase); 
+        placaSolBase.setAttribute("stroke-width", strokeW.toString());
         placaSolBase.setAttribute("stroke-linecap", "round");
         svg.appendChild(placaSolBase);
-
-        // Brillo intermitente de la placa según la luz recibida
-        let eff = effs[i];
-        if (eff > 0 || caraActiva === i || (caraActiva === -2 && eff > 0)) {
-            const resplandor = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            resplandor.setAttribute("x1", pl1x); resplandor.setAttribute("y1", pl1y);
-            resplandor.setAttribute("x2", pl2x); resplandor.setAttribute("y2", pl2y);
-            resplandor.setAttribute("stroke", "#f1c40f"); 
-            resplandor.setAttribute("stroke-width", "3"); 
-            resplandor.setAttribute("stroke-linecap", "round");
-            if (caraActiva === i || (caraActiva === -2 && eff > 0)) {
-                resplandor.setAttribute("opacity", (0.5 + eff*0.5).toString());
-            } else {
-                resplandor.setAttribute("opacity", (eff * 0.7).toString());
-            }
-            svg.appendChild(resplandor);
-        }
     }
 
     // Eje central
