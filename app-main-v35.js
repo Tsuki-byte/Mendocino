@@ -1592,7 +1592,7 @@ function dibujarInteraccionLuminicaSVG() {
     if (!svg || !window.estadoLuminico) return;
     svg.innerHTML = '';
     
-    const { N, giro, luz, effs, caraActiva, indexBottom } = window.estadoLuminico;
+    const { N, giro, luz, effs, currents, caraActiva, indexBottom } = window.estadoLuminico;
     const off = parseInt(document.getElementById('lum-conexion')?.value || '0') || 0; 
     const cx = 100, cy = 80; // Centro elevado para consistencia visual con Paso 3
     const radioExterior = 45; // Escala base visual
@@ -1644,18 +1644,18 @@ function dibujarInteraccionLuminicaSVG() {
     const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--svg-stroke-color').trim() || "#333";
     const colorImpresion3D = getComputedStyle(document.documentElement).getPropertyValue('--svg-panel-color').trim() || "#fdebd0";
 
-    const Ws = EstadoDiseno.anchoRanura_mm || 5;
-    const Ds = EstadoDiseno.altoRanura_mm || 4;
-    const R_mm = (EstadoDiseno.diametroRotor || 50) / 2;
-    const factorEscala = 45 / R_mm; 
+    const Ws = EstadoDiseno?.anchoRanura_mm || 5;
+    const Ds = EstadoDiseno?.altoRanura_mm || 4;
+    const R_mm = (EstadoDiseno?.diametroRotor || 50) / 2;
+    const factorEscala = (R_mm > 0) ? (45 / R_mm) : 1; 
     
     const radioRotorSVG = radioExterior;
     const profPx = Ds * factorEscala;
     const RfondoPx = radioRotorSVG - profPx;
     const tipoRanura = document.getElementById('ranura-tipo')?.value || 'rect';
 
-    const Wp = EstadoDiseno.anchoPanel || 50;
-    const WpTotal = Wp + (2 * (EstadoDiseno.margenMarco_mm || 3));
+    const Wp = EstadoDiseno?.anchoPanel || 50;
+    const WpTotal = Wp + (2 * (EstadoDiseno?.margenMarco_mm || 3));
     const sumaAnchuras = WpTotal + Ws;
     const anguloTotalRadianes = (2 * Math.PI) / N;
     const angP = anguloTotalRadianes * (WpTotal / sumaAnchuras);
@@ -1703,7 +1703,7 @@ function dibujarInteraccionLuminicaSVG() {
     svg.appendChild(pathRotor);
 
     // --- B. DIBUJAR BOBINADOS Y PANELES SOLARES ---
-    const fo = EstadoDiseno.factorOcupacion || 0.8; 
+    const fo = EstadoDiseno?.factorOcupacion || 0.8; 
     const profBobinadoPx = Ds * factorEscala * Math.min(fo, 1.2); 
     const currents = window.estadoLuminico.currents || [];
 
