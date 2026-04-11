@@ -1414,10 +1414,20 @@ function dibujarInteraccionMagneticaSVG() {
     devCircle.setAttribute('r', devanadoR);
     devCircle.setAttribute('fill', '#e67e22'); devCircle.setAttribute('stroke', '#d35400');
     svg.appendChild(devCircle);
-    const dotCorriente = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    dotCorriente.setAttribute('cx', cx); dotCorriente.setAttribute('cy', devanadoY);
-    dotCorriente.setAttribute('r', '2.5'); dotCorriente.setAttribute('fill', '#fff');
-    svg.appendChild(dotCorriente); // El punto simboliza corriente saliente
+    // Símbolo de corriente entrante (Cruz ⊗) congruente con Fuerza a la derecha e Imán N abajo
+    const crossSize = Math.max(2, devanadoR * 0.4);
+    
+    const lineC1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    lineC1.setAttribute('x1', cx - crossSize); lineC1.setAttribute('y1', devanadoY - crossSize);
+    lineC1.setAttribute('x2', cx + crossSize); lineC1.setAttribute('y2', devanadoY + crossSize);
+    lineC1.setAttribute('stroke', '#fff'); lineC1.setAttribute('stroke-width', '1.5');
+    svg.appendChild(lineC1);
+
+    const lineC2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    lineC2.setAttribute('x1', cx + crossSize); lineC2.setAttribute('y1', devanadoY - crossSize);
+    lineC2.setAttribute('x2', cx - crossSize); lineC2.setAttribute('y2', devanadoY + crossSize);
+    lineC2.setAttribute('stroke', '#fff'); lineC2.setAttribute('stroke-width', '1.5');
+    svg.appendChild(lineC2);
 
     // --- 4. FUERZA LORENTZ VECTOR ---
     const lenF = Math.min(50, Math.max(15, fuerza * 4000)); // Longitud reactiva
