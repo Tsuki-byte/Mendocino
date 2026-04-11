@@ -1347,8 +1347,11 @@ function dibujarInteraccionMagneticaSVG() {
     const tipoRanura = document.getElementById('ranura-tipo')?.value || 'rect';
     let dRotor = "";
 
+    // Desfase para asegurar que una ranura apunte exactamente hacia el imán (abajo)
+    const rotOffset = -(angP + angS) / 2;
+
     for (let i = 0; i < N; i++) {
-        const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
+        const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2) + rotOffset;
         const theta1 = anguloCentroPanel - (angP / 2);
         const theta2 = anguloCentroPanel + (angP / 2);
         const theta3 = theta2 + angS;
@@ -1356,6 +1359,7 @@ function dibujarInteraccionMagneticaSVG() {
         const p1x = cx + radioRotorSVG * Math.cos(theta1); const p1y = cy + radioRotorSVG * Math.sin(theta1);
         const p2x = cx + radioRotorSVG * Math.cos(theta2); const p2y = cy + radioRotorSVG * Math.sin(theta2);
         const p3x = cx + radioRotorSVG * Math.cos(theta3); const p3y = cy + radioRotorSVG * Math.sin(theta3);
+
 
         if (i === 0) dRotor += `M ${p1x} ${p1y} `;
         else dRotor += `L ${p1x} ${p1y} `;
@@ -1400,15 +1404,16 @@ function dibujarInteraccionMagneticaSVG() {
     svg.appendChild(ejeCircle);
 
 
-    const devanadoR = 7;
-    const devanadoY = cy + radioRotorSVG - devanadoR;
+    // Hilo de cobre (ahora encajado exactamente en la ranura inferior)
+    const maxDevanadoR = (radioRotorSVG - RfondoPx) / 2;
+    const devanadoR = Math.max(3, Math.min(8, maxDevanadoR)); // Limitamos entre 3 y 8 px
+    const devanadoY = cy + RfondoPx + devanadoR;
 
     const devCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     devCircle.setAttribute('cx', cx); devCircle.setAttribute('cy', devanadoY);
     devCircle.setAttribute('r', devanadoR);
     devCircle.setAttribute('fill', '#e67e22'); devCircle.setAttribute('stroke', '#d35400');
     svg.appendChild(devCircle);
-
     const dotCorriente = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     dotCorriente.setAttribute('cx', cx); dotCorriente.setAttribute('cy', devanadoY);
     dotCorriente.setAttribute('r', '2.5'); dotCorriente.setAttribute('fill', '#fff');
