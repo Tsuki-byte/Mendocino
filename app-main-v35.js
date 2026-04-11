@@ -1499,7 +1499,7 @@ function dibujarInteraccionMagneticaSVG() {
 
 // --- PASO 4: INTERACCIÓN LUMÍNICA ---
 function calcularPasoLuminico() {
-    const N = parseInt(document.getElementById('num-caras-poligono')?.value || 4);
+    const N = EstadoDiseno?.numeroCaras || parseInt(document.getElementById('caras')?.value || 4);
     const corrienteMax = window.corrienteDisponibleMagnetica || (parseFloat(document.getElementById('res-panel-isc')?.textContent) || 0.15); 
     const parMax = window.parMotrizMagnetico || 0.005;
 
