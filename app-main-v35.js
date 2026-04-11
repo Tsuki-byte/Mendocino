@@ -1583,7 +1583,8 @@ function dibujarInteraccionMagneticaSVG() {
     svg.appendChild(lineC2);
 
     // --- 4. FUERZA LORENTZ VECTOR ---
-    const lenF = Math.min(50, Math.max(15, fuerza * 4000)); // Longitud reactiva
+    // Recalibración: Para fuerzas típicas de 0.1N a 0.5N
+    const lenF = Math.min(120, 10 + (fuerza * 300)); 
     const fx1 = cx + devanadoR + 3;
     const fy = devanadoY;
     const fx2 = fx1 + lenF;
@@ -1595,12 +1596,13 @@ function dibujarInteraccionMagneticaSVG() {
     svg.appendChild(flechaF);
 
     const arrowF = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    arrowF.setAttribute('points', `${fx2},${fy} ${fx2-6},${fy-4} ${fx2-6},${fy+4}`);
+    arrowF.setAttribute('points', `${fx2},${fy} ${fx2-8},${fy-5} ${fx2-8},${fy+5}`);
     arrowF.setAttribute('fill', '#e74c3c');
     svg.appendChild(arrowF);
 
     // --- 5. PAR ROTATORIO (CURVA) ---
-    const strokeW = Math.min(6, Math.max(1.5, parActivo * 1500)); // Grosor reactivo
+    // Recalibración: Para pares típicos de 0.005Nm a 0.02Nm
+    const strokeW = Math.min(10, 2 + (parActivo * 400)); // Grosor más reactivo
     const rx = radioRotorSVG + 18;
     
     // Curva indicadora de giro (sentido antihorario, el lado izquierdo baja)
