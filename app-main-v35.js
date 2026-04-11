@@ -1467,8 +1467,6 @@ function dibujarInteraccionMagneticaSVG() {
     svg.appendChild(tauArrow);
 }
 
-}
-
 
         // --- PASO 4: INTERACCIÓN LUMÍNICA ---
         function calcularPasoLuminico() {
