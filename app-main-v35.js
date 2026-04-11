@@ -2474,7 +2474,7 @@ function mostrarUIAutenticada() {
 async function inicializarAuth() {
     console.log("Iniciando inicializarAuth...");
     return new Promise((resolve) => {
-        let authProcesada = false;
+        let arranqueInicialCompletado = false;
 
         const client = window.dbMendocinoClient || (typeof dbMendocinoClient !== 'undefined' ? dbMendocinoClient : null);
         if (!client) {
@@ -2482,28 +2482,28 @@ async function inicializarAuth() {
             resolve(); return;
         }
 
-        // Función unificada de arranque seguro
         const finalizarArranqueConDatos = async (session) => {
-            if (authProcesada) return;
             try {
-                authProcesada = true;
-                authInicializada = true;
                 sessionActiva = session;
+                authInicializada = true;
 
                 if (session) {
-                    console.log("DEBUG [Auth]: Usuario detectado. Cargando ecosistema...");
+                    console.log("DEBUG [Auth]: Usuario detectado. Inicializando interfaz...");
                     const modalAuth = document.getElementById('modal-auth');
                     if (modalAuth) modalAuth.style.display = 'none';
 
-                    cargarPerfilUsuario(session.user).catch(e => console.error("Error perfil:", e));
+                    // 1. Mostrar identidad base de inmediato (sin esperar a DB)
+                    actualizarPanelAdminUI(); 
+                    renderizarUI(); // Renderizado rápido con lo que haya en memoria/local
+                    mostrarUIAutenticada();
+
+                    // 2. Cargar perfil y datos globales en segundo plano (para no bloquear)
+                    cargarPerfilUsuario(session.user).then(() => actualizarPanelAdminUI());
                     
-                    // Asegurar carga de componentes con un margen de tiempo
                     await cargarDatosGlobales();
-                    renderizarUI();
-                    
+                    renderizarUI(); // Segundo renderizado con datos frescos de la nube
                     actualizarPanelAdminUI();
                     aplicarNivelUsuario();
-                    mostrarUIAutenticada();
                 } else {
                     console.log("DEBUG [Auth]: Sin sesión. Mostrando login.");
                     if (!window.location.pathname.includes('admin-v35.html')) {
@@ -2511,39 +2511,36 @@ async function inicializarAuth() {
                     }
                 }
             } catch (error) {
-                console.error("Error crítico en finalizarArranqueConDatos:", error);
+                console.error("Error en flujo de arranque:", error);
             } finally {
-                // SIEMPRE resolvemos para no bloquear la carga de la página
-                resolve();
-            }
-        };
-
-        // 1. Canal normal: Cambio de estado de Auth
-        client.auth.onAuthStateChange(async (event, session) => {
-            console.log("DEBUG [Auth]: Evento:", event);
-            if (!authProcesada) {
-                await finalizarArranqueConDatos(session);
-            }
-        });
-
-        // 2. Canal de respaldo: Timeout 4s (Aumentado para máxima seguridad)
-        setTimeout(async () => {
-            if (!authProcesada) {
-                console.warn("DEBUG [Auth]: Timeout de seguridad disparado. Forzando arranque...");
-                try {
-                    // Intento rápido de obtener sesión con timeout interno de 2s
-                    const sessionPromise = client.auth.getSession();
-                    const timeoutFallback = new Promise(r => setTimeout(() => r({ data: { session: null } }), 2000));
-                    
-                    const { data: { session } } = await Promise.race([sessionPromise, timeoutFallback]);
-                    await finalizarArranqueConDatos(session);
-                } catch (e) {
-                    console.error("Error en fallback de emergencia:", e);
-                    authProcesada = true;
+                if (!arranqueInicialCompletado) {
+                    arranqueInicialCompletado = true;
                     resolve();
                 }
             }
-        }, 4000);
+        };
+
+        // Escuchar SIEMPRE los cambios (permite login, logout y cambio de cuenta)
+        client.auth.onAuthStateChange(async (event, session) => {
+            console.log("DEBUG [Auth]: Evento detectado:", event);
+            await finalizarArranqueConDatos(session);
+        });
+
+        // Solo usamos el timeout para el "primer arranque" si el servidor no responde nada
+        setTimeout(async () => {
+            if (!arranqueInicialCompletado) {
+                console.warn("DEBUG [Auth]: Timeout de seguridad: Forzando arranque inicial.");
+                try {
+                    const { data: { session } } = await client.auth.getSession();
+                    if (!arranqueInicialCompletado) await finalizarArranqueConDatos(session);
+                } catch (e) {
+                    if (!arranqueInicialCompletado) {
+                        arranqueInicialCompletado = true;
+                        resolve();
+                    }
+                }
+            }
+        }, 3500);
     });
 }
 
