@@ -1489,6 +1489,8 @@ function dibujarInteraccionMagneticaSVG() {
     tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 0 ${endX} ${endY}`);
     tauPath.setAttribute('stroke', '#2ecc71'); tauPath.setAttribute('stroke-width', strokeW);
     tauPath.setAttribute('fill', 'none');
+    svg.appendChild(tauPath); // <--- REPARED: Was missing before!
+    
     // Punta de flecha de par
     const tauArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
     tauArrow.setAttribute('points', `${endX},${endY+8} ${endX-5},${endY-3} ${endX+5},${endY-3}`);
