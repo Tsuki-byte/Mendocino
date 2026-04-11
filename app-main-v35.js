@@ -1401,31 +1401,52 @@ function dibujarInteraccionMagneticaSVG() {
     const fuerza = EstadoDiseno.fuerzaLorentz_N || 0;
     const parActivo = EstadoDiseno.par_Nm || 0;
 
-    // --- 1. DIBUJO DE LÍNEAS B (Flujo Magnético) ---
-    const imanWidth = 60;
-    const imanHeight = 20;
-    const imanY = 175;
-    const numLineas = Math.min(12, Math.max(3, Math.floor(campoB * 25))); // Crecen con B
+    // --- 1. CONFIGURACIÓN DEL IMÁN A ESCALA ---
+    let imanWidth = 60;
+    let imanHeight = 20;
+    let imanY = 175;
+    
+    const selIman = document.getElementById('iman-motor');
+    const distImanRotor = parseFloat(document.getElementById('iman-distancia')?.value || 2);
+    const orientacion = document.getElementById('iman-orientacion')?.value || 'long';
+    
+    if (selIman && selIman.value !== '') {
+        const im = dbImanes?.[Number(selIman.value)];
+        if (im) {
+            const dims = [Number(im.l), Number(im.a), Number(im.h)];
+            const T = Math.min(...dims);
+            const baseDims = dims.filter((_, i) => i !== dims.indexOf(T));
+            // Visible width depends on orientation
+            const W_real = (orientacion === 'long') ? Math.min(...baseDims) : Math.max(...baseDims);
+            
+            imanWidth = W_real * factorEscala;
+            imanHeight = T * factorEscala;
+            // imanY = cy + radioRotorSVG + gap;
+            imanY = cy + radioRotorSVG + (distImanRotor * factorEscala);
+        }
+    }
 
+    // --- 2. DIBUJO DE LÍNEAS B (Flujo Magnético) ---
+    const numLineas = Math.min(15, Math.max(3, Math.floor(campoB * 30)));
     for(let i=0; i<numLineas; i++){
-        const lx = cx - (imanWidth/2) + 5 + (i * ((imanWidth-10) / Math.max(1, numLineas-1)));
+        const lx = cx - (imanWidth/2) + (imanWidth*0.1) + (i * ((imanWidth*0.8) / Math.max(1, numLineas-1)));
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
         line.setAttribute('x1', lx); line.setAttribute('y1', imanY);
-        line.setAttribute('x2', lx); line.setAttribute('y2', cy + radioRotorSVG - 5);
+        line.setAttribute('x2', lx); line.setAttribute('y2', cy + radioRotorSVG - 2);
         line.setAttribute('stroke', '#3498db');
-        line.setAttribute('stroke-width', '1.5');
-        line.setAttribute('stroke-dasharray', '4,4');
-        line.setAttribute('opacity', '0.5');
+        line.setAttribute('stroke-width', '1.2');
+        line.setAttribute('stroke-dasharray', '3,3');
+        line.setAttribute('opacity', '0.4');
         
         // Flecha B
         const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        arrow.setAttribute('points', `${lx},${cy + radioRotorSVG} ${lx-3},${cy + radioRotorSVG + 8} ${lx+3},${cy + radioRotorSVG + 8}`);
-        arrow.setAttribute('fill', '#3498db'); arrow.setAttribute('opacity', '0.6');
+        arrow.setAttribute('points', `${lx},${cy + radioRotorSVG} ${lx-3},${cy + radioRotorSVG + 6} ${lx+3},${cy + radioRotorSVG + 6}`);
+        arrow.setAttribute('fill', '#3498db'); arrow.setAttribute('opacity', '0.5');
         
         svg.appendChild(line); svg.appendChild(arrow);
     }
 
-    // --- 2. IMÁN BASE (Bipolo: Norte Rojo / Sur Azul) ---
+    // --- 3. IMÁN BASE (Bipolo: Norte Rojo / Sur Azul) a escala ---
     const hMedio = imanHeight / 2;
     
     // Parte Norte (Superior - Rojo)
@@ -1438,10 +1459,10 @@ function dibujarInteraccionMagneticaSVG() {
     
     const txtN = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     txtN.setAttribute('x', cx); txtN.setAttribute('y', imanY + hMedio - 2);
-    txtN.setAttribute('font-size', '11'); txtN.setAttribute('fill', 'white');
+    txtN.setAttribute('font-size', Math.min(11, hMedio*1.5)); txtN.setAttribute('fill', 'white');
     txtN.setAttribute('font-weight', 'bold'); txtN.setAttribute('text-anchor', 'middle');
     txtN.textContent = 'N';
-    svg.appendChild(txtN);
+    if (hMedio > 4) svg.appendChild(txtN);
 
     // Parte Sur (Inferior - Azul)
     const rectS = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -1453,12 +1474,12 @@ function dibujarInteraccionMagneticaSVG() {
 
     const txtS = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     txtS.setAttribute('x', cx); txtS.setAttribute('y', imanY + imanHeight - 2);
-    txtS.setAttribute('font-size', '11'); txtS.setAttribute('fill', 'white');
+    txtS.setAttribute('font-size', Math.min(11, hMedio*1.5)); txtS.setAttribute('fill', 'white');
     txtS.setAttribute('font-weight', 'bold'); txtS.setAttribute('text-anchor', 'middle');
     txtS.textContent = 'S';
-    svg.appendChild(txtS);
+    if (hMedio > 4) svg.appendChild(txtS);
 
-    // --- 3. ROTOR POLIGONAL CON EJE ---
+    // --- 4. ROTOR POLIGONAL CON EJE ---
     const N = EstadoDiseno.numeroCaras || 4;
     const Wp = EstadoDiseno.anchoPanel || 50;
     const Ws = EstadoDiseno.anchoRanura_mm || 5;
@@ -1913,10 +1934,30 @@ function dibujarInteraccionLuminicaSVG() {
     eje.setAttribute('stroke', '#7f8c8d');
     svg.appendChild(eje);
 
-    // Imán inferior de referencia (Bipolo: Norte Rojo / Sur Azul)
-    const magW = 60; const magH = 16;
+    // --- IMÁN BASE A ESCALA REAL ---
+    let magW = 60; 
+    let magH = 16;
+    let magY = cy + radioRotorSVG + 10;
+    
+    const selIman4 = document.getElementById('iman-motor');
+    const distImanRotor4 = parseFloat(document.getElementById('iman-distancia')?.value || 2);
+    const orientacion4 = document.getElementById('iman-orientacion')?.value || 'long';
+    
+    if (selIman4 && selIman4.value !== '') {
+        const im = dbImanes?.[Number(selIman4.value)];
+        if (im) {
+            const dims = [Number(im.l), Number(im.a), Number(im.h)];
+            const T = Math.min(...dims);
+            const baseDims = dims.filter((_, i) => i !== dims.indexOf(T));
+            const W_real = (orientacion4 === 'long') ? Math.min(...baseDims) : Math.max(...baseDims);
+            
+            magW = W_real * factorEscala;
+            magH = T * factorEscala;
+            magY = cy + radioRotorSVG + (distImanRotor4 * factorEscala);
+        }
+    }
+
     const hM = magH / 2;
-    const magY = cy + radioRotorSVG + 10;
 
     // Norte (Rojo)
     const rectN4 = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -1927,10 +1968,10 @@ function dibujarInteraccionLuminicaSVG() {
     
     const textN4 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     textN4.setAttribute('x', cx); textN4.setAttribute('y', magY + hM - 2);
-    textN4.setAttribute('fill', '#fff'); textN4.setAttribute('font-size', '9');
+    textN4.setAttribute('fill', '#fff'); textN4.setAttribute('font-size', Math.min(9, hM*1.5));
     textN4.setAttribute('font-weight', 'bold'); textN4.setAttribute('text-anchor', 'middle');
     textN4.textContent = 'N';
-    svg.appendChild(textN4);
+    if (hM > 3) svg.appendChild(textN4);
 
     // Sur (Azul)
     const rectS4 = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -1941,10 +1982,10 @@ function dibujarInteraccionLuminicaSVG() {
 
     const textS4 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     textS4.setAttribute('x', cx); textS4.setAttribute('y', magY + magH - 2);
-    textS4.setAttribute('fill', '#fff'); textS4.setAttribute('font-size', '9');
+    textS4.setAttribute('fill', '#fff'); textS4.setAttribute('font-size', Math.min(9, hM*1.5));
     textS4.setAttribute('font-weight', 'bold'); textS4.setAttribute('text-anchor', 'middle');
     textS4.textContent = 'S';
-    svg.appendChild(textS4);
+    if (hM > 3) svg.appendChild(textS4);
 }
 
 // Hook the variables exported by Magnetic to be used as starting values for Lumínico
