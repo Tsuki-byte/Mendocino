@@ -1582,9 +1582,8 @@ function dibujarInteraccionMagneticaSVG() {
     lineC2.setAttribute('stroke', '#fff'); lineC2.setAttribute('stroke-width', '1.5');
     svg.appendChild(lineC2);
 
-    // --- 4. FUERZA LORENTZ VECTOR (Escala Cualitativa Logarítmica) ---
+    // --- 4. FUERZA LORENTZ VECTOR (Escala Cualitativa Lineal) ---
     // El tamaño máximo (100%) es cuando el entrehierro es 0mm.
-    // Usamos escala logarítmica para que la flecha sea visible incluso a distancias mayores.
     let ratioF = 0.5; 
     const selImanF = document.getElementById('iman-motor');
     if (selImanF && selImanF.value !== '') {
@@ -1605,11 +1604,8 @@ function dibujarInteraccionMagneticaSVG() {
         }
     }
 
-    // Longitud visual logarítmica: Max ~120px (diámetro del rotor)
-    // Formula: L_min + (L_max - L_min) * [ log(1 + k*ratio) / log(1 + k) ]
-    const k = 9; // Factor de compresión logarítmica
-    const logRatio = Math.log10(1 + k * ratioF) / Math.log10(1 + k);
-    const lenF = 8 + (logRatio * 115); 
+    // Longitud visual lineal: Max ~123px (diámetro del rotor)
+    const lenF = 8 + (ratioF * 115); 
     
     const fx1 = cx + devanadoR + 3;
     const fy = devanadoY;
