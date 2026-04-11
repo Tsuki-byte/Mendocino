@@ -688,9 +688,8 @@ function cargarMotor(config) {
             // Actualizar cálculos eléctricos y ocupación
             calcularPaso2();
             calcularOcupacionRanura(); 
-            precargarPasoMagnetico();
             calcularPasoMagnetico();
-
+            if (typeof calcularPasoLuminico === 'function') calcularPasoLuminico();
         }
 
         // --- DIBUJO GEOMÉTRICO (SVG) ---
@@ -1539,6 +1538,7 @@ function dibujarInteraccionLuminicaSVG() {
     svg.innerHTML = '';
     
     const { N, giro, luz, effs, caraActiva, indexBottom } = window.estadoLuminico;
+    const off = parseInt(document.getElementById('lum-conexion')?.value || '0') || 0; 
     const cx = 100, cy = 80; // Centro elevado para consistencia visual con Paso 3
     const radioExterior = 45; // Escala base visual
 
@@ -1671,13 +1671,25 @@ function dibujarInteraccionLuminicaSVG() {
         conductor.setAttribute('cx', cX); conductor.setAttribute('cy', cY);
         conductor.setAttribute('r', 3);
         
-        // El de abajo (indexBottom) se destaca
-        if (i === indexBottom) {
-            conductor.setAttribute('fill', '#e67e22');
-            conductor.setAttribute('stroke', '#d35400');
+        // Mapeo: El conductor i es alimentado por el panel (i - off)
+        const panelAlimentador = (i - off + N) % N;
+        const estaEnergizado = effs[panelAlimentador] > 0;
+
+        if (estaEnergizado) {
+            conductor.setAttribute('fill', '#f39c12'); // Ámbar/Naranja activo
+            conductor.setAttribute('stroke', '#e67e22');
             conductor.setAttribute('r', 4);
+            
+            // Si es exactamente el de abajo (fuerza máxima), lo hacemos brillar más
+            if (i === indexBottom) {
+                conductor.setAttribute('fill', '#e67e22');
+                conductor.setAttribute('stroke', '#d35400');
+                conductor.setAttribute('r', 5);
+            }
         } else {
             conductor.setAttribute('fill', '#95a5a6');
+        }
+        svg.appendChild(conductor);
         }
         svg.appendChild(conductor);
     }
