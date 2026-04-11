@@ -1705,7 +1705,7 @@ function dibujarInteraccionLuminicaSVG() {
     // --- B. DIBUJAR BOBINADOS Y PANELES SOLARES ---
     const fo = EstadoDiseno?.factorOcupacion || 0.8; 
     const profBobinadoPx = Ds * factorEscala * Math.min(fo, 1.2); 
-    const currents = window.estadoLuminico.currents || [];
+    // currents ya está disponible por la desestructuración al inicio de la función
 
     for (let i = 0; i < N; i++) {
         const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2) + rotOffset;
