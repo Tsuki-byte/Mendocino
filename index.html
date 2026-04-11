@@ -548,10 +548,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="form-group">
             <label>Topología del Devanado (Qué placa alimenta la bobina activa)</label>
             <select id="lum-conexion" onchange="calcularPasoLuminico()">
-                <option value="1">Conectado a la cara a la Tensión Transversal (+90° / Cara Adyacente)</option>
-                <option value="0">Conectado a la misma cara (Frente)</option>
-                <option value="opuesta">Conectado a la placa diametralmente opuesta (180°)</option>
-                <option value="total">Suma total (Puente Rectificador o Todas conectadas en anillo)</option>
+                <option value="0">Bobinado a la Derecha del Panel (Original)</option>
+                <option value="-1">Bobinado a la Izquierda del Panel (Invertido)</option>
             </select>
         </div>
 

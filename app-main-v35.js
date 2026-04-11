@@ -1505,9 +1505,8 @@ function calcularPasoLuminico() {
     const corrienteMax = window.corrienteDisponibleMagnetica || (parseFloat(document.getElementById('res-panel-isc')?.textContent) || 0.15); 
     const parMax = window.parMotrizMagnetico || 0.005;
 
-    const giro_deg = parseFloat(document.getElementById('lum-giro')?.value) || 0;
-    const luz_deg = parseFloat(document.getElementById('lum-angulo-luz')?.value) || 0;
-    const conexion = document.getElementById('lum-conexion')?.value || '1';
+    const conexion = document.getElementById('lum-conexion')?.value || '0';
+    const off = parseInt(conexion); 
 
     const luz_normal = (luz_deg - 90) * Math.PI / 180;
     let effs = [];
@@ -1529,25 +1528,35 @@ function calcularPasoLuminico() {
             indexBottom = i;
         }
     }
+    
+    // 1. Calcular corrientes de bobinados por par opuesto
+    // En un Mendocino, el panel i y el panel i + N/2 están en serie-opuesta/antiparalelo.
+    // La corriente en el bobinado j es proporcional a (eff[j] - eff[j+N/2])
+    let currents = new Array(N).fill(0);
+    let totalFactor = 0;
 
-    let factor = 0;
-    let caraActiva = -1;
+    for (let i = 0; i < N / 2; i++) {
+        let iOpp = i + (N / 2);
+        let netEff = effs[i] - effs[iOpp]; // Corriente neta del par
+        
+        // El par i alimenta al bobinado k
+        // Si off=0 (Derecha), el par i alimenta la ranura i
+        // Si off=-1 (Izquierda), el par i alimenta la ranura i-1
+        let k = (i + off + N) % N;
+        let kOpp = (k + (N / 2)) % N;
 
-    if (conexion === 'total') {
-        factor = effs.reduce((a, b) => a + b, 0); 
-        caraActiva = -2;
-    } else if (conexion === 'opuesta') {
-        let opp = (indexBottom + Math.floor(N/2)) % N;
-        factor = effs[opp];
-        caraActiva = opp;
-    } else {
-        let off = parseInt(conexion); 
-        let res = ((indexBottom - off) % N + N) % N; 
-        factor = effs[res];
-        caraActiva = res;
+        currents[k] = netEff;
+        currents[kOpp] = -netEff; // El retorno tiene sentido opuesto
+
+        // Solo sumamos al factor total lo que ocurre abajo (donde está el imán)
+        // El par motor neto depende de cuánta corriente hay abajo
+        // NOTA: indexBottom nos dice qué ranura está abajo.
+        if (k === indexBottom) totalFactor += netEff;
+        if (kOpp === indexBottom) totalFactor += (-netEff);
     }
 
-    factor = Math.max(0, Math.min(2.0, factor));
+    let factor = Math.abs(totalFactor); // Factor de par motor resultante
+    let caraActiva = -1; // Ya no hay una sola cara activa, es un sistema distribuido
 
     let corrienteResult = corrienteMax * factor;
     let parResult = parMax * factor; 
@@ -1560,7 +1569,16 @@ function calcularPasoLuminico() {
     if(resObj2) resObj2.textContent = corrienteResult.toFixed(3) + ' A';
     if(resObj3) resObj3.textContent = parResult.toFixed(4) + ' N·m';
 
-    window.estadoLuminico = { N: N, giro: giro_deg, luz: luz_deg, effs: effs, caraActiva: caraActiva, factor: factor, indexBottom: indexBottom };
+    window.estadoLuminico = { 
+        N: N, 
+        giro: giro_deg, 
+        luz: luz_deg, 
+        effs: effs, 
+        currents: currents, // IMPORTANTE: Enviamos el array de corrientes a la vista
+        caraActiva: caraActiva, 
+        factor: factor, 
+        indexBottom: indexBottom 
+    };
     
     if (document.getElementById('step-4').classList.contains('active')) {
         dibujarInteraccionLuminicaSVG();
@@ -1685,6 +1703,7 @@ function dibujarInteraccionLuminicaSVG() {
     // --- B. DIBUJAR BOBINADOS Y PANELES SOLARES ---
     const fo = EstadoDiseno.factorOcupacion || 0.8; 
     const profBobinadoPx = Ds * factorEscala * Math.min(fo, 1.2); 
+    const currents = window.estadoLuminico.currents || [];
 
     for (let i = 0; i < N; i++) {
         const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2) + rotOffset;
@@ -1715,24 +1734,23 @@ function dibujarInteraccionLuminicaSVG() {
             pVbob = `${f1x},${f1y} ${o1x},${o1y} ${o2x},${o2y} ${f2x},${f2y}`;
         }
 
-        const panelAlimentador = (i - off + N) % N;
-        const estaEnergizado = effs[panelAlimentador] > 0;
+        // Color del bobinado basado en la corriente absoluta
+        // I_inst va de -1 a 1. Usamos |I| para la intensidad del ROJO.
+        const I_inst = Math.abs(currents[i] || 0);
         
-        let colorBobinado = '#95a5a6';
-        let opacidadBobinado = '0.9';
+        // Colores: Gris (#95a5a6) a Rojo (#e74c3c)
+        const r_b = Math.round(149 + (231 - 149) * I_inst);
+        const g_b = Math.round(165 + (76 - 165) * I_inst);
+        const b_b = Math.round(166 + (60 - 166) * I_inst);
+        const colorBobinado = `rgb(${r_b}, ${g_b}, ${b_b})`;
         
-        if (estaEnergizado) {
-            colorBobinado = '#f39c12';
-            if (i === indexBottom) {
-                colorBobinado = '#e67e22'; // Extra fuerte abajo
-            }
-        }
-
         const polyBobinado = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
         polyBobinado.setAttribute("points", pVbob);
         polyBobinado.setAttribute("fill", colorBobinado);
-        polyBobinado.setAttribute("opacity", opacidadBobinado);
-        if (i === indexBottom && estaEnergizado) {
+        polyBobinado.setAttribute("opacity", "0.9");
+        
+        // Si es el bobinado inferior y tiene corriente, le damos un borde de alerta
+        if (i === indexBottom && I_inst > 0.1) {
             polyBobinado.setAttribute("stroke", "#c0392b");
             polyBobinado.setAttribute("stroke-width", "1");
         }
