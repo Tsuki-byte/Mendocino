@@ -1723,8 +1723,6 @@ function dibujarInteraccionLuminicaSVG() {
             conductor.setAttribute('fill', '#95a5a6');
         }
         svg.appendChild(conductor);
-        }
-        svg.appendChild(conductor);
     }
 
     // Eje central
