@@ -1326,13 +1326,79 @@ function dibujarInteraccionMagneticaSVG() {
     textN.textContent = 'N';
     svg.appendChild(textN);
 
-    // --- 3. ROTOR E HILO DE COBRE ---
-    const rotorCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    rotorCircle.setAttribute('cx', cx); rotorCircle.setAttribute('cy', cy);
-    rotorCircle.setAttribute('r', radioRotorSVG);
-    rotorCircle.setAttribute('fill', '#ecf0f1'); rotorCircle.setAttribute('stroke', '#bdc3c7');
-    rotorCircle.setAttribute('stroke-width', '2');
-    svg.appendChild(rotorCircle);
+    // --- 3. ROTOR POLIGONAL CON EJE ---
+    const N = EstadoDiseno.numeroCaras || 4;
+    const Wp = EstadoDiseno.anchoPanel || 50;
+    const Ws = EstadoDiseno.anchoRanura_mm || 5;
+    const Ds = EstadoDiseno.altoRanura_mm || 4;
+    
+    let angP = EstadoDiseno.anguloPanel;
+    let angS = EstadoDiseno.anguloRanura;
+    if (!angP || !angS) {
+        const WpTotal = Wp + (2 * (EstadoDiseno.margenMarco_mm || 3));
+        const sumaAnchuras = WpTotal + Ws;
+        const anguloTotalRadianes = (2 * Math.PI) / N;
+        angP = anguloTotalRadianes * (WpTotal / sumaAnchuras);
+        angS = anguloTotalRadianes * (Ws / sumaAnchuras);
+    }
+
+    const profPx = Ds * factorEscala;
+    const RfondoPx = Math.max( radioRotorSVG * 0.35, radioRotorSVG - profPx );
+    const tipoRanura = document.getElementById('ranura-tipo')?.value || 'rect';
+    let dRotor = "";
+
+    for (let i = 0; i < N; i++) {
+        const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
+        const theta1 = anguloCentroPanel - (angP / 2);
+        const theta2 = anguloCentroPanel + (angP / 2);
+        const theta3 = theta2 + angS;
+
+        const p1x = cx + radioRotorSVG * Math.cos(theta1); const p1y = cy + radioRotorSVG * Math.sin(theta1);
+        const p2x = cx + radioRotorSVG * Math.cos(theta2); const p2y = cy + radioRotorSVG * Math.sin(theta2);
+        const p3x = cx + radioRotorSVG * Math.cos(theta3); const p3y = cy + radioRotorSVG * Math.sin(theta3);
+
+        if (i === 0) dRotor += `M ${p1x} ${p1y} `;
+        else dRotor += `L ${p1x} ${p1y} `;
+        dRotor += `L ${p2x} ${p2y} `;
+
+        if (tipoRanura === 'trapecio') {
+            const s1x = cx + RfondoPx * Math.cos(theta2); const s1y = cy + RfondoPx * Math.sin(theta2);
+            const s2x = cx + RfondoPx * Math.cos(theta3); const s2y = cy + RfondoPx * Math.sin(theta3);
+            dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
+        } else {
+            const thetaBisectriz = (theta2 + theta3) / 2;
+            const dirX = Math.cos(thetaBisectriz); const dirY = Math.sin(thetaBisectriz);
+            const s1x = p2x - dirX * profPx; const s1y = p2y - dirY * profPx;
+            const s2x = p3x - dirX * profPx; const s2y = p3y - dirY * profPx;
+            dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
+        }
+    }
+    dRotor += "Z";
+
+    // Silueta guía externa discontinua
+    const circuloExt = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circuloExt.setAttribute("cx", cx); circuloExt.setAttribute("cy", cy);
+    circuloExt.setAttribute("r", radioRotorSVG);
+    circuloExt.setAttribute("fill", "none"); circuloExt.setAttribute("stroke", "#ccc");
+    circuloExt.setAttribute("stroke-dasharray", "3");
+    svg.appendChild(circuloExt);
+
+    const pathRotor = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    pathRotor.setAttribute("d", dRotor);
+    pathRotor.setAttribute("fill", "#ecf0f1");
+    pathRotor.setAttribute("stroke", "#bdc3c7");
+    pathRotor.setAttribute("stroke-width", "2");
+    svg.appendChild(pathRotor);
+
+    // Eje central de apoyo visual
+    const ejeCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    ejeCircle.setAttribute("cx", cx); ejeCircle.setAttribute("cy", cy);
+    ejeCircle.setAttribute("r", radioRotorSVG * 0.15); // Tamaño dinámico
+    ejeCircle.setAttribute("fill", "#fff");
+    ejeCircle.setAttribute("stroke", "#95a5a6");
+    ejeCircle.setAttribute("stroke-width", "2");
+    svg.appendChild(ejeCircle);
+
 
     const devanadoR = 7;
     const devanadoY = cy + radioRotorSVG - devanadoR;
