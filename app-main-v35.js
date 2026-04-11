@@ -1752,23 +1752,28 @@ function dibujarInteraccionLuminicaSVG() {
         // Calculamos el color de la placa en base a la luz que recibe (eff = de 0 a 1)
         let eff = effs[i];
         
-        // Color oscuro (Gris apagado) cuando eff = 0: rgb(127, 140, 141)
-        // Color claro (Amarillo solar) cuando eff = 1: rgb(241, 196, 15)
-        let r = Math.round(127 + (241 - 127) * eff);
-        let g = Math.round(140 + (196 - 140) * eff);
-        let b = Math.round(141 + (15 - 141) * eff);
+        let r, g, b;
+        if (eff < 0.5) {
+            // Transición de Rojo Oscuro (0) a Naranja (0.5)
+            let t = eff / 0.5;
+            r = Math.round(192 + (230 - 192) * t); // 192 -> 230
+            g = Math.round(57 + (126 - 57) * t);   // 57 -> 126
+            b = Math.round(43 + (34 - 43) * t);    // 43 -> 34
+        } else {
+            // Transición de Naranja (0.5) a Amarillo Solar (1)
+            let t = (eff - 0.5) / 0.5;
+            r = Math.round(230 + (241 - 230) * t); // 230 -> 241
+            g = Math.round(126 + (196 - 126) * t); // 126 -> 196
+            b = Math.round(34 + (15 - 34) * t);    // 34 -> 15
+        }
+        
         let colorSolarBase = `rgb(${r},${g},${b})`;
         let strokeW = 4;
 
         if (caraActiva === i || (caraActiva === -2 && eff > 0)) {
-             // Pequeño extra visual para el panel primario activo que genera la corriente
+             // Pequeño extra de grosor visual para el panel primario que está dictando la corriente
              strokeW = 5; 
-             if (eff < 0.3) {
-                 // Si está activo pero recibe muy poca luz, forzamos un mínimo de amarillo/naranja
-                 colorSolarBase = '#e67e22';
-             }
         }
-
         const placaSolBase = document.createElementNS("http://www.w3.org/2000/svg", "line");
         placaSolBase.setAttribute("x1", pl1x); placaSolBase.setAttribute("y1", pl1y);
         placaSolBase.setAttribute("x2", pl2x); placaSolBase.setAttribute("y2", pl2y);
