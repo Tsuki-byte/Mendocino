@@ -1457,9 +1457,7 @@ function dibujarInteraccionMagneticaSVG() {
     tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 0 ${endX} ${endY}`);
     tauPath.setAttribute('stroke', '#2ecc71'); tauPath.setAttribute('stroke-width', strokeW);
     tauPath.setAttribute('fill', 'none');
-    svg.appendChild(tauPath);
-
-    // Punta de flecha de par (apuntando hacia abajo)
+    // Punta de flecha de par
     const tauArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
     tauArrow.setAttribute('points', `${endX},${endY+8} ${endX-5},${endY-3} ${endX+5},${endY-3}`);
     tauArrow.setAttribute('fill', '#2ecc71');
@@ -1467,263 +1465,332 @@ function dibujarInteraccionMagneticaSVG() {
     svg.appendChild(tauArrow);
 }
 
+// --- PASO 4: INTERACCIÓN LUMÍNICA ---
+function calcularPasoLuminico() {
+    const N = parseInt(document.getElementById('num-caras-poligono')?.value || 4);
+    const corrienteMax = window.corrienteDisponibleMagnetica || (parseFloat(document.getElementById('res-panel-isc')?.textContent) || 0.15); 
+    const parMax = window.parMotrizMagnetico || 0.005;
 
-        // --- PASO 4: INTERACCIÓN LUMÍNICA ---
-        function calcularPasoLuminico() {
-            const N = parseInt(document.getElementById('num-caras-poligono')?.value || 4);
-            const corrienteMax = window.corrienteDisponibleMagnetica || (parseFloat(document.getElementById('res-panel-isc')?.textContent) || 0.15); 
-            const parMax = window.parMotrizMagnetico || 0.005;
+    const giro_deg = parseFloat(document.getElementById('lum-giro')?.value) || 0;
+    const luz_deg = parseFloat(document.getElementById('lum-angulo-luz')?.value) || 0;
+    const conexion = document.getElementById('lum-conexion')?.value || '1';
 
-            const giro_deg = parseFloat(document.getElementById('lum-giro')?.value) || 0;
-            const luz_deg = parseFloat(document.getElementById('lum-angulo-luz')?.value) || 0;
-            const conexion = document.getElementById('lum-conexion')?.value || '1';
+    const luz_normal = (luz_deg - 90) * Math.PI / 180;
+    let effs = [];
+    let minDistBottom = Infinity;
+    let indexBottom = 0;
 
-            // El vector SOL apunta hacia ABAJO desde luz_deg.
-            // Para que la luz golpee una placa ortogonalmente, la NORMAL de la placa debe ser luz_deg - 90 (apuntando hacia la fuente).
-            const luz_normal = (luz_deg - 90) * Math.PI / 180;
-            let effs = [];
-            let minDistBottom = Infinity;
-            let indexBottom = 0;
+    for(let i=0; i<N; i++) {
+        let angulo = (i * 360 / N - 90 + giro_deg);
+        let anguloRad = angulo * Math.PI / 180;
+        let delta = anguloRad - luz_normal;
+        let cosInc = Math.cos(delta);
+        effs.push(Math.max(0, cosInc));
 
-            for(let i=0; i<N; i++) {
-                // Ángulo de la normal de la cara (la 0 es Top, a -90 grados SVG)
-                let angulo = (i * 360 / N - 90 + giro_deg);
-                let anguloRad = angulo * Math.PI / 180;
-                
-                // Coseno de la diferencia (incidencia)
-                let delta = anguloRad - luz_normal;
-                let cosInc = Math.cos(delta);
-                // Si cos > 0 significa que la normal mira hacia la luz
-                effs.push(Math.max(0, cosInc));
-
-                // Búsqueda de la cara más pegada al imán de abajo (90 deg matemáticos en SVG)
-                let normalSVG = ((angulo % 360) + 360) % 360; // 0..360
-                let dist = Math.abs(normalSVG - 90);
-                if (dist > 180) dist = 360 - dist;
-                if (dist < minDistBottom) {
-                    minDistBottom = dist;
-                    indexBottom = i;
-                }
-            }
-
-            let factor = 0;
-            let caraActiva = -1;
-
-            if (conexion === 'total') {
-                factor = effs.reduce((a, b) => a + b, 0); // Factor suma de todo el puente
-                caraActiva = -2; // Todas las iluminadas
-            } else if (conexion === 'opuesta') {
-                let opp = (indexBottom + Math.floor(N/2)) % N;
-                factor = effs[opp];
-                caraActiva = opp;
-            } else {
-                let off = parseInt(conexion); // 0 (adyacente front), 1 (lado derecho)
-                let res = ((indexBottom - off) % N + N) % N; // Menos indica lado derecho
-                factor = effs[res];
-                caraActiva = res;
-            }
-
-            factor = Math.max(0, Math.min(2.0, factor));
-
-            let corrienteResult = corrienteMax * factor;
-            let parResult = parMax * factor; 
-
-            const resObj1 = document.getElementById('lum-res-factor');
-            const resObj2 = document.getElementById('lum-res-corriente');
-            const resObj3 = document.getElementById('lum-res-par');
-            
-            if(resObj1) resObj1.textContent = factor.toFixed(2);
-            if(resObj2) resObj2.textContent = corrienteResult.toFixed(3) + ' A';
-            if(resObj3) resObj3.textContent = parResult.toFixed(4) + ' N·m';
-
-            window.estadoLuminico = { N: N, giro: giro_deg, luz: luz_deg, effs: effs, caraActiva: caraActiva, factor: factor, indexBottom: indexBottom };
-            
-            if (document.getElementById('step-4').classList.contains('active')) {
-                dibujarInteraccionLuminicaSVG();
-            }
+        let normalSVG = ((angulo % 360) + 360) % 360; 
+        let dist = Math.abs(normalSVG - 90);
+        if (dist > 180) dist = 360 - dist;
+        if (dist < minDistBottom) {
+            minDistBottom = dist;
+            indexBottom = i;
         }
+    }
 
-        function dibujarInteraccionLuminicaSVG() {
-            const svg = document.getElementById('luminico-svg');
-            if (!svg) return;
-            svg.innerHTML = '';
-            
-            if(!window.estadoLuminico) return;
-            const { N, giro, luz, effs, caraActiva, indexBottom } = window.estadoLuminico;
+    let factor = 0;
+    let caraActiva = -1;
 
-            const cx = 100, cy = 100;
-            const radio = 45;
+    if (conexion === 'total') {
+        factor = effs.reduce((a, b) => a + b, 0); 
+        caraActiva = -2;
+    } else if (conexion === 'opuesta') {
+        let opp = (indexBottom + Math.floor(N/2)) % N;
+        factor = effs[opp];
+        caraActiva = opp;
+    } else {
+        let off = parseInt(conexion); 
+        let res = ((indexBottom - off) % N + N) % N; 
+        factor = effs[res];
+        caraActiva = res;
+    }
 
-            // 1. DIBUJAR SOL Y RAYOS
-            // Base del sol
-            const solX = cx + 80 * Math.cos((luz - 90) * Math.PI / 180);
-            const solY = cy + 80 * Math.sin((luz - 90) * Math.PI / 180);
-            
-            const sunGlow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            sunGlow.setAttribute('cx', solX); sunGlow.setAttribute('cy', solY);
-            sunGlow.setAttribute('r', 16); sunGlow.setAttribute('fill', '#f1c40f');
-            svg.appendChild(sunGlow);
+    factor = Math.max(0, Math.min(2.0, factor));
 
-            // Rayos direccionales
-            for(let j=-2; j<=2; j++) {
-                const rx_start = solX + 18 * Math.cos((luz - 90 + j*25)*Math.PI/180);
-                const ry_start = solY + 18 * Math.sin((luz - 90 + j*25)*Math.PI/180);
-                // Vector apuntando opuesto a la fuente
-                let dirLuzX = -Math.cos((luz - 90) * Math.PI / 180);
-                let dirLuzY = -Math.sin((luz - 90) * Math.PI / 180);
-                const rayPath = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                rayPath.setAttribute('x1', rx_start); rayPath.setAttribute('y1', ry_start);
-                rayPath.setAttribute('x2', rx_start + dirLuzX * 30); rayPath.setAttribute('y2', ry_start + dirLuzY * 30);
-                rayPath.setAttribute('stroke', '#f39c12'); rayPath.setAttribute('stroke-width', '2');
-                rayPath.setAttribute('stroke-dasharray', '4 2');
-                svg.appendChild(rayPath);
-            }
+    let corrienteResult = corrienteMax * factor;
+    let parResult = parMax * factor; 
 
-            // 2. DIBUJAR POLÍGONO CON COLOR DE EFICIENCIA
-            const angP = (2 * Math.PI) / N;
-            // Para N caras, el panel i va de i*angP - angP/2 a i*angP + angP/2 (ajustado por offset -PI/2)
-            for(let i=0; i<N; i++) {
-                const anguloCentro = i * angP - Math.PI/2 + (giro * Math.PI/180);
-                const t1 = anguloCentro - angP/2;
-                const t2 = anguloCentro + angP/2;
+    const resObj1 = document.getElementById('lum-res-factor');
+    const resObj2 = document.getElementById('lum-res-corriente');
+    const resObj3 = document.getElementById('lum-res-par');
+    
+    if(resObj1) resObj1.textContent = factor.toFixed(2);
+    if(resObj2) resObj2.textContent = corrienteResult.toFixed(3) + ' A';
+    if(resObj3) resObj3.textContent = parResult.toFixed(4) + ' N·m';
 
-                const p1x = cx + radio * Math.cos(t1); const p1y = cy + radio * Math.sin(t1);
-                const p2x = cx + radio * Math.cos(t2); const p2y = cy + radio * Math.sin(t2);
+    window.estadoLuminico = { N: N, giro: giro_deg, luz: luz_deg, effs: effs, caraActiva: caraActiva, factor: factor, indexBottom: indexBottom };
+    
+    if (document.getElementById('step-4').classList.contains('active')) {
+        dibujarInteraccionLuminicaSVG();
+    }
+}
 
-                const poly = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                // Trazar cara del centro a esquinas para dibujar "cuñas" pintadas
-                poly.setAttribute('d', `M ${cx} ${cy} L ${p1x} ${p1y} L ${p2x} ${p2y} Z`);
-                let opacidad = 0.1 + (effs[i] * 0.7); // Brillan más si effs es cercano a 1
-                let colorDbg = '#bdc3c7'; // Grises por defecto
-                
-                if(caraActiva === -2 && effs[i] > 0) colorDbg = '#f1c40f'; // Todas las encendidas brillan amarillas
-                else if (caraActiva === i) colorDbg = '#e67e22'; // Cara específica brilla un poco naranja
+function dibujarInteraccionLuminicaSVG() {
+    const svg = document.getElementById('luminico-svg');
+    if (!svg || !window.estadoLuminico) return;
+    svg.innerHTML = '';
+    
+    const { N, giro, luz, effs, caraActiva, indexBottom } = window.estadoLuminico;
+    const cx = 100, cy = 80; // Centro elevado para consistencia visual con Paso 3
+    const radioExterior = 45; // Escala base visual
 
-                poly.setAttribute('fill', colorDbg);
-                poly.setAttribute('fill-opacity', opacidad);
-                poly.setAttribute('stroke', '#7f8c8d');
-                svg.appendChild(poly);
+    // 1. SOL EN ÓRBITA
+    // El ángulo 'luz' en el slider va de -90 a 90 (0 es arriba)
+    const anguloSolRad = (luz - 90) * Math.PI / 180;
+    const radioOrbita = 85;
+    const solX = cx + radioOrbita * Math.cos(anguloSolRad);
+    const solY = cy + radioOrbita * Math.sin(anguloSolRad);
+    
+    // Brillo del Sol
+    const solGlow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    solGlow.setAttribute('cx', solX); solGlow.setAttribute('cy', solY);
+    solGlow.setAttribute('r', 18); solGlow.setAttribute('fill', 'url(#sunGradient)');
+    
+    // Gradiente para el sol si no existe lo creamos
+    let defs = svg.querySelector('defs');
+    if(!defs){
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        svg.appendChild(defs);
+        const grad = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+        grad.setAttribute('id', 'sunGradient');
+        grad.innerHTML = '<stop offset="0%" stop-color="#fff700"/><stop offset="100%" stop-color="#f39c12"/>';
+        defs.appendChild(grad);
+    }
+    svg.appendChild(solGlow);
 
-                // Dibujar devanado en medio de la cara si le toca
-                const devX = cx + (radio - 5) * Math.cos(anguloCentro);
-                const devY = cy + (radio - 5) * Math.sin(anguloCentro);
-                const devC = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                devC.setAttribute('cx', devX); devC.setAttribute('cy', devY);
-                devC.setAttribute('r', 4);
-                
-                if (i === indexBottom) {
-                    devC.setAttribute('fill', '#e74c3c'); // El de abajo siempre rojo (interactuando)
-                    devC.setAttribute('stroke', '#c0392b');
-                    devC.setAttribute('r', 5);
-                } else {
-                    devC.setAttribute('fill', '#95a5a6'); // Demás devanados
-                }
-                svg.appendChild(devC);
-            }
+    // Rayos direccionales (siguen al sol)
+    for(let j=-2; j<=2; j++) {
+        const offsetAng = j * 12; // Separación de rayos
+        const r_ang = (luz - 90 + offsetAng) * Math.PI / 180;
+        const rx_s = cx + (radioOrbita - 5) * Math.cos(r_ang);
+        const ry_s = cy + (radioOrbita - 5) * Math.sin(r_ang);
+        
+        let dirX = -Math.cos(anguloSolRad);
+        let dirY = -Math.sin(anguloSolRad);
+        
+        const ray = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        ray.setAttribute('x1', rx_s); ray.setAttribute('y1', ry_s);
+        ray.setAttribute('x2', rx_s + dirX * 25); ray.setAttribute('y2', ry_s + dirY * 25);
+        ray.setAttribute('stroke', '#f39c12'); ray.setAttribute('stroke-width', '1.5');
+        ray.setAttribute('stroke-dasharray', '3,3');
+        ray.setAttribute('opacity', '0.7');
+        svg.appendChild(ray);
+    }
 
-            // 3. IMÁN INFERIOR EN EL SUELO (Referencia)
-            const magW = 60; const magH = 12;
-            const magP = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            magP.setAttribute('x', cx - magW/2); magP.setAttribute('y', cy + radio + 10);
-            magP.setAttribute('width', magW); magP.setAttribute('height', magH);
-            magP.setAttribute('fill', '#d35400');
-            svg.appendChild(magP);
-            const tm = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            tm.setAttribute('x', cx - 4); tm.setAttribute('y', cy + radio + 20);
-            tm.setAttribute('fill', '#fff'); tm.setAttribute('font-size', '10');
-            tm.setAttribute('font-weight', 'bold');
-            tm.textContent = 'N';
-            svg.appendChild(tm);
+    // 2. GEOMETRÍA DEL ROTOR (Unificada)
+    const Ws = EstadoDiseno.anchoRanura_mm || 5;
+    const Ds = EstadoDiseno.altoRanura_mm || 4;
+    const R_mm = (EstadoDiseno.diametroRotor || 50) / 2;
+    const factorEscala = 45 / R_mm; 
+    
+    const radioRotorSVG = radioExterior;
+    const profPx = Ds * factorEscala;
+    const RfondoPx = radioRotorSVG - profPx;
+    const tipoRanura = document.getElementById('ranura-tipo')?.value || 'rect';
+
+    const Wp = EstadoDiseno.anchoPanel || 50;
+    const WpTotal = Wp + (2 * (EstadoDiseno.margenMarco_mm || 3));
+    const sumaAnchuras = WpTotal + Ws;
+    const anguloTotalRadianes = (2 * Math.PI) / N;
+    const angP = anguloTotalRadianes * (WpTotal / sumaAnchuras);
+    const angS = anguloTotalRadianes * (Ws / sumaAnchuras);
+
+    // Offset de giro real (desde el centro del panel 0)
+    const rotOffset = -(angP + angS) / 2 + (giro * Math.PI / 180);
+
+    for (let i = 0; i < N; i++) {
+        const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2) + rotOffset;
+        const t1 = anguloCentroPanel - (angP / 2);
+        const t2 = anguloCentroPanel + (angP / 2);
+        const t3 = t2 + angS;
+
+        const p1x = cx + radioRotorSVG * Math.cos(t1); const p1y = cy + radioRotorSVG * Math.sin(t1);
+        const p2x = cx + radioRotorSVG * Math.cos(t2); const p2y = cy + radioRotorSVG * Math.sin(t2);
+        const p3x = cx + radioRotorSVG * Math.cos(t3); const p3y = cy + radioRotorSVG * Math.sin(t3);
+
+        // --- DIBUJAR CARA (PANEL SOLAR) ---
+        // Dibujamos la "cuña" del panel con su eficiencia
+        const facePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        facePath.setAttribute('d', `M ${cx} ${cy} L ${p1x} ${p1y} L ${p2x} ${p2y} Z`);
+        
+        // Color basado en eficiencia
+        let eff = effs[i];
+        let colorPanel = '#bdc3c7'; // Apagado
+        if (eff > 0) {
+            // Mezclamos gris con naranja/oro según eficiencia
+            const r = Math.round(189 + (241-189)*eff);
+            const g = Math.round(195 + (196-195)*eff);
+            const b = Math.round(199 + (15-199)*eff);
+            colorPanel = `rgb(${r},${g},${b})`;
         }
-
-        // Hook the variables exported by Magnetic to be used as starting values for Lumínico
-        const oldCalcularMagnetico = window.calcularPasoMagnetico || function(){};
-        window.calcularPasoMagnetico = function() {
-            oldCalcularMagnetico();
-            const I = parseFloat(document.getElementById('mag-corriente')?.textContent);
-            window.corrienteDisponibleMagnetica = !isNaN(I) ? I : null;
-            const P = parseFloat(document.getElementById('res-par')?.textContent);
-            window.parMotrizMagnetico = !isNaN(P) ? P : null;
-            calcularPasoLuminico(); // Chain execution
+        if (caraActiva === i || (caraActiva === -2 && eff > 0)) {
+            colorPanel = '#f39c12'; // Resaltado especial si está conectada
         }
+        
+        facePath.setAttribute('fill', colorPanel);
+        facePath.setAttribute('stroke', '#7f8c8d');
+        facePath.setAttribute('stroke-width', '0.5');
+        svg.appendChild(facePath);
 
-
-        // --- PASO 5: ENCAJE EN RANURA ---
-
-        function calcularOcupacionRanura() {
-            const anchoReal = EstadoDiseno.anchoRanura_mm;
-            const altoReal = EstadoDiseno.altoRanura_mm;
-
-            if (anchoReal > 0 && altoReal > 0 && EstadoDiseno.diametroHilo_mm > 0 && EstadoDiseno.espirasPorDevanado > 0) {
-                const conductoresCapa = Math.floor(anchoReal / EstadoDiseno.diametroHilo_mm);
-
-                if (conductoresCapa <= 0) {
-                    document.getElementById('alerta-ranura').style.display = 'block';
-                    document.getElementById('alerta-ranura').innerHTML = "<strong>⚠️ Error:</strong> El hilo es más grueso que el ancho de la ranura.";
-                } else {
-                    const numCapas = Math.ceil(EstadoDiseno.espirasPorDevanado / conductoresCapa);
-
-                    let espirasUltima = EstadoDiseno.espirasPorDevanado % conductoresCapa;
-                    if (espirasUltima === 0) espirasUltima = conductoresCapa;
-
-                    const anchoOcupado = (EstadoDiseno.espirasPorDevanado < conductoresCapa ? EstadoDiseno.espirasPorDevanado : conductoresCapa) * EstadoDiseno.diametroHilo_mm;
-                    const altoOcupado = numCapas * EstadoDiseno.diametroHilo_mm;
-
-                    const areaCobre = EstadoDiseno.espirasPorDevanado * Math.PI * Math.pow(EstadoDiseno.diametroHilo_mm / 2, 2);
-                    const calidad = parseFloat(document.getElementById("calidad-bobinado").value);
-                    const areaEfectiva = areaCobre * (1 + calidad);
-                    const areaRanura = EstadoDiseno.areaRanuraUtil_mm2;
-                    const factorRelleno = areaRanura > 0 ? (areaEfectiva / areaRanura) * 100 : 0;
-
-                    document.getElementById('res-area-ranura').textContent = areaRanura.toFixed(2) + ' mm²';
-                    document.getElementById('res-ancho-ocupado').textContent = anchoOcupado.toFixed(2) + ' mm';
-                    document.getElementById('res-alto-ocupado').textContent = altoOcupado.toFixed(2) + ' mm';
-                    document.getElementById('res-factor').textContent = factorRelleno.toFixed(1) + '%';
-                    const elVisualBar = document.getElementById('visual-factor-bar');
-                    if (elVisualBar) elVisualBar.style.width = Math.min(factorRelleno, 100) + '%';
-
-                    // Guardar para el dibujo
-                    EstadoDiseno.factorOcupacion = factorRelleno / 100;
-                    
-                    // Redibujar el rotor para actualizar el color de alerta
-                    dibujarRotorSVG();
-
-                    const alerta = document.getElementById('alerta-ranura');
-                    const cabePorArea = areaEfectiva <= areaRanura;
-
-                    if (altoOcupado > altoReal || !cabePorArea) {
-                        alerta.style.display = 'block';
-                        alerta.innerHTML = `<strong>⚠️ Cuidado:</strong> El bobinado sobresaldrá de la ranura (${(factorRelleno).toFixed(0)}% ocupación).`;
-                    } else {
-                        alerta.style.display = 'none';
-                    }
-                }
-            } else {
-                // RESET si no hay datos de bobinado
-                document.getElementById('res-factor').textContent = '0%';
-                if (document.getElementById('visual-factor-bar')) document.getElementById('visual-factor-bar').style.width = '0%';
-                EstadoDiseno.factorOcupacion = 0;
-            }
-                
-            // REDIBUJAR SIEMPRE (FUERA DEL IF) para asegurar sincronización
-            const caras = EstadoDiseno.numeroCaras;
-            if (caras >= 3) {
-                const tipoRanura = document.getElementById('ranura-tipo').value;
-                const Wp = EstadoDiseno.anchoPanel;
-                const Ws = EstadoDiseno.anchoRanura_mm;
-                const Ds = EstadoDiseno.altoRanura_mm;
-                const R = EstadoDiseno.diametroRotor / 2;
-                
-                const WpTotal = Wp + (2 * EstadoDiseno.margenMarco_mm);
-                const sumaAnchuras = WpTotal + Ws;
-                const anguloTotalRadianes = (2 * Math.PI) / caras;
-                const angP = anguloTotalRadianes * (WpTotal / sumaAnchuras);
-                const angS = anguloTotalRadianes * (Ws / sumaAnchuras);
-                
-                dibujarRotorSVG(caras, tipoRanura, Wp, Ws, Ds, R, angP, angS);
-                dibujarPanelSVG(EstadoDiseno.longitudPanel, Wp, EstadoDiseno.margenMarco_mm);
-            }
+        // --- DIBUJAR RANURA Y CONDUCTOR ---
+        let dRanura = `M ${p2x} ${p2y} `;
+        let s1x, s1y, s2x, s2y;
+        
+        if (tipoRanura === 'trapecio') {
+            s1x = cx + RfondoPx * Math.cos(t2); s1y = cy + RfondoPx * Math.sin(t2);
+            s2x = cx + RfondoPx * Math.cos(t3); s2y = cy + RfondoPx * Math.sin(t3);
+        } else {
+            const tBisectriz = (t2 + t3) / 2;
+            const dX = Math.cos(tBisectriz); const dY = Math.sin(tBisectriz);
+            s1x = p2x - dX * profPx; s1y = p2y - dY * profPx;
+            s2x = p3x - dX * profPx; s2y = p3y - dY * profPx;
         }
+        dRanura += `L ${s1x} ${s1y} L ${s2x} ${s2y} L ${p3x} ${p3y} Z`;
+        
+        const ranuraPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        ranuraPath.setAttribute('d', dRanura);
+        ranuraPath.setAttribute('fill', '#ecf0f1');
+        ranuraPath.setAttribute('stroke', '#bdc3c7');
+        svg.appendChild(ranuraPath);
+
+        // Conductor interior
+        const tConductor = (t2+t3)/2;
+        const distConductor = RfondoPx + (radioRotorSVG - RfondoPx)/2;
+        const cX = cx + distConductor * Math.cos(tConductor);
+        const cY = cy + distConductor * Math.sin(tConductor);
+        
+        const conductor = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        conductor.setAttribute('cx', cX); conductor.setAttribute('cy', cY);
+        conductor.setAttribute('r', 3);
+        
+        // El de abajo (indexBottom) se destaca
+        if (i === indexBottom) {
+            conductor.setAttribute('fill', '#e67e22');
+            conductor.setAttribute('stroke', '#d35400');
+            conductor.setAttribute('r', 4);
+        } else {
+            conductor.setAttribute('fill', '#95a5a6');
+        }
+        svg.appendChild(conductor);
+    }
+
+    // Eje central
+    const eje = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    eje.setAttribute('cx', cx); eje.setAttribute('cy', cy);
+    eje.setAttribute('r', 5); eje.setAttribute('fill', '#fff');
+    eje.setAttribute('stroke', '#7f8c8d');
+    svg.appendChild(eje);
+
+    // Imán inferior de referencia
+    const magW = 60; const magH = 12;
+    const magR = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    magR.setAttribute('x', cx - magW/2); magR.setAttribute('y', cy + radioRotorSVG + 10);
+    magR.setAttribute('width', magW); magR.setAttribute('height', magH);
+    magR.setAttribute('fill', '#d35400'); magR.setAttribute('rx', '2');
+    svg.appendChild(magR);
+    const textN = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    textN.setAttribute('x', cx); textN.setAttribute('y', cy + radioRotorSVG + 20);
+    textN.setAttribute('fill', '#fff'); textN.setAttribute('font-size', '10');
+    textN.setAttribute('text-anchor', 'middle'); textN.textContent = 'N';
+    svg.appendChild(textN);
+}
+
+// Hook the variables exported by Magnetic to be used as starting values for Lumínico
+const oldCalcularMagnetico = window.calcularPasoMagnetico || function(){};
+window.calcularPasoMagnetico = function() {
+    oldCalcularMagnetico();
+    const I = parseFloat(document.getElementById('mag-corriente')?.textContent);
+    window.corrienteDisponibleMagnetica = !isNaN(I) ? I : null;
+    const P = parseFloat(document.getElementById('res-par')?.textContent);
+    window.parMotrizMagnetico = !isNaN(P) ? P : null;
+    calcularPasoLuminico(); // Chain execution
+}
+
+
+// --- PASO 5: ENCAJE EN RANURA ---
+
+function calcularOcupacionRanura() {
+    const anchoReal = EstadoDiseno.anchoRanura_mm;
+    const altoReal = EstadoDiseno.altoRanura_mm;
+
+    if (anchoReal > 0 && altoReal > 0 && EstadoDiseno.diametroHilo_mm > 0 && EstadoDiseno.espirasPorDevanado > 0) {
+        const conductoresCapa = Math.floor(anchoReal / EstadoDiseno.diametroHilo_mm);
+
+        if (conductoresCapa <= 0) {
+            document.getElementById('alerta-ranura').style.display = 'block';
+            document.getElementById('alerta-ranura').innerHTML = "<strong>⚠️ Error:</strong> El hilo es más grueso que el ancho de la ranura.";
+        } else {
+            const numCapas = Math.ceil(EstadoDiseno.espirasPorDevanado / conductoresCapa);
+
+            let espirasUltima = EstadoDiseno.espirasPorDevanado % conductoresCapa;
+            if (espirasUltima === 0) espirasUltima = conductoresCapa;
+
+            const anchoOcupado = (EstadoDiseno.espirasPorDevanado < conductoresCapa ? EstadoDiseno.espirasPorDevanado : conductoresCapa) * EstadoDiseno.diametroHilo_mm;
+            const altoOcupado = numCapas * EstadoDiseno.diametroHilo_mm;
+
+            const areaCobre = EstadoDiseno.espirasPorDevanado * Math.PI * Math.pow(EstadoDiseno.diametroHilo_mm / 2, 2);
+            const calidad = parseFloat(document.getElementById("calidad-bobinado").value);
+            const areaEfectiva = areaCobre * (1 + calidad);
+            const areaRanura = EstadoDiseno.areaRanuraUtil_mm2;
+            const factorRelleno = areaRanura > 0 ? (areaEfectiva / areaRanura) * 100 : 0;
+
+            document.getElementById('res-area-ranura').textContent = areaRanura.toFixed(2) + ' mm²';
+            document.getElementById('res-ancho-ocupado').textContent = anchoOcupado.toFixed(2) + ' mm';
+            document.getElementById('res-alto-ocupado').textContent = altoOcupado.toFixed(2) + ' mm';
+        document.getElementById('res-factor').textContent = factorRelleno.toFixed(1) + '%';
+        const elVisualBar = document.getElementById('visual-factor-bar');
+        if (elVisualBar) elVisualBar.style.width = Math.min(factorRelleno, 100) + '%';
+
+        // Guardar para el dibujo
+        EstadoDiseno.factorOcupacion = factorRelleno / 100;
+        
+        // Redibujar el rotor para actualizar el color de alerta
+        dibujarRotorSVG();
+
+        const alerta = document.getElementById('alerta-ranura');
+        const cabePorArea = areaEfectiva <= areaRanura;
+
+        if (altoOcupado > altoReal || !cabePorArea) {
+            alerta.style.display = 'block';
+            alerta.innerHTML = `<strong>⚠️ Cuidado:</strong> El bobinado sobresaldrá de la ranura (${(factorRelleno).toFixed(0)}% ocupación).`;
+        } else {
+            alerta.style.display = 'none';
+        }
+    }
+} else {
+    // RESET si no hay datos de bobinado
+    document.getElementById('res-factor').textContent = '0%';
+    if (document.getElementById('visual-factor-bar')) document.getElementById('visual-factor-bar').style.width = '0%';
+    EstadoDiseno.factorOcupacion = 0;
+}
+                
+    // REDIBUJAR SIEMPRE (FUERA DEL IF) para asegurar sincronización
+    const caras = EstadoDiseno.numeroCaras;
+    if (caras >= 3) {
+        const tipoRanura = document.getElementById('ranura-tipo').value;
+        const Wp = EstadoDiseno.anchoPanel;
+        const Ws = EstadoDiseno.anchoRanura_mm;
+        const Ds = EstadoDiseno.altoRanura_mm;
+        const R = EstadoDiseno.diametroRotor / 2;
+        
+        const WpTotal = Wp + (2 * EstadoDiseno.margenMarco_mm);
+        const sumaAnchuras = WpTotal + Ws;
+        const anguloTotalRadianes = (2 * Math.PI) / caras;
+        const angP = anguloTotalRadianes * (WpTotal / sumaAnchuras);
+        const angS = anguloTotalRadianes * (Ws / sumaAnchuras);
+        
+        dibujarRotorSVG(caras, tipoRanura, Wp, Ws, Ds, R, angP, angS);
+        dibujarPanelSVG(EstadoDiseno.longitudPanel, Wp, EstadoDiseno.margenMarco_mm);
+    }
+}
 
 
         // --- FUNCIONES PARA GUARDAR Y CARGAR LOCALMENTE ---
