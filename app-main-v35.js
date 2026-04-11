@@ -205,7 +205,7 @@ function cargarMotor(config) {
             guardarDatos(); // Guarda en LocalStorage y refresca UI
             
             // Si hay sesión activa, también persistimos en la nube para que no se pierda al recargar
-            if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
+            if (window.dbMendocinoClient && sessionActiva) {
                 const pParaSubir = { ...panelInfo };
                 delete pParaSubir.id; // Evitar conflictos de ID si el origen tenía uno
                 pParaSubir.usuario_id = sessionActiva.user.id;
@@ -356,7 +356,7 @@ function cargarMotor(config) {
         
         async function cargarDatosGlobales() {
             try {
-                if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
+                if (window.dbMendocinoClient && sessionActiva) {
                     const uid = sessionActiva.user.id;
                     
                     // 1. Cargar datos del usuario
@@ -493,7 +493,7 @@ function cargarMotor(config) {
             if (isNaN(dia) || dia <= 0) { alert("Error: Introduce un diámetro válido."); return; }
             if (dbHilos.includes(dia)) { alert("Error: Este diámetro ya existe."); return; }
             
-            if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
+            if (window.dbMendocinoClient && sessionActiva) {
                 await dbMendocinoClient.from('hilos').insert([{ usuario_id: sessionActiva.user.id, diametro: dia }]);
                 await cargarDatosGlobales();
                 renderizarUI();
@@ -521,7 +521,7 @@ function cargarMotor(config) {
             
             const nuevoObj = { usuario_id: sessionActiva.user.id, nombre, voc, isc, v, i, l, a };
 
-            if (typeof supabase !== 'undefined' && supabase) {
+            if (window.dbMendocinoClient) {
                 await dbMendocinoClient.from('paneles').insert([nuevoObj]);
                 await cargarDatosGlobales();
                 renderizarUI();
@@ -562,7 +562,7 @@ function cargarMotor(config) {
         }
 
         async function borrarPanel(index) { 
-            if (typeof supabase !== 'undefined' && supabase && dbPaneles[index] && dbPaneles[index].id) {
+            if (window.dbMendocinoClient && dbPaneles[index] && dbPaneles[index].id) {
                 await dbMendocinoClient.from('paneles').delete().eq('id', dbPaneles[index].id);
                 await cargarDatosGlobales();
                 renderizarUI();
@@ -581,7 +581,7 @@ function cargarMotor(config) {
             }
         }
         async function borrarIman(index) { 
-            if (typeof supabase !== 'undefined' && supabase && dbImanes[index] && dbImanes[index].id) {
+            if (window.dbMendocinoClient && dbImanes[index] && dbImanes[index].id) {
                 await dbMendocinoClient.from('imanes').delete().eq('id', dbImanes[index].id);
                 await cargarDatosGlobales();
                 renderizarUI();
@@ -1431,7 +1431,7 @@ function calcularPasoMagnetico() {
     misMotores[nombreMotor] = miConfiguracion;
     localStorage.setItem('listaMotoresMendocino', JSON.stringify(misMotores));
 
-        if (typeof supabase !== 'undefined' && supabase) {
+        if (window.dbMendocinoClient) {
             const usrId = sessionActiva?.user?.id;
             const usrNombre = usuarioActual?.nombre || 'Alumno';
             const id_unico = (usuarioActual?.nombre || 'demo') + '-' + new Date().getTime();
@@ -2485,31 +2485,37 @@ async function inicializarAuth() {
         // Función unificada de arranque seguro
         const finalizarArranqueConDatos = async (session) => {
             if (authProcesada) return;
-            authProcesada = true;
-            authInicializada = true;
-            sessionActiva = session;
+            try {
+                authProcesada = true;
+                authInicializada = true;
+                sessionActiva = session;
 
-            if (session) {
-                console.log("DEBUG [Auth]: Usuario detectado. Cargando ecosistema...");
-                const modalAuth = document.getElementById('modal-auth');
-                if (modalAuth) modalAuth.style.display = 'none';
+                if (session) {
+                    console.log("DEBUG [Auth]: Usuario detectado. Cargando ecosistema...");
+                    const modalAuth = document.getElementById('modal-auth');
+                    if (modalAuth) modalAuth.style.display = 'none';
 
-                cargarPerfilUsuario(session.user).catch(e => console.error("Error perfil:", e));
-                
-                // Asegurar carga de componentes
-                await cargarDatosGlobales();
-                renderizarUI();
-                
-                actualizarPanelAdminUI();
-                aplicarNivelUsuario();
-                mostrarUIAutenticada();
-            } else {
-                console.log("DEBUG [Auth]: Sin sesión. Mostrando login.");
-                if (!window.location.pathname.includes('admin-v35.html')) {
-                    ocultarUIHastaAutenticacion();
+                    cargarPerfilUsuario(session.user).catch(e => console.error("Error perfil:", e));
+                    
+                    // Asegurar carga de componentes con un margen de tiempo
+                    await cargarDatosGlobales();
+                    renderizarUI();
+                    
+                    actualizarPanelAdminUI();
+                    aplicarNivelUsuario();
+                    mostrarUIAutenticada();
+                } else {
+                    console.log("DEBUG [Auth]: Sin sesión. Mostrando login.");
+                    if (!window.location.pathname.includes('admin-v35.html')) {
+                        ocultarUIHastaAutenticacion();
+                    }
                 }
+            } catch (error) {
+                console.error("Error crítico en finalizarArranqueConDatos:", error);
+            } finally {
+                // SIEMPRE resolvemos para no bloquear la carga de la página
+                resolve();
             }
-            resolve();
         };
 
         // 1. Canal normal: Cambio de estado de Auth
@@ -2520,19 +2526,24 @@ async function inicializarAuth() {
             }
         });
 
-        // 2. Canal de respaldo: Timeout 1.5s (Suficiente para detectar sesión persistente)
+        // 2. Canal de respaldo: Timeout 4s (Aumentado para máxima seguridad)
         setTimeout(async () => {
             if (!authProcesada) {
-                console.warn("DEBUG [Auth]: Timeout disparado. Forzando verificación.");
+                console.warn("DEBUG [Auth]: Timeout de seguridad disparado. Forzando arranque...");
                 try {
-                    const { data: { session } } = await client.auth.getSession();
+                    // Intento rápido de obtener sesión con timeout interno de 2s
+                    const sessionPromise = client.auth.getSession();
+                    const timeoutFallback = new Promise(r => setTimeout(() => r({ data: { session: null } }), 2000));
+                    
+                    const { data: { session } } = await Promise.race([sessionPromise, timeoutFallback]);
                     await finalizarArranqueConDatos(session);
                 } catch (e) {
-                    console.error("Error en fallback:", e);
+                    console.error("Error en fallback de emergencia:", e);
+                    authProcesada = true;
                     resolve();
                 }
             }
-        }, 1500);
+        }, 4000);
     });
 }
 
