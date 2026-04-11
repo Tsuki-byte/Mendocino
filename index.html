@@ -141,9 +141,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <div class="step-arrow">➔</div>
                 <div class="step-indicator" id="ind-3" onclick="cambiarPaso(3)"><span>3. Interacción magnética</span></div>
                 <div class="step-arrow">➔</div>
-                <div class="step-indicator" id="ind-4" onclick="cambiarPaso(4)"><span>4. Levitación</span></div>
+                <div class="step-indicator" id="ind-4" onclick="cambiarPaso(4)"><span>4. Interacción lumínica</span></div>
                 <div class="step-arrow">➔</div>
-                <div class="step-indicator" id="ind-5" onclick="cambiarPaso(5)"><span>5. Informe</span></div>
+                <div class="step-indicator" id="ind-5" onclick="cambiarPaso(5)"><span>5. Levitación</span></div>
+                <div class="step-arrow">➔</div>
+                <div class="step-indicator" id="ind-6" onclick="cambiarPaso(6)"><span>6. Informe</span></div>
             </div>
 
             <div class="content">
@@ -526,9 +528,56 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
 <div id="step-4" class="step-container">
+    <div class="form-section">
+        <h3 class="titulo-seccion-principal">☀️ 4. Simulación Lumínica y Fotovoltaica</h3>
+        <p class="texto-ayuda">Estudia cómo el ángulo de la fuente de luz y el giro del rotor afectan al rendimiento energético que se le inyecta a la bobina actuadora.</p>
+
+        <div class="mag-grid-2">
+            <div class="form-group">
+                <label>Ángulo del Rotor [°] (Giro manual)</label>
+                <input type="range" id="lum-giro" min="0" max="360" value="0" oninput="document.getElementById('lum-giro-val').textContent = this.value; calcularPasoLuminico()">
+                <div style="text-align: right; font-size: 11px; margin-top:2px;">Valor: <span id="lum-giro-val">0</span>°</div>
+            </div>
+            <div class="form-group">
+                <label>Ángulo del Sol [°] (Cenit = 0°)</label>
+                <input type="range" id="lum-angulo-luz" min="-90" max="90" value="0" oninput="document.getElementById('lum-luz-val').textContent = this.value; calcularPasoLuminico()">
+                <div style="text-align: right; font-size: 11px; margin-top:2px;">Valor: <span id="lum-luz-val">0</span>°</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Topología del Devanado (Qué placa alimenta la bobina activa)</label>
+            <select id="lum-conexion" onchange="calcularPasoLuminico()">
+                <option value="1">Conectado a la cara a la Tensión Transversal (+90° / Cara Adyacente)</option>
+                <option value="0">Conectado a la misma cara (Frente)</option>
+                <option value="opuesta">Conectado a la placa diametralmente opuesta (180°)</option>
+                <option value="total">Suma total (Puente Rectificador o Todas conectadas en anillo)</option>
+            </select>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn-nav btn-prev" onclick="cambiarPaso(3)">⮜ Anterior</button>
+            <button class="btn-nav btn-next" onclick="cambiarPaso(5)">Siguiente ⮞</button>
+        </div>
+    </div>
+
+    <div class="summary-section">
+        <h3>Motor Fotovoltaico</h3>
+        <div class="svg-illustration-container">
+            <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Incidencia Solar</h4>
+            <svg id="luminico-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; max-height: 250px;"></svg>
+        </div>
+        <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 20px 0 15px 0;">
+        <h3>Rendimiento General Instantáneo</h3>
+        <div class="summary-item"><span>Factor de Placas Activas</span><span class="value" id="lum-res-factor">1.00</span></div>
+        <div class="summary-item"><span>Corriente Entregada (I)</span><span class="value" id="lum-res-corriente">0 A</span></div>
+    </div>
+</div>
+
+<div id="step-5" class="step-container">
 
                     <div class="form-section">
-                        <h3 class="titulo-seccion-principal">🧲 4. Modelo axial de levitación</h3>
+                        <h3 class="titulo-seccion-principal">🧲 5. Modelo axial de levitación</h3>
                         <p class="texto-ayuda-lev">Modelo simplificado del Mendocino real: cuatro imanes en la base (dos por cada punta), dos aros en el eje del rotor y apoyo puntual sobre cristal para estabilizar el conjunto.</p>
 
                         <div class="lev-grid-2">
@@ -589,8 +638,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         </div>
 
                         <div class="nav-buttons">
-                            <button class="btn-nav btn-prev" onclick="cambiarPaso(3)">⮜ Anterior</button>
-                            <button class="btn-nav btn-next" onclick="generarInformeAutomatico(); cambiarPaso(5);">Siguiente ⮞</button>
+                            <button class="btn-nav btn-prev" onclick="cambiarPaso(4)">⮜ Anterior</button>
+                            <button class="btn-nav btn-next" onclick="generarInformeAutomatico(); cambiarPaso(6);">Siguiente ⮞</button>
                         </div>
                     </div>
 
@@ -613,7 +662,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                 </div>
 
-<div id="step-5" class="step-container">
+<div id="step-6" class="step-container">
 
 
                     <div class="informe-header">
@@ -660,7 +709,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
 
                     <div class="nav-buttons nav-buttons-informe">
-                        <button class="btn-nav btn-prev btn-prev-informe" onclick="cambiarPaso(4)">⮜ Anterior</button>
+                        <button class="btn-nav btn-prev btn-prev-informe" onclick="cambiarPaso(5)">⮜ Anterior</button>
                     </div>
 
                 </div>

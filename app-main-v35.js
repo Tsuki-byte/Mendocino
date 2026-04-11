@@ -105,13 +105,13 @@ const CONFIG_NIVELES = {
         puedeVerInforme: false
     },
     avanzado: {
-        pasosPermitidos: [1, 2, 3],
+        pasosPermitidos: [1, 2, 3, 4],
         puedeVerPasoMagnetico: true,
         puedeVerPasoLevitacion: false,
         puedeVerInforme: false
     },
     experto: {
-        pasosPermitidos: [1, 2, 3, 4, 5],
+        pasosPermitidos: [1, 2, 3, 4, 5, 6],
         puedeVerPasoMagnetico: true,
         puedeVerPasoLevitacion: true,
         puedeVerInforme: true
@@ -1467,14 +1467,190 @@ function dibujarInteraccionMagneticaSVG() {
     svg.appendChild(tauArrow);
 }
 
+}
 
 
+        // --- PASO 4: INTERACCIÓN LUMÍNICA ---
+        function calcularPasoLuminico() {
+            const N = parseInt(document.getElementById('num-caras-poligono')?.value || 4);
+            const corrienteMax = window.corrienteDisponibleMagnetica || (parseFloat(document.getElementById('res-panel-isc')?.textContent) || 0.15); 
+            const parMax = window.parMotrizMagnetico || 0.005;
+
+            const giro_deg = parseFloat(document.getElementById('lum-giro')?.value) || 0;
+            const luz_deg = parseFloat(document.getElementById('lum-angulo-luz')?.value) || 0;
+            const conexion = document.getElementById('lum-conexion')?.value || '1';
+
+            // El vector SOL apunta hacia ABAJO desde luz_deg.
+            // Para que la luz golpee una placa ortogonalmente, la NORMAL de la placa debe ser luz_deg - 90 (apuntando hacia la fuente).
+            const luz_normal = (luz_deg - 90) * Math.PI / 180;
+            let effs = [];
+            let minDistBottom = Infinity;
+            let indexBottom = 0;
+
+            for(let i=0; i<N; i++) {
+                // Ángulo de la normal de la cara (la 0 es Top, a -90 grados SVG)
+                let angulo = (i * 360 / N - 90 + giro_deg);
+                let anguloRad = angulo * Math.PI / 180;
+                
+                // Coseno de la diferencia (incidencia)
+                let delta = anguloRad - luz_normal;
+                let cosInc = Math.cos(delta);
+                // Si cos > 0 significa que la normal mira hacia la luz
+                effs.push(Math.max(0, cosInc));
+
+                // Búsqueda de la cara más pegada al imán de abajo (90 deg matemáticos en SVG)
+                let normalSVG = ((angulo % 360) + 360) % 360; // 0..360
+                let dist = Math.abs(normalSVG - 90);
+                if (dist > 180) dist = 360 - dist;
+                if (dist < minDistBottom) {
+                    minDistBottom = dist;
+                    indexBottom = i;
+                }
+            }
+
+            let factor = 0;
+            let caraActiva = -1;
+
+            if (conexion === 'total') {
+                factor = effs.reduce((a, b) => a + b, 0); // Factor suma de todo el puente
+                caraActiva = -2; // Todas las iluminadas
+            } else if (conexion === 'opuesta') {
+                let opp = (indexBottom + Math.floor(N/2)) % N;
+                factor = effs[opp];
+                caraActiva = opp;
+            } else {
+                let off = parseInt(conexion); // 0 (adyacente front), 1 (lado derecho)
+                let res = ((indexBottom - off) % N + N) % N; // Menos indica lado derecho
+                factor = effs[res];
+                caraActiva = res;
+            }
+
+            factor = Math.max(0, Math.min(2.0, factor));
+
+            let corrienteResult = corrienteMax * factor;
+            let parResult = parMax * factor; 
+
+            const resObj1 = document.getElementById('lum-res-factor');
+            const resObj2 = document.getElementById('lum-res-corriente');
+            const resObj3 = document.getElementById('lum-res-par');
+            
+            if(resObj1) resObj1.textContent = factor.toFixed(2);
+            if(resObj2) resObj2.textContent = corrienteResult.toFixed(3) + ' A';
+            if(resObj3) resObj3.textContent = parResult.toFixed(4) + ' N·m';
+
+            window.estadoLuminico = { N: N, giro: giro_deg, luz: luz_deg, effs: effs, caraActiva: caraActiva, factor: factor, indexBottom: indexBottom };
+            
+            if (document.getElementById('step-4').classList.contains('active')) {
+                dibujarInteraccionLuminicaSVG();
+            }
+        }
+
+        function dibujarInteraccionLuminicaSVG() {
+            const svg = document.getElementById('luminico-svg');
+            if (!svg) return;
+            svg.innerHTML = '';
+            
+            if(!window.estadoLuminico) return;
+            const { N, giro, luz, effs, caraActiva, indexBottom } = window.estadoLuminico;
+
+            const cx = 100, cy = 100;
+            const radio = 45;
+
+            // 1. DIBUJAR SOL Y RAYOS
+            // Base del sol
+            const solX = cx + 80 * Math.cos((luz - 90) * Math.PI / 180);
+            const solY = cy + 80 * Math.sin((luz - 90) * Math.PI / 180);
+            
+            const sunGlow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            sunGlow.setAttribute('cx', solX); sunGlow.setAttribute('cy', solY);
+            sunGlow.setAttribute('r', 16); sunGlow.setAttribute('fill', '#f1c40f');
+            svg.appendChild(sunGlow);
+
+            // Rayos direccionales
+            for(let j=-2; j<=2; j++) {
+                const rx_start = solX + 18 * Math.cos((luz - 90 + j*25)*Math.PI/180);
+                const ry_start = solY + 18 * Math.sin((luz - 90 + j*25)*Math.PI/180);
+                // Vector apuntando opuesto a la fuente
+                let dirLuzX = -Math.cos((luz - 90) * Math.PI / 180);
+                let dirLuzY = -Math.sin((luz - 90) * Math.PI / 180);
+                const rayPath = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                rayPath.setAttribute('x1', rx_start); rayPath.setAttribute('y1', ry_start);
+                rayPath.setAttribute('x2', rx_start + dirLuzX * 30); rayPath.setAttribute('y2', ry_start + dirLuzY * 30);
+                rayPath.setAttribute('stroke', '#f39c12'); rayPath.setAttribute('stroke-width', '2');
+                rayPath.setAttribute('stroke-dasharray', '4 2');
+                svg.appendChild(rayPath);
+            }
+
+            // 2. DIBUJAR POLÍGONO CON COLOR DE EFICIENCIA
+            const angP = (2 * Math.PI) / N;
+            // Para N caras, el panel i va de i*angP - angP/2 a i*angP + angP/2 (ajustado por offset -PI/2)
+            for(let i=0; i<N; i++) {
+                const anguloCentro = i * angP - Math.PI/2 + (giro * Math.PI/180);
+                const t1 = anguloCentro - angP/2;
+                const t2 = anguloCentro + angP/2;
+
+                const p1x = cx + radio * Math.cos(t1); const p1y = cy + radio * Math.sin(t1);
+                const p2x = cx + radio * Math.cos(t2); const p2y = cy + radio * Math.sin(t2);
+
+                const poly = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                // Trazar cara del centro a esquinas para dibujar "cuñas" pintadas
+                poly.setAttribute('d', `M ${cx} ${cy} L ${p1x} ${p1y} L ${p2x} ${p2y} Z`);
+                let opacidad = 0.1 + (effs[i] * 0.7); // Brillan más si effs es cercano a 1
+                let colorDbg = '#bdc3c7'; // Grises por defecto
+                
+                if(caraActiva === -2 && effs[i] > 0) colorDbg = '#f1c40f'; // Todas las encendidas brillan amarillas
+                else if (caraActiva === i) colorDbg = '#e67e22'; // Cara específica brilla un poco naranja
+
+                poly.setAttribute('fill', colorDbg);
+                poly.setAttribute('fill-opacity', opacidad);
+                poly.setAttribute('stroke', '#7f8c8d');
+                svg.appendChild(poly);
+
+                // Dibujar devanado en medio de la cara si le toca
+                const devX = cx + (radio - 5) * Math.cos(anguloCentro);
+                const devY = cy + (radio - 5) * Math.sin(anguloCentro);
+                const devC = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                devC.setAttribute('cx', devX); devC.setAttribute('cy', devY);
+                devC.setAttribute('r', 4);
+                
+                if (i === indexBottom) {
+                    devC.setAttribute('fill', '#e74c3c'); // El de abajo siempre rojo (interactuando)
+                    devC.setAttribute('stroke', '#c0392b');
+                    devC.setAttribute('r', 5);
+                } else {
+                    devC.setAttribute('fill', '#95a5a6'); // Demás devanados
+                }
+                svg.appendChild(devC);
+            }
+
+            // 3. IMÁN INFERIOR EN EL SUELO (Referencia)
+            const magW = 60; const magH = 12;
+            const magP = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            magP.setAttribute('x', cx - magW/2); magP.setAttribute('y', cy + radio + 10);
+            magP.setAttribute('width', magW); magP.setAttribute('height', magH);
+            magP.setAttribute('fill', '#d35400');
+            svg.appendChild(magP);
+            const tm = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            tm.setAttribute('x', cx - 4); tm.setAttribute('y', cy + radio + 20);
+            tm.setAttribute('fill', '#fff'); tm.setAttribute('font-size', '10');
+            tm.setAttribute('font-weight', 'bold');
+            tm.textContent = 'N';
+            svg.appendChild(tm);
+        }
+
+        // Hook the variables exported by Magnetic to be used as starting values for Lumínico
+        const oldCalcularMagnetico = window.calcularPasoMagnetico || function(){};
+        window.calcularPasoMagnetico = function() {
+            oldCalcularMagnetico();
+            const I = parseFloat(document.getElementById('mag-corriente')?.textContent);
+            window.corrienteDisponibleMagnetica = !isNaN(I) ? I : null;
+            const P = parseFloat(document.getElementById('res-par')?.textContent);
+            window.parMotrizMagnetico = !isNaN(P) ? P : null;
+            calcularPasoLuminico(); // Chain execution
+        }
 
 
-
-
-
-        // --- PASO 4: ENCAJE EN RANURA ---
+        // --- PASO 5: ENCAJE EN RANURA ---
 
         function calcularOcupacionRanura() {
             const anchoReal = EstadoDiseno.anchoRanura_mm;
@@ -2410,6 +2586,9 @@ function cambiarPaso(numPaso) {
         calcularPasoMagnetico();
     }
     if (numPaso === 4) {
+        calcularPasoLuminico();
+    }
+    if (numPaso === 5) {
         poblarSelectoresLevitacion();
         actualizarModeloAxial();
     }
