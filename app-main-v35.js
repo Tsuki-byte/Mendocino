@@ -1266,6 +1266,124 @@ function calcularPasoMagnetico() {
     }
 
     setText('res-lectura-magnetica', lectura);
+
+    dibujarInteraccionMagneticaSVG();
+}
+
+function dibujarInteraccionMagneticaSVG() {
+    const svg = document.getElementById('magnetismo-svg');
+    if (!svg) return;
+
+    svg.innerHTML = ''; // Limpiar lienzo
+
+    const R = (EstadoDiseno.diametroRotor || 50) / 2;
+    const cx = 100;
+    const cy = 80; // Centro elevado para acomodar el imán base
+    const factorEscala = 60 / R; // Ajuste visual de escala
+    const radioRotorSVG = R * factorEscala;
+
+    // --- LECTURA DE VARIABLES ---
+    const campoB = EstadoDiseno.campoB_T || 0.18;
+    const fuerza = EstadoDiseno.fuerzaLorentz_N || 0;
+    const parActivo = EstadoDiseno.par_Nm || 0;
+
+    // --- 1. DIBUJO DE LÍNEAS B (Flujo Magnético) ---
+    const imanWidth = 60;
+    const imanHeight = 20;
+    const imanY = 175;
+    const numLineas = Math.min(12, Math.max(3, Math.floor(campoB * 25))); // Crecen con B
+
+    for(let i=0; i<numLineas; i++){
+        const lx = cx - (imanWidth/2) + 5 + (i * ((imanWidth-10) / Math.max(1, numLineas-1)));
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', lx); line.setAttribute('y1', imanY);
+        line.setAttribute('x2', lx); line.setAttribute('y2', cy + radioRotorSVG - 5);
+        line.setAttribute('stroke', '#3498db');
+        line.setAttribute('stroke-width', '1.5');
+        line.setAttribute('stroke-dasharray', '4,4');
+        line.setAttribute('opacity', '0.5');
+        
+        // Flecha B
+        const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        arrow.setAttribute('points', `${lx},${cy + radioRotorSVG} ${lx-3},${cy + radioRotorSVG + 8} ${lx+3},${cy + radioRotorSVG + 8}`);
+        arrow.setAttribute('fill', '#3498db'); arrow.setAttribute('opacity', '0.6');
+        
+        svg.appendChild(line); svg.appendChild(arrow);
+    }
+
+    // --- 2. IMÁN BASE ---
+    const rectIman = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rectIman.setAttribute('x', cx - imanWidth/2); rectIman.setAttribute('y', imanY);
+    rectIman.setAttribute('width', imanWidth); rectIman.setAttribute('height', imanHeight);
+    rectIman.setAttribute('fill', '#95a5a6'); rectIman.setAttribute('stroke', '#7f8c8d');
+    rectIman.setAttribute('stroke-width', '2'); rectIman.setAttribute('rx', '2');
+    svg.appendChild(rectIman);
+    
+    const textN = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    textN.setAttribute('x', cx); textN.setAttribute('y', imanY + 15);
+    textN.setAttribute('font-size', '13'); textN.setAttribute('fill', 'white');
+    textN.setAttribute('font-weight', 'bold'); textN.setAttribute('text-anchor', 'middle');
+    textN.textContent = 'N';
+    svg.appendChild(textN);
+
+    // --- 3. ROTOR E HILO DE COBRE ---
+    const rotorCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    rotorCircle.setAttribute('cx', cx); rotorCircle.setAttribute('cy', cy);
+    rotorCircle.setAttribute('r', radioRotorSVG);
+    rotorCircle.setAttribute('fill', '#ecf0f1'); rotorCircle.setAttribute('stroke', '#bdc3c7');
+    rotorCircle.setAttribute('stroke-width', '2');
+    svg.appendChild(rotorCircle);
+
+    const devanadoR = 7;
+    const devanadoY = cy + radioRotorSVG - devanadoR;
+
+    const devCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    devCircle.setAttribute('cx', cx); devCircle.setAttribute('cy', devanadoY);
+    devCircle.setAttribute('r', devanadoR);
+    devCircle.setAttribute('fill', '#e67e22'); devCircle.setAttribute('stroke', '#d35400');
+    svg.appendChild(devCircle);
+
+    const dotCorriente = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    dotCorriente.setAttribute('cx', cx); dotCorriente.setAttribute('cy', devanadoY);
+    dotCorriente.setAttribute('r', '2.5'); dotCorriente.setAttribute('fill', '#fff');
+    svg.appendChild(dotCorriente); // El punto simboliza corriente saliente
+
+    // --- 4. FUERZA LORENTZ VECTOR ---
+    const lenF = Math.min(50, Math.max(15, fuerza * 4000)); // Longitud reactiva
+    const fx1 = cx + devanadoR + 3;
+    const fy = devanadoY;
+    const fx2 = fx1 + lenF;
+
+    const flechaF = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    flechaF.setAttribute('x1', fx1); flechaF.setAttribute('y1', fy);
+    flechaF.setAttribute('x2', fx2); flechaF.setAttribute('y2', fy);
+    flechaF.setAttribute('stroke', '#e74c3c'); flechaF.setAttribute('stroke-width', '3');
+    svg.appendChild(flechaF);
+
+    const arrowF = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    arrowF.setAttribute('points', `${fx2},${fy} ${fx2-6},${fy-4} ${fx2-6},${fy+4}`);
+    arrowF.setAttribute('fill', '#e74c3c');
+    svg.appendChild(arrowF);
+
+    // --- 5. PAR ROTATORIO (CURVA) ---
+    const strokeW = Math.min(6, Math.max(1.5, parActivo * 1500)); // Grosor reactivo
+    const rx = radioRotorSVG + 18;
+    
+    // Curva indicadora de giro (sentido antihorario asumiendo Fuerza derecha)
+    const startX = cx - rx * 0.7; const startY = cy + rx * 0.7;
+    const endX = cx - rx * 0.7;   const endY = cy - rx * 0.7;
+    const tauPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 1 ${endX} ${endY}`);
+    tauPath.setAttribute('stroke', '#2ecc71'); tauPath.setAttribute('stroke-width', strokeW);
+    tauPath.setAttribute('fill', 'none');
+    svg.appendChild(tauPath);
+
+    // Punta de flecha de par
+    const tauArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    tauArrow.setAttribute('points', `${endX},${endY-6} ${endX-5},${endY+4} ${endX+5},${endY+4}`);
+    tauArrow.setAttribute('fill', '#2ecc71');
+    tauArrow.setAttribute('transform', `rotate(35 ${endX} ${endY})`);
+    svg.appendChild(tauArrow);
 }
 
 
