@@ -1559,59 +1559,73 @@ function dibujarInteraccionMagneticaSVG() {
     svg.appendChild(ejeCircle);
 
 
-    // Hilo de cobre (ahora encajado exactamente en la ranura inferior)
+    // --- 4. DEVANADOS Y FUERZAS EN TODAS LAS RANURAS ---
+    const N = EstadoDiseno.numeroCaras || 4;
+    const angP = EstadoDiseno.anguloPanel || (Math.PI/2);
+    const angS = EstadoDiseno.anguloRanura || (Math.PI/2);
+    const Rfondo_mm = (EstadoDiseno.diametroRotor/2) - (EstadoDiseno.altoRanura_mm || 0);
+    const RfondoPx = Rfondo_mm * factorEscala;
+    
     const maxDevanadoR = (radioRotorSVG - RfondoPx) / 2;
-    const devanadoR = Math.max(3, Math.min(8, maxDevanadoR)); // Limitamos entre 3 y 8 px
-    const devanadoY = cy + RfondoPx + devanadoR;
+    const devanadoR = Math.max(3, Math.min(8, maxDevanadoR)); 
 
-    const devCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    devCircle.setAttribute('cx', cx); devCircle.setAttribute('cy', devanadoY);
-    devCircle.setAttribute('r', devanadoR);
-    devCircle.setAttribute('fill', '#e67e22'); devCircle.setAttribute('stroke', '#d35400');
-    svg.appendChild(devCircle);
-    // Símbolo de corriente entrante (Cruz ⊗) congruente con Fuerza a la derecha e Imán N abajo
-    const crossSize = Math.max(2, devanadoR * 0.4);
-    
-    const lineC1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    lineC1.setAttribute('x1', cx - crossSize); lineC1.setAttribute('y1', devanadoY - crossSize);
-    lineC1.setAttribute('x2', cx + crossSize); lineC1.setAttribute('y2', devanadoY + crossSize);
-    lineC1.setAttribute('stroke', '#fff'); lineC1.setAttribute('stroke-width', '1.5');
-    svg.appendChild(lineC1);
+    for (let i = 0; i < N; i++) {
+        // Ángulo de cada ranura (empezando por abajo: PI/2)
+        const anguloRanura = i * (angP + angS) + (Math.PI / 2);
+        const sx = cx + (RfondoPx + devanadoR) * Math.cos(anguloRanura);
+        const sy = cy + (RfondoPx + devanadoR) * Math.sin(anguloRanura);
 
-    const lineC2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    lineC2.setAttribute('x1', cx + crossSize); lineC2.setAttribute('y1', devanadoY - crossSize);
-    lineC2.setAttribute('x2', cx - crossSize); lineC2.setAttribute('y2', devanadoY + crossSize);
-    lineC2.setAttribute('stroke', '#fff'); lineC2.setAttribute('stroke-width', '1.5');
-    svg.appendChild(lineC2);
+        // --- Círculo de Devanado ---
+        const devCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        devCircle.setAttribute('cx', sx); devCircle.setAttribute('cy', sy);
+        devCircle.setAttribute('r', devanadoR);
+        devCircle.setAttribute('fill', '#e67e22'); devCircle.setAttribute('stroke', '#d35400');
+        devCircle.setAttribute('opacity', sy > cy ? '1' : '0.4'); // Más tenue arriba
+        svg.appendChild(devCircle);
 
-    // --- 4. FUERZA LORENTZ VECTOR (Escala Cualitativa Lineal) ---
-    // El tamaño máximo (100%) es cuando el entrehierro es 0mm.
-    // Usamos el B_max calculado en el Paso 1 para este imán concreto.
-    let ratioF = 0.5; 
-    const B_act = EstadoDiseno.campoB_T || 0;
-    const B_max = EstadoDiseno.campoB_max || B_act || 0.18;
+        // --- Símbolo Corriente (⊗) ---
+        const csz = Math.max(2, devanadoR * 0.4);
+        const l1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l1.setAttribute('x1', sx - csz); l1.setAttribute('y1', sy - csz);
+        l1.setAttribute('x2', sx + csz); l1.setAttribute('y2', sy + csz);
+        l1.setAttribute('stroke', '#fff'); l1.setAttribute('stroke-width', '1.2');
+        svg.appendChild(l1);
+        const l2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l2.setAttribute('x1', sx + csz); l2.setAttribute('y1', sy - csz);
+        l2.setAttribute('x2', sx - csz); l2.setAttribute('y2', sy + csz);
+        l2.setAttribute('stroke', '#fff'); l2.setAttribute('stroke-width', '1.2');
+        svg.appendChild(l2);
 
-    if (B_max > 0) {
-        ratioF = Math.min(1, B_act / B_max);
+        // --- FUERZA DE LORENTZ LOCAL (Cualitativa) ---
+        // Estimamos el campo B en esta posición específica
+        const distVertical = Math.max(1, imanY - sy);
+        const distHorizontal = Math.abs(sx - cx);
+        
+        // El campo cae con la distancia vertical y lateralmente
+        // Usamos una aproximación cualitativa: B_local = B_max * (1/z^2) * damping_lateral
+        const z_norm = distVertical / (radioRotorSVG * 0.5);
+        const damping_lateral = Math.exp(-Math.pow(distHorizontal / (imanWidth * 0.8), 2));
+        const localRatio = Math.min(1, (1 / (1 + z_norm * z_norm)) * damping_lateral);
+        
+        // Solo dibujamos flechas si la fuerza es significativa
+        if (localRatio > 0.05) {
+            const F_len = 5 + (localRatio * 80); 
+            const f_x1 = sx + devanadoR + 2;
+            const f_x2 = f_x1 + F_len;
+            
+            const lineF = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            lineF.setAttribute('x1', f_x1); lineF.setAttribute('y1', sy);
+            lineF.setAttribute('x2', f_x2); lineF.setAttribute('y2', sy);
+            lineF.setAttribute('stroke', '#e74c3c'); lineF.setAttribute('stroke-width', '2.5');
+            lineF.setAttribute('opacity', localRatio * 1.5);
+            svg.appendChild(lineF);
+
+            const arrF = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            arrF.setAttribute('points', `${f_x2},${sy} ${f_x2-6},${sy-3.5} ${f_x2-6},${sy+3.5}`);
+            arrF.setAttribute('fill', '#e74c3c'); arrF.setAttribute('opacity', localRatio * 1.5);
+            svg.appendChild(arrF);
+        }
     }
-
-    // Longitud visual lineal: Max ~123px (diámetro del rotor)
-    const lenF = 8 + (ratioF * 115); 
-    
-    const fx1 = cx + devanadoR + 3;
-    const fy = devanadoY;
-    const fx2 = fx1 + lenF;
-
-    const flechaF = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    flechaF.setAttribute('x1', fx1); flechaF.setAttribute('y1', fy);
-    flechaF.setAttribute('x2', fx2); flechaF.setAttribute('y2', fy);
-    flechaF.setAttribute('stroke', '#e74c3c'); flechaF.setAttribute('stroke-width', '3');
-    svg.appendChild(flechaF);
-
-    const arrowF = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    arrowF.setAttribute('points', `${fx2},${fy} ${fx2-8},${fy-5} ${fx2-8},${fy+5}`);
-    arrowF.setAttribute('fill', '#e74c3c');
-    svg.appendChild(arrowF);
 
     // --- 5. PAR ROTATORIO (CURVA) ---
     // Recalibración: Para pares típicos de 0.005Nm a 0.02Nm
