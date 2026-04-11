@@ -1618,7 +1618,10 @@ function dibujarInteraccionLuminicaSVG() {
         svg.appendChild(ray);
     }
 
-    // 2. GEOMETRÍA DEL ROTOR (Unificada)
+    // 2. GEOMETRÍA DEL ROTOR (Unificada con Pasos 1, 2 y 3)
+    const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--svg-stroke-color').trim() || "#333";
+    const colorImpresion3D = getComputedStyle(document.documentElement).getPropertyValue('--svg-panel-color').trim() || "#fdebd0";
+
     const Ws = EstadoDiseno.anchoRanura_mm || 5;
     const Ds = EstadoDiseno.altoRanura_mm || 4;
     const R_mm = (EstadoDiseno.diametroRotor || 50) / 2;
@@ -1639,90 +1642,136 @@ function dibujarInteraccionLuminicaSVG() {
     // Offset de giro real (desde el centro del panel 0)
     const rotOffset = -(angP + angS) / 2 + (giro * Math.PI / 180);
 
+    // --- A. DIBUJAR CUERPO DEL ROTOR (Un solo Path 3D) ---
+    let dRotor = "";
+
     for (let i = 0; i < N; i++) {
         const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2) + rotOffset;
-        const t1 = anguloCentroPanel - (angP / 2);
-        const t2 = anguloCentroPanel + (angP / 2);
-        const t3 = t2 + angS;
+        const theta1 = anguloCentroPanel - (angP / 2);
+        const theta2 = anguloCentroPanel + (angP / 2);
+        const theta3 = theta2 + angS;
 
-        const p1x = cx + radioRotorSVG * Math.cos(t1); const p1y = cy + radioRotorSVG * Math.sin(t1);
-        const p2x = cx + radioRotorSVG * Math.cos(t2); const p2y = cy + radioRotorSVG * Math.sin(t2);
-        const p3x = cx + radioRotorSVG * Math.cos(t3); const p3y = cy + radioRotorSVG * Math.sin(t3);
+        const p1x = cx + radioRotorSVG * Math.cos(theta1); const p1y = cy + radioRotorSVG * Math.sin(theta1);
+        const p2x = cx + radioRotorSVG * Math.cos(theta2); const p2y = cy + radioRotorSVG * Math.sin(theta2);
+        const p3x = cx + radioRotorSVG * Math.cos(theta3); const p3y = cy + radioRotorSVG * Math.sin(theta3);
 
-        // --- DIBUJAR CARA (PANEL SOLAR) ---
-        // Dibujamos la "cuña" del panel con su eficiencia
-        const facePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        facePath.setAttribute('d', `M ${cx} ${cy} L ${p1x} ${p1y} L ${p2x} ${p2y} Z`);
-        
-        // Color basado en eficiencia
-        let eff = effs[i];
-        let colorPanel = '#bdc3c7'; // Apagado
-        if (eff > 0) {
-            // Mezclamos gris con naranja/oro según eficiencia
-            const r = Math.round(189 + (241-189)*eff);
-            const g = Math.round(195 + (196-195)*eff);
-            const b = Math.round(199 + (15-199)*eff);
-            colorPanel = `rgb(${r},${g},${b})`;
-        }
-        if (caraActiva === i || (caraActiva === -2 && eff > 0)) {
-            colorPanel = '#f39c12'; // Resaltado especial si está conectada
-        }
-        
-        facePath.setAttribute('fill', colorPanel);
-        facePath.setAttribute('stroke', '#7f8c8d');
-        facePath.setAttribute('stroke-width', '0.5');
-        svg.appendChild(facePath);
+        if (i === 0) dRotor += `M ${p1x} ${p1y} `;
+        else dRotor += `L ${p1x} ${p1y} `;
+        dRotor += `L ${p2x} ${p2y} `;
 
-        // --- DIBUJAR RANURA Y CONDUCTOR ---
-        let dRanura = `M ${p2x} ${p2y} `;
-        let s1x, s1y, s2x, s2y;
-        
         if (tipoRanura === 'trapecio') {
-            s1x = cx + RfondoPx * Math.cos(t2); s1y = cy + RfondoPx * Math.sin(t2);
-            s2x = cx + RfondoPx * Math.cos(t3); s2y = cy + RfondoPx * Math.sin(t3);
+            const s1x = cx + RfondoPx * Math.cos(theta2); const s1y = cy + RfondoPx * Math.sin(theta2);
+            const s2x = cx + RfondoPx * Math.cos(theta3); const s2y = cy + RfondoPx * Math.sin(theta3);
+            dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
         } else {
-            const tBisectriz = (t2 + t3) / 2;
-            const dX = Math.cos(tBisectriz); const dY = Math.sin(tBisectriz);
-            s1x = p2x - dX * profPx; s1y = p2y - dY * profPx;
-            s2x = p3x - dX * profPx; s2y = p3y - dY * profPx;
+            const thetaBisectriz = (theta2 + theta3) / 2;
+            const dirX = Math.cos(thetaBisectriz); const dirY = Math.sin(thetaBisectriz);
+            const s1x = p2x - dirX * profPx; const s1y = p2y - dirY * profPx;
+            const s2x = p3x - dirX * profPx; const s2y = p3y - dirY * profPx;
+            dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
         }
-        dRanura += `L ${s1x} ${s1y} L ${s2x} ${s2y} L ${p3x} ${p3y} Z`;
-        
-        const ranuraPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        ranuraPath.setAttribute('d', dRanura);
-        ranuraPath.setAttribute('fill', '#ecf0f1');
-        ranuraPath.setAttribute('stroke', '#bdc3c7');
-        svg.appendChild(ranuraPath);
+    }
+    dRotor += "Z";
 
-        // Conductor interior
-        const tConductor = (t2+t3)/2;
-        const distConductor = RfondoPx + (radioRotorSVG - RfondoPx)/2;
-        const cX = cx + distConductor * Math.cos(tConductor);
-        const cY = cy + distConductor * Math.sin(tConductor);
-        
-        const conductor = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        conductor.setAttribute('cx', cX); conductor.setAttribute('cy', cY);
-        conductor.setAttribute('r', 3);
-        
-        // Mapeo: El conductor i es alimentado por el panel (i - off)
+    const pathRotor = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    pathRotor.setAttribute("d", dRotor);
+    pathRotor.setAttribute("fill", colorImpresion3D);
+    pathRotor.setAttribute("stroke", strokeColor);
+    pathRotor.setAttribute("stroke-width", "1.5");
+    svg.appendChild(pathRotor);
+
+    // --- B. DIBUJAR BOBINADOS Y PANELES SOLARES ---
+    const fo = EstadoDiseno.factorOcupacion || 0.8; 
+    const profBobinadoPx = Ds * factorEscala * Math.min(fo, 1.2); 
+
+    for (let i = 0; i < N; i++) {
+        const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2) + rotOffset;
+        const theta1 = anguloCentroPanel - (angP / 2);
+        const theta2 = anguloCentroPanel + (angP / 2);
+        const theta3 = theta2 + angS;
+
+        // 1. BOBINADO
+        const thetaBisectriz = (theta2 + theta3) / 2;
+        const dirX = Math.cos(thetaBisectriz);
+        const dirY = Math.sin(thetaBisectriz);
+        let pVbob = "";
+
+        if (tipoRanura === 'trapecio') {
+            const f1x = cx + RfondoPx * Math.cos(theta2); const f1y = cy + RfondoPx * Math.sin(theta2);
+            const f2x = cx + RfondoPx * Math.cos(theta3); const f2y = cy + RfondoPx * Math.sin(theta3);
+            const rExt = RfondoPx + profBobinadoPx;
+            const o1x = cx + rExt * Math.cos(theta2); const o1y = cy + rExt * Math.sin(theta2);
+            const o2x = cx + rExt * Math.cos(theta3); const o2y = cy + rExt * Math.sin(theta3);
+            pVbob = `${f1x},${f1y} ${o1x},${o1y} ${o2x},${o2y} ${f2x},${f2y}`;
+        } else {
+            const p2x = cx + radioRotorSVG * Math.cos(theta2); const p2y = cy + radioRotorSVG * Math.sin(theta2);
+            const p3x = cx + radioRotorSVG * Math.cos(theta3); const p3y = cy + radioRotorSVG * Math.sin(theta3);
+            const f1x = p2x - dirX * profPx; const f1y = p2y - dirY * profPx;
+            const f2x = p3x - dirX * profPx; const f2y = p3y - dirY * profPx;
+            const o1x = f1x + dirX * profBobinadoPx; const o1y = f1y + dirY * profBobinadoPx;
+            const o2x = f2x + dirX * profBobinadoPx; const o2y = f2y + dirY * profBobinadoPx;
+            pVbob = `${f1x},${f1y} ${o1x},${o1y} ${o2x},${o2y} ${f2x},${f2y}`;
+        }
+
         const panelAlimentador = (i - off + N) % N;
         const estaEnergizado = effs[panelAlimentador] > 0;
-
+        
+        let colorBobinado = '#95a5a6';
+        let opacidadBobinado = '0.9';
+        
         if (estaEnergizado) {
-            conductor.setAttribute('fill', '#f39c12'); // Ámbar/Naranja activo
-            conductor.setAttribute('stroke', '#e67e22');
-            conductor.setAttribute('r', 4);
-            
-            // Si es exactamente el de abajo (fuerza máxima), lo hacemos brillar más
+            colorBobinado = '#f39c12';
             if (i === indexBottom) {
-                conductor.setAttribute('fill', '#e67e22');
-                conductor.setAttribute('stroke', '#d35400');
-                conductor.setAttribute('r', 5);
+                colorBobinado = '#e67e22'; // Extra fuerte abajo
             }
-        } else {
-            conductor.setAttribute('fill', '#95a5a6');
         }
-        svg.appendChild(conductor);
+
+        const polyBobinado = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        polyBobinado.setAttribute("points", pVbob);
+        polyBobinado.setAttribute("fill", colorBobinado);
+        polyBobinado.setAttribute("opacity", opacidadBobinado);
+        if (i === indexBottom && estaEnergizado) {
+            polyBobinado.setAttribute("stroke", "#c0392b");
+            polyBobinado.setAttribute("stroke-width", "1");
+        }
+        svg.appendChild(polyBobinado);
+
+        // 2. PANEL SOLAR
+        const proporcionPlaca = WpTotal > 0 ? (Wp / WpTotal) : 1;
+        const angPlacaReal = angP * proporcionPlaca;
+        const tPlaca1 = anguloCentroPanel - (angPlacaReal / 2);
+        const tPlaca2 = anguloCentroPanel + (angPlacaReal / 2);
+
+        const pl1x = cx + radioRotorSVG * Math.cos(tPlaca1);
+        const pl1y = cy + radioRotorSVG * Math.sin(tPlaca1);
+        const pl2x = cx + radioRotorSVG * Math.cos(tPlaca2);
+        const pl2y = cy + radioRotorSVG * Math.sin(tPlaca2);
+
+        // Placa base
+        const placaSolBase = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        placaSolBase.setAttribute("x1", pl1x); placaSolBase.setAttribute("y1", pl1y);
+        placaSolBase.setAttribute("x2", pl2x); placaSolBase.setAttribute("y2", pl2y);
+        placaSolBase.setAttribute("stroke", "#2c3e50"); 
+        placaSolBase.setAttribute("stroke-width", "4");
+        placaSolBase.setAttribute("stroke-linecap", "round");
+        svg.appendChild(placaSolBase);
+
+        // Brillo intermitente de la placa según la luz recibida
+        let eff = effs[i];
+        if (eff > 0 || caraActiva === i || (caraActiva === -2 && eff > 0)) {
+            const resplandor = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            resplandor.setAttribute("x1", pl1x); resplandor.setAttribute("y1", pl1y);
+            resplandor.setAttribute("x2", pl2x); resplandor.setAttribute("y2", pl2y);
+            resplandor.setAttribute("stroke", "#f1c40f"); 
+            resplandor.setAttribute("stroke-width", "3"); 
+            resplandor.setAttribute("stroke-linecap", "round");
+            if (caraActiva === i || (caraActiva === -2 && eff > 0)) {
+                resplandor.setAttribute("opacity", (0.5 + eff*0.5).toString());
+            } else {
+                resplandor.setAttribute("opacity", (eff * 0.7).toString());
+            }
+            svg.appendChild(resplandor);
+        }
     }
 
     // Eje central
