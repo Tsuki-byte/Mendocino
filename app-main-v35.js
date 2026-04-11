@@ -299,6 +299,27 @@ function cargarMotor(config) {
         calidad.value = config.calidad;
     }
 
+    // --- Lógica de Imán de Motor ---
+    const imanSelect = document.getElementById('iman-motor');
+    const imanOrient = document.getElementById('iman-orientacion');
+    const imanDist = document.getElementById('iman-distancia');
+
+    if (config.imanMotorNombre && dbImanes.length > 0) {
+        const idxIm = dbImanes.findIndex(im => im.nombre === config.imanMotorNombre);
+        if (idxIm >= 0 && imanSelect) {
+            imanSelect.value = String(idxIm);
+        }
+    }
+    if (imanOrient && config.imanMotorOrientacion) {
+        imanOrient.value = config.imanMotorOrientacion;
+    }
+    if (imanDist && config.imanMotorDistancia !== undefined) {
+        imanDist.value = config.imanMotorDistancia;
+    }
+
+    if (typeof poblarInfoImanMotor === 'function') poblarInfoImanMotor();
+    actualizarResumenPaso1();
+
     // --- Lógica de Imanes (si aplica en el paso 4) ---
     if (config.imanRotorNombre || config.imanBaseNombre) {
         const selBase = document.getElementById('lev-base-iman');
@@ -479,6 +500,30 @@ function cargarMotor(config) {
                     }
                 }
 
+                // Poblado del selector de imán de motor (bloques únicamente)
+                const selImanMotor = document.getElementById('iman-motor');
+                if (selImanMotor && Array.isArray(dbImanes)) {
+                    const motorActual = selImanMotor.value;
+                    selImanMotor.innerHTML = '';
+                    dbImanes.forEach((im, index) => {
+                        if (String(im.forma || '').toLowerCase().includes('bloque')) {
+                            const texto = `${im.nombre} (${im.br} T)`;
+                            selImanMotor.innerHTML += `<option value="${index}">${texto}</option>`;
+                        }
+                    });
+
+                    if (dbImanes.length === 0) {
+                        selImanMotor.innerHTML = '<option value="">Sin imanes bloque</option>';
+                    } else if (motorActual !== '' && Number(motorActual) >= 0 && Number(motorActual) < dbImanes.length) {
+                        selImanMotor.value = motorActual;
+                    } else {
+                        // Selección por defecto del primer bloque disponible
+                        const idxBloque = dbImanes.findIndex(im => String(im.forma || '').toLowerCase().includes('bloque'));
+                        if (idxBloque >= 0) selImanMotor.value = String(idxBloque);
+                    }
+                    poblarInfoImanMotor();
+                }
+
                 document.getElementById('lista-paneles').innerHTML = dbPaneles.map((p, i) => {
                     const p_mW = p.v * p.i;
                     const r_ohm = p.i > 0 ? p.v / (p.i / 1000) : 0;
@@ -653,6 +698,43 @@ function cargarMotor(config) {
 
             const inputMargen = document.getElementById('margen-placa');
             EstadoDiseno.margenMarco_mm = inputMargen ? (parseFloat(inputMargen.value) || 0) : 0;
+
+            // --- CÁLCULO DE IMÁN DE MOTOR (BASE) ---
+            const selIman = document.getElementById('iman-motor');
+            const distImanRotor = parseFloat(document.getElementById('iman-distancia')?.value || 2);
+            const orientacion = document.getElementById('iman-orientacion')?.value || 'long';
+            
+            if (selIman && selIman.value !== '') {
+                const im = dbImanes?.[Number(selIman.value)];
+                if (im) {
+                    const dims = [Number(im.l), Number(im.a), Number(im.h)];
+                    const T = Math.min(...dims); // espesor de magnetización
+                    const baseDims = dims.filter((_, i) => i !== dims.indexOf(T));
+                    let L_eff, W_eff;
+                    
+                    if (orientacion === 'long') {
+                        L_eff = Math.max(...baseDims); // Dimensión larga paralela al eje
+                        W_eff = Math.min(...baseDims);
+                    } else {
+                        L_eff = Math.min(...baseDims); // Dimensión corta paralela al eje
+                        W_eff = Math.max(...baseDims);
+                    }
+                    
+                    // Calculamos B a la distancia z. 
+                    // z = entrehierro + 1mm (margen conservador al centro del devanado exterior)
+                    const z = distImanRotor + 1; 
+                    const B_calculado = calcularCampoBPrisma(Number(im.br), L_eff, W_eff, T, z);
+                    
+                    EstadoDiseno.campoB_T = B_calculado;
+                    EstadoDiseno.imanMotorNombre = im.nombre;
+                    
+                    // Sincronizamos con el input del Paso 3
+                    const inputPaso3 = document.getElementById('campo-b');
+                    if (inputPaso3) {
+                        inputPaso3.value = B_calculado.toFixed(3);
+                    }
+                }
+            }
 
             EstadoDiseno.anchoRanura_mm = parseFloat(document.getElementById('ranura-ancho').value) || 0;
             EstadoDiseno.altoRanura_mm = parseFloat(document.getElementById('ranura-alto').value) || 0;
@@ -2653,6 +2735,45 @@ function obtenerFactorIman(indice, rol = 'base') {
     return Math.max(0.2, factor);
 }
 
+function poblarInfoImanMotor() {
+    const sel = document.getElementById('iman-motor');
+    const info = document.getElementById('info-iman-motor');
+    if (!sel || !info) return;
+
+    const im = dbImanes?.[Number(sel.value)];
+    if (!im) {
+        info.style.display = 'none';
+        return;
+    }
+
+    const dims = [Number(im.l), Number(im.a), Number(im.h)];
+    const T = Math.min(...dims); // espesor = eje N-S
+    const baseDims = dims.filter((_, i) => i !== dims.indexOf(T));
+    const L_base = Math.max(...baseDims);
+    const W_base = Math.min(...baseDims);
+
+    info.style.display = 'block';
+    info.innerHTML = `
+        <strong>Detalles:</strong> ${im.forma} de ${L_base}x${W_base}x${T} mm. <br>
+        <strong>Br:</strong> ${im.br} T | <strong>Caras polares:</strong> ${L_base}x${W_base} mm.
+    `;
+}
+
+/**
+ * Calcula el campo B (Tesla) en el eje de simetría de un imán prismático rectangular.
+ * @param {number} Br - Inducción remanente (T)
+ * @param {number} L - Longitud de la cara (mm)
+ * @param {number} W - Anchura de la cara (mm)
+ * @param {number} T - Espesor / Altura del imán (dirección magnetización) (mm)
+ * @param {number} z - Distancia desde la superficie al punto de medición (mm)
+ */
+function calcularCampoBPrisma(Br, L, W, T, z) {
+    if (z < 0.1) z = 0.1; // Evitar singularidades
+    const term1 = Math.atan((L * W) / (2 * z * Math.sqrt(L*L + W*W + 4*z*z)));
+    const term2 = Math.atan((L * W) / (2 * (z + T) * Math.sqrt(L*L + W*W + 4*(z + T)*(z + T))));
+    return (Br / Math.PI) * (term1 - term2);
+}
+
 function actualizarModeloAxial() {
     const svg = document.getElementById('levitacion-svg');
     if (!svg) return;
@@ -3341,7 +3462,8 @@ function guardarProgresoCalculadora() {
             'caras', 'margen-placa', 'ranura-ancho', 'ranura-alto', 'ranura-tipo', 
             'material-hilo', 'dia-hilo-select', 'calidad-bobinado', 
             'campo-b', 'radio-efectivo-mm', 'campo-b-levitacion', 
-            'longitud-activa-levitacion-mm', 'factor-orientacion-levitacion'
+            'longitud-activa-levitacion-mm', 'factor-orientacion-levitacion',
+            'iman-motor', 'iman-orientacion', 'iman-distancia'
         ];
 
         const estado = {
@@ -3367,6 +3489,11 @@ function guardarProgresoCalculadora() {
         const elPanel = document.getElementById('panel');
         if (elPanel && elPanel.selectedIndex >= 0) {
             estado.valores['panelNombre'] = elPanel.options[elPanel.selectedIndex].text;
+        }
+
+        const elIman = document.getElementById('iman-motor');
+        if (elIman && elIman.selectedIndex >= 0) {
+            estado.valores['imanMotorNombre'] = elIman.options[elIman.selectedIndex].text;
         }
 
         localStorage.setItem('progresoMendocino', JSON.stringify(estado));
