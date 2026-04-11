@@ -1753,18 +1753,27 @@ function dibujarInteraccionLuminicaSVG() {
         let eff = effs[i];
         
         let r, g, b;
-        if (eff < 0.5) {
-            // Transición de Rojo Oscuro (0) a Naranja (0.5)
-            let t = eff / 0.5;
-            r = Math.round(192 + (230 - 192) * t); // 192 -> 230
-            g = Math.round(57 + (126 - 57) * t);   // 57 -> 126
-            b = Math.round(43 + (34 - 43) * t);    // 43 -> 34
+        if (eff === 0) {
+            // Sombra total: Gris apagado #7f8c8d
+            r = 127; g = 140; b = 141;
+        } else if (eff < 0.2) {
+            // Transición de Gris a Rojo Oscuro #c0392b
+            let t = eff / 0.2;
+            r = Math.round(127 + (192 - 127) * t);
+            g = Math.round(140 + (57 - 140) * t);
+            b = Math.round(141 + (43 - 141) * t);
+        } else if (eff < 0.6) {
+            // Transición de Rojo Oscuro a Naranja #e67e22
+            let t = (eff - 0.2) / 0.4;
+            r = Math.round(192 + (230 - 192) * t); 
+            g = Math.round(57 + (126 - 57) * t);   
+            b = Math.round(43 + (34 - 43) * t);    
         } else {
-            // Transición de Naranja (0.5) a Amarillo Solar (1)
-            let t = (eff - 0.5) / 0.5;
-            r = Math.round(230 + (241 - 230) * t); // 230 -> 241
-            g = Math.round(126 + (196 - 126) * t); // 126 -> 196
-            b = Math.round(34 + (15 - 34) * t);    // 34 -> 15
+            // Transición de Naranja a Amarillo Solar #f1c40f
+            let t = (eff - 0.6) / 0.4;
+            r = Math.round(230 + (241 - 230) * t); 
+            g = Math.round(126 + (196 - 126) * t); 
+            b = Math.round(34 + (15 - 34) * t);    
         }
         
         let colorSolarBase = `rgb(${r},${g},${b})`;
