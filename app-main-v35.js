@@ -325,7 +325,7 @@ function cargarMotor(config, id_unico = null, titulo = null) {
         calidad.value = config.calidad;
     }
 
-    // --- Lógica de Imán de Motor ---
+    // --- Lógica de Imán de Motor (Paso 3) ---
     const imanSelect = document.getElementById('iman-motor');
     const imanOrient = document.getElementById('iman-orientacion');
     const imanDist = document.getElementById('iman-distancia');
@@ -344,23 +344,46 @@ function cargarMotor(config, id_unico = null, titulo = null) {
     }
 
     if (typeof poblarInfoImanMotor === 'function') poblarInfoImanMotor();
-    actualizarResumenPaso1();
 
-    // --- Lógica de Imanes (si aplica en el paso 4) ---
-    if (config.imanRotorNombre || config.imanBaseNombre) {
-        const selBase = document.getElementById('lev-base-iman');
-        const selRotor = document.getElementById('lev-rotor-iman');
-        
-        if (selBase && config.imanBaseNombre) {
-             const idx = dbImanes.findIndex(im => im.nombre === config.imanBaseNombre);
-             if (idx >= 0) selBase.value = idx;
-        }
-        if (selRotor && config.imanRotorNombre) {
-             const idx = dbImanes.findIndex(im => im.nombre === config.imanRotorNombre);
-             if (idx >= 0) selRotor.value = idx;
-        }
+    // --- Otros parámetros Paso 3 ---
+    const campoBInput = document.getElementById('campo-b');
+    const radioEfectivoInput = document.getElementById('radio-efectivo-mm');
+    if (campoBInput && config.campoB !== undefined) campoBInput.value = config.campoB;
+    if (radioEfectivoInput && config.radioEfectivo !== undefined) radioEfectivoInput.value = config.radioEfectivo;
+
+    // --- Lógica Paso 4 (Lumínico) ---
+    const lumGiroIn = document.getElementById('lum-giro');
+    const lumLuzIn = document.getElementById('lum-angulo-luz');
+    const lumConIn = document.getElementById('lum-conexion');
+
+    if (lumGiroIn && config.lumGiro !== undefined) {
+        lumGiroIn.value = config.lumGiro;
+        const valDisp = document.getElementById('lum-giro-val');
+        if (valDisp) valDisp.textContent = config.lumGiro;
+    }
+    if (lumLuzIn && config.lumAnguloLuz !== undefined) {
+        lumLuzIn.value = config.lumAnguloLuz;
+        const valDisp = document.getElementById('lum-luz-val');
+        if (valDisp) valDisp.textContent = config.lumAnguloLuz;
+    }
+    if (lumConIn && config.lumConexion !== undefined) {
+        lumConIn.value = config.lumConexion;
     }
 
+    // --- Lógica Paso 5 (FCEM) ---
+    const fcemRpmIn = document.getElementById('fcem-rpm-sim');
+    const fcemPerdIn = document.getElementById('fcem-perdidas');
+
+    if (fcemRpmIn && config.fcemRpmSim !== undefined) {
+        fcemRpmIn.value = config.fcemRpmSim;
+        const valDisp = document.getElementById('fcem-rpm-val');
+        if (valDisp) valDisp.textContent = config.fcemRpmSim;
+    }
+    if (fcemPerdIn && config.fcemPerdidas !== undefined) {
+        fcemPerdIn.value = config.fcemPerdidas;
+    }
+
+    // --- Lógica de Informe (Paso 6) ---
     if (config.informe) {
         const areaInforme = document.getElementById('informe-automatico');
         if (areaInforme) areaInforme.value = config.informe;
@@ -376,11 +399,14 @@ function cargarMotor(config, id_unico = null, titulo = null) {
         if (elNivel) elNivel.textContent = config.resumen.nivel || '--';
     }
 
-    // Disparar cálculos en cascada con un pequeño delay para asegurar estabilidad del DOM
+    // --- Disparar recálculos finales ---
+    actualizarResumenPaso1();
     setTimeout(() => {
-        actualizarResumenPaso1();
-        // Los pasos siguientes se llaman en cadena desde allí
-    }, 50);
+        // Encadenamos cálculos para que las gráficas se actualicen con los nuevos parámetros
+        if (typeof calcularPasoMagnetico === 'function') calcularPasoMagnetico();
+        if (typeof calcularPasoLuminico === 'function') calcularPasoLuminico();
+        if (typeof calcularPasoFCEM === 'function') calcularPasoFCEM();
+    }, 100);
 }
 
 
@@ -2192,7 +2218,6 @@ function calcularOcupacionRanura() {
                 panelNombre: panelSelect.options[panelSelect.selectedIndex]?.text || '',
                 panelData: dbPaneles[panelSelect.value] ? {...dbPaneles[panelSelect.value]} : null,
                 margen: document.getElementById('margen-placa').value,
-                imanDistancia: document.getElementById('iman-distancia')?.value || 2.0,
 
                 // Paso 2
                 ranuraAncho: document.getElementById('ranura-ancho').value,
@@ -2203,6 +2228,9 @@ function calcularOcupacionRanura() {
                 calidad: document.getElementById('calidad-bobinado').value,
 
                 // Paso 3
+                imanMotorNombre: document.getElementById('iman-motor')?.value !== "" ? document.getElementById('iman-motor').options[document.getElementById('iman-motor').selectedIndex]?.text : '',
+                imanMotorOrientacion: document.getElementById('iman-orientacion')?.value || 'long',
+                imanMotorDistancia: document.getElementById('iman-distancia')?.value || 2.0,
                 campoB: document.getElementById('campo-b')?.value || 0.18,
                 radioEfectivo: document.getElementById('radio-efectivo-mm')?.value || 0,
 
