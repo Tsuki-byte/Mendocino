@@ -2150,15 +2150,16 @@ function calcularOcupacionRanura() {
             } catch (e) { console.warn("Error leyendo LocalStorage:", e); }
 
             // 2. Si hay sesión, cargar de Supabase
-            if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
+            if (window.dbMendocinoClient && sessionActiva) {
                 try {
+                    console.log("DEBUG [Auth]: Sincronizando diseños desde la nube...");
                     const fetchPromise = dbMendocinoClient
                         .from('motores')
                         .select('id_unico, titulo, config')
                         .eq('usuario_id', sessionActiva.user.id);
                     
                     const timeoutPromise = new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error("Timeout")), 10000)
+                        setTimeout(() => reject(new Error("Timeout Supabase")), 8000)
                     );
 
                     const { data: motoresCloud, error } = await Promise.race([fetchPromise, timeoutPromise]);
@@ -2171,9 +2172,14 @@ function calcularOcupacionRanura() {
                                 id_unico: m.id_unico
                             };
                         });
+                        console.log(`DEBUG [Auth]: ${motoresCloud.length} diseños recuperados de la nube.`);
+                        // Actualizamos LocalStorage con lo que hay en la nube para persistencia offline futura
+                        localStorage.setItem('listaMotoresMendocino', JSON.stringify(motoresFinales));
+                    } else if (error) {
+                        console.error("Error sincronizando motores:", error);
                     }
                 } catch (e) { 
-                    console.warn("DEBUG [Auth]: Usando solo local:", e.message);
+                    console.warn("DEBUG [Auth]: Usando solo local por fallo en la nube:", e.message);
                 }
             }
             return motoresFinales;
@@ -2184,84 +2190,95 @@ function calcularOcupacionRanura() {
             const btnGuardar = document.querySelector('button[onclick*="guardarConfiguracionLocal"]');
             const textoOriginal = btnGuardar ? btnGuardar.innerHTML : '';
 
-            let nombreMotor = "";
-            let modoEdicion = false;
+            try {
+                let nombreMotor = "";
+                let modoEdicion = false;
 
-            if (window.proyectoActivo) {
-                const confirmacion = confirm(`¿Quieres sobreescribir los cambios en "${window.proyectoActivo.titulo}"? \n\n Pulsa "Aceptar" para actualizar o "Cancelar" para guardar como un diseño nuevo.`);
-                if (confirmacion) {
-                    nombreMotor = window.proyectoActivo.titulo;
-                    modoEdicion = true;
+                if (window.proyectoActivo) {
+                    const confirmacion = confirm(`¿Quieres sobreescribir los cambios en "${window.proyectoActivo.titulo}"? \n\n Pulsa "Aceptar" para actualizar o "Cancelar" para guardar como un diseño nuevo.`);
+                    if (confirmacion) {
+                        nombreMotor = window.proyectoActivo.titulo;
+                        modoEdicion = true;
+                    }
                 }
-            }
 
-            if (!modoEdicion) {
-                nombreMotor = prompt("📝 Ponle un nombre a esta nueva configuración:");
-                if (!nombreMotor || nombreMotor.trim() === "") return;
-            }
+                if (!modoEdicion) {
+                    nombreMotor = prompt("📝 Ponle un nombre a esta nueva configuración:");
+                    if (!nombreMotor || nombreMotor.trim() === "") return;
+                }
 
-            if (btnGuardar) {
-                btnGuardar.disabled = true;
-                btnGuardar.innerHTML = '<span>Guardando...</span> ⏳';
-            }
+                if (btnGuardar) {
+                    btnGuardar.disabled = true;
+                    btnGuardar.innerHTML = '<span>Guardando...</span> ⏳';
+                }
 
-            const panelSelect = document.getElementById('panel');
-            const informe = document.getElementById('informe-automatico')?.value || "";
-            const tipoRotor = document.getElementById('res-tipo-rotor')?.textContent || "";
-            const comportamiento = document.getElementById('res-comportamiento')?.textContent || "";
-            const nivel = document.getElementById('res-nivel')?.textContent || "";
+                // --- RECOPILACIÓN SEGURA DE DATOS ---
+                const getVal = (id) => document.getElementById(id)?.value || '';
+                const getTxt = (id) => {
+                    const el = document.getElementById(id);
+                    if (!el) return '';
+                    if (el.tagName === 'SELECT') {
+                        return el.selectedIndex >= 0 ? el.options[el.selectedIndex]?.text : '';
+                    }
+                    return el.textContent || '';
+                };
 
-            const miConfiguracion = {
-                // Paso 1
-                caras: document.getElementById('caras').value,
-                panel: panelSelect.value,
-                panelNombre: panelSelect.options[panelSelect.selectedIndex]?.text || '',
-                panelData: dbPaneles[panelSelect.value] ? {...dbPaneles[panelSelect.value]} : null,
-                margen: document.getElementById('margen-placa').value,
+                const panelSelect = document.getElementById('panel');
+                const informe = document.getElementById('informe-automatico')?.value || "";
+                const tipoRotor = getTxt('res-tipo-rotor');
+                const comportamiento = getTxt('res-comportamiento');
+                const nivel = getTxt('res-nivel');
 
-                // Paso 2
-                ranuraAncho: document.getElementById('ranura-ancho').value,
-                ranuraAlto: document.getElementById('ranura-alto').value,
-                ranuraTipo: document.getElementById('ranura-tipo').value,
-                material: document.getElementById('material-hilo').value,
-                hilo: document.getElementById('dia-hilo-select').value,
-                calidad: document.getElementById('calidad-bobinado').value,
+                const miConfiguracion = {
+                    // Paso 1
+                    caras: getVal('caras') || 4,
+                    panel: getVal('panel'),
+                    panelNombre: panelSelect ? (panelSelect.options[panelSelect.selectedIndex]?.text || '') : '',
+                    panelData: (panelSelect && dbPaneles[panelSelect.value]) ? {...dbPaneles[panelSelect.value]} : null,
+                    margen: getVal('margen-placa') || 2,
 
-                // Paso 3
-                imanMotorNombre: document.getElementById('iman-motor')?.value !== "" ? document.getElementById('iman-motor').options[document.getElementById('iman-motor').selectedIndex]?.text : '',
-                imanMotorOrientacion: document.getElementById('iman-orientacion')?.value || 'long',
-                imanMotorDistancia: document.getElementById('iman-distancia')?.value || 2.0,
-                campoB: document.getElementById('campo-b')?.value || 0.18,
-                radioEfectivo: document.getElementById('radio-efectivo-mm')?.value || 0,
+                    // Paso 2
+                    ranuraAncho: getVal('ranura-ancho') || 10,
+                    ranuraAlto: getVal('ranura-alto') || 15,
+                    ranuraTipo: getVal('ranura-tipo') || 'rect',
+                    material: getVal('material-hilo') || 'cobre',
+                    hilo: getVal('dia-hilo-select') || 0.15,
+                    calidad: getVal('calidad-bobinado') || 'media',
 
-                // Paso 4
-                lumGiro: document.getElementById('lum-giro')?.value || 0,
-                lumAnguloLuz: document.getElementById('lum-angulo-luz')?.value || 0,
-                lumConexion: document.getElementById('lum-conexion')?.value || '0',
+                    // Paso 3
+                    imanMotorNombre: getTxt('iman-motor'),
+                    imanMotorOrientacion: getVal('iman-orientacion') || 'long',
+                    imanMotorDistancia: getVal('iman-distancia') || 2.0,
+                    campoB: getVal('campo-b') || 0.18,
+                    radioEfectivo: getVal('radio-efectivo-mm') || 0,
 
-                // Paso 5
-                fcemRpmSim: document.getElementById('fcem-rpm-sim')?.value || 0,
-                fcemPerdidas: document.getElementById('fcem-perdidas')?.value || 15,
+                    // Paso 4
+                    lumGiro: getVal('lum-giro') || 0,
+                    lumAnguloLuz: getVal('lum-angulo-luz') || 0,
+                    lumConexion: getVal('lum-conexion') || '0',
 
-                // Paso 6 (Notas)
-                informe,
+                    // Paso 5
+                    fcemRpmSim: getVal('fcem-rpm-sim') || 0,
+                    fcemPerdidas: getVal('fcem-perdidas') || 15,
 
-                resumen: {
-                    tipoRotor,
-                    comportamiento,
-                    nivel
-                },
-                fechaGuardado: new Date().toLocaleString('es-ES')
-            };
+                    // Paso 6 (Notas)
+                    informe,
 
-            // 1. Guardado Local
-            const misMotores = await obtenerMotoresGuardados();
-            misMotores[nombreMotor] = { config: miConfiguracion, id_unico: modoEdicion ? window.proyectoActivo.id_unico : null };
-            localStorage.setItem('listaMotoresMendocino', JSON.stringify(misMotores));
+                    resumen: {
+                        tipoRotor,
+                        comportamiento,
+                        nivel
+                    },
+                    fechaGuardado: new Date().toLocaleString('es-ES')
+                };
 
-            // 2. Sincronización con la Nube
-            if (window.dbMendocinoClient && sessionActiva) {
-                try {
+                // 1. Guardado Local
+                const misMotores = await obtenerMotoresGuardados();
+                misMotores[nombreMotor] = { config: miConfiguracion, id_unico: modoEdicion ? window.proyectoActivo.id_unico : null };
+                localStorage.setItem('listaMotoresMendocino', JSON.stringify(misMotores));
+
+                // 2. Sincronización con la Nube
+                if (window.dbMendocinoClient && sessionActiva) {
                     if (modoEdicion && window.proyectoActivo.id_unico) {
                         const { error } = await dbMendocinoClient
                             .from('motores')
@@ -2270,9 +2287,9 @@ function calcularOcupacionRanura() {
                         if (error) throw error;
                         mostrarToast(`"${nombreMotor}" actualizado en la nube.`, 'ok');
                     } else {
-                        const id_unico = (usuarioActual?.nombre || 'user') + '-' + Date.now();
+                        const id_nuevo = (usuarioActual?.nombre || 'user').replace(/\s+/g, '_') + '-' + Date.now();
                         const { error } = await dbMendocinoClient.from('motores').insert([{
-                            id_unico: id_unico,
+                            id_unico: id_nuevo,
                             titulo: nombreMotor,
                             config: miConfiguracion,
                             usuario_id: sessionActiva.user.id,
@@ -2280,21 +2297,22 @@ function calcularOcupacionRanura() {
                             es_publico: false 
                         }]);
                         if (error) throw error;
-                        window.proyectoActivo = { id_unico, titulo: nombreMotor };
+                        window.proyectoActivo = { id_unico: id_nuevo, titulo: nombreMotor };
                         actualizarUIProyectoActivo();
-                        mostrarToast(`"${nombreMotor}" guardado como nuevo en la nube.`, 'ok');
+                        mostrarToast(`"${nombreMotor}" guardado en la nube.`, 'ok');
                     }
-                } catch (e) {
-                    console.error("Error nube:", e);
-                    mostrarToast(`Error al sincronizar. Guardado localmente.`, 'aviso');
+                } else {
+                    mostrarToast(`Guardado solo localmente (Sesión no iniciada).`, 'aviso');
                 }
-            } else {
-                mostrarToast(`Guardado localmente.`, 'ok');
-            }
 
-            if (btnGuardar) {
-                btnGuardar.disabled = false;
-                btnGuardar.innerHTML = textoOriginal;
+            } catch (err) {
+                console.error("Error crítico durante el guardado:", err);
+                mostrarToast(`Error al guardar: ${err.message || 'Error desconocido'}`, 'error');
+            } finally {
+                if (btnGuardar) {
+                    btnGuardar.disabled = false;
+                    btnGuardar.innerHTML = textoOriginal;
+                }
             }
         }
 
@@ -3393,6 +3411,10 @@ async function inicializarAuth() {
                             renderizarUI(); 
                             actualizarPanelAdminUI();
                             aplicarNivelUsuario();
+
+                            // Sincronización proactiva de diseños del usuario
+                            await obtenerMotoresGuardados();
+                            console.log("DEBUG [Auth]: Diseños sincronizados proactivamente tras login.");
                         } catch (e) {
                             console.error("Error en carga de fondo:", e);
                         }
