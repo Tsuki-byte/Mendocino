@@ -545,7 +545,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <div style="text-align: right; font-size: 11px; margin-top:2px;">Valor: <span id="lum-giro-val">0</span>°</div>
             </div>
             <div class="form-group">
-                <label>Ángulo del Sol [°] (Cenit = 0°)</label>
+                <label>Ángulo de la Fuente de Luz [°] (Cenit = 0°)</label>
                 <input type="range" id="lum-angulo-luz" min="-90" max="90" value="0" oninput="document.getElementById('lum-luz-val').textContent = this.value; calcularPasoLuminico()">
                 <div style="text-align: right; font-size: 11px; margin-top:2px;">Valor: <span id="lum-luz-val">0</span>°</div>
             </div>
@@ -568,7 +568,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="summary-section">
         <h3>Interacción Lumínica y Eléctrica</h3>
         <div class="svg-illustration-container">
-            <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Incidencia Solar</h4>
+            <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Incidencia de Luz</h4>
             <svg id="luminico-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; max-height: 250px;"></svg>
         </div>
         <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 20px 0 15px 0;">
@@ -581,7 +581,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="step-5" class="step-container">
     <div class="form-section">
         <h3 class="titulo-seccion-principal">⚡ 5. Fuerza Contraelectromotriz (FCEM)</h3>
-        <p class="texto-ayuda">Simula la velocidad de giro para ver cómo el voltaje generado por la bobina ($V_{fcem}$) aumenta hasta igualar al voltaje del panel solar, limitando la velocidad máxima.</p>
+        <p class="texto-ayuda">Simula la velocidad de giro para ver cómo el voltaje generado por la bobina ($V_{fcem}$) aumenta hasta igualar al voltaje del panel de alimentación, limitando la velocidad máxima.</p>
 
         <div class="form-group">
             <label>Simulación de velocidad [RPM]</label>
