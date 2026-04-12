@@ -2557,7 +2557,7 @@ function calcularOcupacionRanura() {
         // --- INICIALIZACIÓN BASE ---
         function inicializarAplicacionBase() {
             inicializarNavegacionProfesional();
-            renderizarProyectos();
+            // Ya no llamamos aquí a renderizarProyectos, se hará tras inicializar Auth
         }
 
 
@@ -3695,17 +3695,25 @@ function cargarUsuarioActualDesdeStorage() {
 }
 
 window.onload = async function() {
-    // Si estamos en el panel de administración, script.js no debe inicializar
-    // la app principal (elementos como modal-auth, lista-paneles, etc. no existen aquí)
+    // Si estamos en el panel de administración, no inicializamos la app principal
     if (window.location.pathname.includes('admin-v35.html')) {
         return;
     }
 
     ocultarUIHastaAutenticacion();
-    inicializarAplicacionBase();
-    await inicializarAuth();
 
-    // Si después de inicializar no hay sesión, aseguramos que el modal se vea
+    // 1. PRIMERO inicializamos la conexión y autenticación (ESENCIAL)
+    try {
+        await inicializarAuth();
+        console.log("Auth inicializada. Estado sesión:", sessionActiva ? "Activa" : "No detectada");
+    } catch (e) {
+        console.error("Error crítico inicializando Auth:", e);
+    }
+
+    // 2. DESPUÉS inicializamos la UI base y cargamos datos
+    inicializarAplicacionBase();
+    renderizarProyectos();
+
     if (!sessionActiva) {
         const modalAuth = document.getElementById('modal-auth');
         if (modalAuth) {
