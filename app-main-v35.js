@@ -382,6 +382,10 @@ function cargarMotor(config, id_unico = null, titulo = null) {
     if (fcemPerdIn && config.fcemPerdidas !== undefined) {
         fcemPerdIn.value = config.fcemPerdidas;
     }
+    
+    // Restaurar Peso Real
+    const elPesoReal = document.getElementById('peso-total-real');
+    if (elPesoReal) elPesoReal.value = config.resumen?.pesoReal || '0';
 
     // --- Lógica de Informe (Paso 6) ---
     if (config.informe) {
@@ -2274,14 +2278,6 @@ function calcularOcupacionRanura() {
             }
         }
 
-        async function nuevoProyecto() {
-            if (await mostrarConfirmacion("Nuevo Diseño", "¿Deseas limpiar el diseño actual y empezar uno nuevo? Se perderán los cambios que no hayas guardado en la nube.")) {
-                localStorage.removeItem('progresoMendocino');
-                // Al recargar, como hemos borrado el progreso, iniciará de cero
-                location.reload();
-            }
-        }
-
         async function guardarConfiguracionLocal() {
             const btnGuardar = document.querySelector('button[onclick*="guardarConfiguracionLocal"]');
             const textoOriginal = btnGuardar ? btnGuardar.innerHTML : '';
@@ -2445,69 +2441,14 @@ function calcularOcupacionRanura() {
                     comportamiento,
                     nivel,
                     espiras: getVal('espiras') || 0,
-                    pesoTotal: getTxt('res-peso-total-todos') || '0 g',
+                    pesoCobre: getTxt('res-peso-total-todos') || '0 g',
+                    pesoReal: getVal('peso-total-real') || '0',
                     velocidadMax: getTxt('res-fcem-rpm-real') || '0 RPM'
                 },
                 fechaGuardado: new Date().toLocaleString('es-ES')
             };
         }
 
-        async function repararMetadatosPublicos() {
-            if (!confirm("Esta operación recorrerá todos los proyectos PÚBLICOS y actualizará sus metadatos (espiras, peso, velocidad) para la galería. Puede tardar unos minutos. ¿Continuar?")) return;
-            
-            try {
-                // 1. Obtener motores públicos
-                const { data: motores, error } = await dbMendocinoClient
-                    .from('motores')
-                    .select('*')
-                    .eq('es_publico', true);
-                
-                if (error) throw error;
-                if (!motores || motores.length === 0) {
-                    mostrarToast("No hay motores públicos para reparar.", "info");
-                    return;
-                }
-
-                mostrarToast(`Iniciando reparación de ${motores.length} motores...`, 'info');
-                
-                let exitos = 0;
-                let errores = 0;
-
-                for (let i = 0; i < motores.length; i++) {
-                    const m = motores[i];
-                    console.log(`REPARAR [${i+1}/${motores.length}]: ${m.titulo}`);
-                    
-                    try {
-                        // Cargar motor (esto dispara recálculos en el DOM)
-                        await cargarMotor(m.config, m.id_unico, m.titulo);
-                        
-                        // Espera técnica para que los cálculos de Paso 2 y Paso 5 terminen
-                        await new Promise(r => setTimeout(r, 600)); 
-
-                        // Capturar nuevo estado con metadatos corregidos
-                        const nuevaConfig = capturarEstadoConfiguracionActual();
-
-                        // Actualizar en Supabase
-                        const { error: errorUpd } = await dbMendocinoClient
-                            .from('motores')
-                            .update({ config: nuevaConfig })
-                            .eq('id_unico', m.id_unico);
-                        
-                        if (errorUpd) throw errorUpd;
-                        exitos++;
-                    } catch (err) {
-                        console.error(`Error reparando ${m.titulo}:`, err);
-                        errores++;
-                    }
-                }
-
-                mostrarToast(`Reparación finalizada. Éxitos: ${exitos}, Errores: ${errores}`, exitos > 0 ? 'ok' : 'error');
-                if (typeof renderizarProyectos === 'function') renderizarProyectos();
-
-            } catch (e) {
-                console.error("Fallo general en reparación:", e);
-                mostrarToast("Fallo crítico en el reparador.", "error");
-            }
         }
 
         function actualizarUIProyectoActivo() {
@@ -2783,7 +2724,7 @@ function calcularOcupacionRanura() {
                                         <div class="proyecto-ficha__fila"><span>Hilo</span><strong>${proyecto.ficha?.hilo || (proyecto.config?.hilo ? (proyecto.config.hilo + ' mm') : '--')}</strong></div>
                                         <div class="proyecto-ficha__fila"><span>Espiras</span><strong>${proyecto.ficha?.espiras || proyecto.config?.resumen?.espiras || '--'}</strong></div>
                                         <div class="proyecto-ficha__fila"><span>Velocidad</span><strong>${proyecto.ficha?.velocidad || proyecto.config?.resumen?.velocidadMax || '--'}</strong></div>
-                                        <div class="proyecto-ficha__fila"><span>Peso</span><strong>${proyecto.ficha?.peso || proyecto.config?.resumen?.pesoTotal || '--'}</strong></div>
+                                        <div class="proyecto-ficha__fila"><span>Peso</span><strong>${proyecto.ficha?.peso || (proyecto.config?.resumen?.pesoReal && proyecto.config.resumen.pesoReal !== '0' ? (proyecto.config.resumen.pesoReal + ' g') : (proyecto.config?.resumen?.pesoCobre || proyecto.config?.resumen?.pesoTotal || '--'))}</strong></div>
                                     </div>
                                 </div>
 
@@ -3794,13 +3735,8 @@ function actualizarPanelAdminUI() {
 
     if (btnIrAdmin) {
         btnIrAdmin.style.display = esRealAdmin ? 'inline-flex' : 'none';
-    }
-
-    const btnReparar = document.getElementById('btn-reparar-galeria');
-    if (btnReparar) {
-        btnReparar.style.display = esRealAdmin ? 'inline-flex' : 'none';
         if (esRealAdmin) {
-            console.log("DEBUG [AdminUI]: Panel Admin y Reparador habilitados.");
+            console.log("DEBUG [AdminUI]: Panel Admin habilitado.");
         }
     }
 

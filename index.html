@@ -119,9 +119,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <button id="btn-ir-admin" class="btn-action" type="button" onclick="abrirPanelAdmin()" style="display:none; background-color: #9b59b6; margin: 0; padding: 6px 12px; font-size: 11px; border-radius: 20px; border: none;">
                     🛡️ Admin
                 </button>
-                <button id="btn-reparar-galeria" class="btn-action" type="button" onclick="repararMetadatosPublicos()" style="display:none; background-color: #ef4444; margin: 0 5px; padding: 6px 12px; font-size: 11px; border-radius: 20px; border: none;" title="Actualiza metadatos de todos los diseños públicos">
-                    🔧 Reparar Galería
-                </button>
 
                 <div id="mensaje-nivel" class="estado-usuario" style="margin-right: 5px;">Cargando...</div>
                 <div id="proyecto-activo-display" class="estado-usuario" style="margin-right: 15px; color: #10b981; font-weight: bold; border-left: 1px solid #444; padding-left: 15px; display:none;"></div>
@@ -384,8 +381,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
                         
                         <div class="summary-item oculto-basico">
-                            <span>PESO TOTAL:</span>
+                            <span>PESO COBRE (est.):</span>
                             <span class="value" id="res-peso-total-todos" style="color: #e74c3c;">0 g</span>
+                        </div>
+
+                        <div class="summary-item" style="background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.2); border-radius: 6px; padding: 8px; margin-top: 10px;">
+                            <span style="font-weight:bold; color: #27ae60;">PESO TOTAL REAL (g):</span>
+                            <input type="number" id="peso-total-real" step="0.1" value="0.0" style="width: 80px; padding: 4px; border-radius: 4px; border: 1px solid #27ae60; text-align: right; font-family: inherit; font-weight: bold; background: white;" oninput="actualizarResumenPesoManual()">
                         </div>
 
                         <small style="color: #666; font-size: 11px; text-align: center; display: block;">* Suma de todos los devanados del rotor.</small>
@@ -816,6 +818,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- Cliente de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=19"></script>
-    <script src="app-main-v35.js?v=35.27"></script>
+    <script src="app-main-v35.js?v=35.29"></script>
 </body>
 </html>
