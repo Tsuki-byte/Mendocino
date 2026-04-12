@@ -2678,13 +2678,15 @@ function generarInformeAutomatico() {
         Par ejercido estimado: ${parMagnetico.toFixed(6)} N·m
 
         ──────────────────────────────────────────────
-        [ 5. COMPORTAMIENTO ]
+        [ 5. COMPORTAMIENTO Y VELOCIDAD ]
         Tipo de rotor: ${tipoRotor}
+        Velocidad máx. teórica: ${document.getElementById('res-fcem-rpm-teo')?.textContent || '0 RPM'}
+        Velocidad máx. real (est.): ${document.getElementById('res-fcem-rpm-real')?.textContent || '0 RPM'}
 
         Arranque:
         ${arranque}
 
-        Velocidad:
+        Interpretación de velocidad:
         ${velocidad}
 
         ──────────────────────────────────────────────
@@ -2700,7 +2702,7 @@ function generarInformeAutomatico() {
         La energía luminosa se convierte en energía eléctrica mediante el panel solar.
         La corriente circula por las bobinas generando interacción con el campo magnético.
         Esto produce el par que hace girar el rotor.
-        La FCEM estabiliza el sistema al aumentar la velocidad.
+        La FCEM (Fuerza Contraelectromotriz) se genera cuando las bobinas cortan el flujo magnético en movimiento; este voltaje se opone al del panel y es lo que finalmente estabiliza y limita la velocidad máxima del motor.
 
         ──────────────────────────────────────────────
         [ 9. CONCLUSIÓN ]
@@ -2772,234 +2774,80 @@ function descargarInformeAutomatico() {
 
 
 
-function poblarSelectoresLevitacion() {
-    const selBase = document.getElementById('lev-base-iman');
-    const selRotor = document.getElementById('lev-rotor-iman');
-    if (!selBase || !selRotor || !Array.isArray(dbImanes)) return;
-
-    const basePrev = selBase.value;
-    const rotorPrev = selRotor.value;
-
-    selBase.innerHTML = '';
-    selRotor.innerHTML = '';
-
-    dbImanes.forEach((im, index) => {
-        const texto = `${im.nombre} · Br ${Number(im.br || 0).toFixed(2)} T`;
-        selBase.innerHTML += `<option value="${index}">${texto}</option>`;
-        selRotor.innerHTML += `<option value="${index}">${texto}</option>`;
-    });
-
-    if (dbImanes.length === 0) {
-        selBase.innerHTML = '<option value="">Sin imanes</option>';
-        selRotor.innerHTML = '<option value="">Sin imanes</option>';
-        return;
-    }
-
-    const idxAro = dbImanes.findIndex(im => String(im.forma || '').toLowerCase().includes('aro'));
-    const idxBloque = dbImanes.findIndex(im => String(im.forma || '').toLowerCase().includes('bloque'));
-
-    selBase.value = (basePrev !== '' && Number(basePrev) < dbImanes.length) ? basePrev : String(Math.max(0, idxBloque));
-    selRotor.value = (rotorPrev !== '' && Number(rotorPrev) < dbImanes.length) ? rotorPrev : String(idxAro >= 0 ? idxAro : 0);
+function calcularPasoFCEM() {
+    // 1. Obtener datos de pasos anteriores
+    const vmp = panelActual?.vmp || 0;
+    const vueltas = EstadoDiseno.espirasPorDevanado || 100;
+    
+    // Campo B del imán base calculado en el Paso 3
+    const campoB = parseFloat(document.getElementById('campo-b')?.value || 0.18);
+    
+    // Geometría para el área efectiva (L * D)
+    const L_m = (EstadoDiseno.longitudPanel || 50) / 1000;
+    const R_m = ((EstadoDiseno.diametroRotor || 50) / 2) / 1000;
+    
+    // 2. Parámetros de simulación
+    const rpmSim = parseFloat(document.getElementById('fcem-rpm-sim')?.value || 0);
+    const perdidasPerc = parseFloat(document.getElementById('fcem-perdidas')?.value || 15);
+    const factorPerdidas = (100 - perdidasPerc) / 100;
+    
+    // V_fcem = 2 * N * B * L * r * omega
+    const omegaSim = (rpmSim * 2 * Math.PI) / 60;
+    const vfcemSim = 2 * vueltas * campoB * L_m * R_m * omegaSim;
+    
+    // RPM Máximas (cuando Vfcem = Vmp * factorPerdidas)
+    // Despejando: omega_max = (Vmp * factorPerdidas) / (2 * N * B * L * r)
+    const factorK = 2 * vueltas * campoB * L_m * R_m;
+    const rpmMaxTeo = factorK > 0 ? (vmp * 60) / (2 * Math.PI * factorK) : 0;
+    const rpmMaxReal = rpmMaxTeo * factorPerdidas;
+    
+    // 3. Actualizar UI
+    document.getElementById('res-fcem-v').textContent = vfcemSim.toFixed(3) + ' V';
+    document.getElementById('res-fcem-rpm-teo').textContent = Math.round(rpmMaxTeo) + ' RPM';
+    document.getElementById('res-fcem-rpm-real').textContent = Math.round(rpmMaxReal) + ' RPM';
+    
+    // Resistencia (ya calculada en paso 2)
+    const resTotal = (EstadoDiseno.resistenciaTotal || 0);
+    document.getElementById('fcem-resistencia').value = resTotal.toFixed(2) + ' Ω';
+    
+    // 4. Dibujar Gráfica
+    dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim);
 }
 
-function obtenerFactorIman(indice, rol = 'base') {
-    const im = dbImanes?.[Number(indice)];
-    if (!im) return 1;
-    const br = Number(im.br || 1.2);
-    const l = Number(im.l || 10);
-    const a = Number(im.a || 10);
-    const h = Number(im.h || 5);
-    let area = 0;
-
-    if (String(im.forma || '').toLowerCase().includes('aro')) {
-        const dExt = l;
-        const dInt = a;
-        area = Math.max(1, Math.PI * (dExt*dExt - dInt*dInt) / 4);
-    } else {
-        area = Math.max(1, l * a);
-    }
-
-    const volumen = area * Math.max(1, h);
-    let factor = br * Math.pow(volumen, 0.35) / 8;
-    if (rol === 'base') factor *= 1.15;
-    return Math.max(0.2, factor);
-}
-
-function poblarInfoImanMotor() {
-    const sel = document.getElementById('iman-motor');
-    const info = document.getElementById('info-iman-motor');
-    if (!sel || !info) return;
-
-    const im = dbImanes?.[Number(sel.value)];
-    if (!im) {
-        info.style.display = 'none';
-        return;
-    }
-
-    const dims = [Number(im.l), Number(im.a), Number(im.h)];
-    const T = Math.min(...dims); // espesor = eje N-S
-    const baseDims = dims.filter((_, i) => i !== dims.indexOf(T));
-    const L_base = Math.max(...baseDims);
-    const W_base = Math.min(...baseDims);
-
-    info.style.display = 'block';
-    info.innerHTML = `
-        <strong>Detalles:</strong> ${im.forma} de ${L_base}x${W_base}x${T} mm. <br>
-        <strong>Br:</strong> ${im.br} T | <strong>Caras polares:</strong> ${L_base}x${W_base} mm.
-    `;
-}
-
-/**
- * Calcula el campo B (Tesla) en el eje de simetría de un imán prismático rectangular.
- * @param {number} Br - Inducción remanente (T)
- * @param {number} L - Longitud de la cara (mm)
- * @param {number} W - Anchura de la cara (mm)
- * @param {number} T - Espesor / Altura del imán (dirección magnetización) (mm)
- * @param {number} z - Distancia desde la superficie al punto de medición (mm)
- */
-function calcularCampoBPrisma(Br, L, W, T, z) {
-    if (z < 0.1) z = 0.1; // Evitar singularidades
-    const term1 = Math.atan((L * W) / (2 * z * Math.sqrt(L*L + W*W + 4*z*z)));
-    const term2 = Math.atan((L * W) / (2 * (z + T) * Math.sqrt(L*L + W*W + 4*(z + T)*(z + T))));
-    return (Br / Math.PI) * (term1 - term2);
-}
-
-function actualizarModeloAxial() {
-    const svg = document.getElementById('levitacion-svg');
+function dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim) {
+    const svg = document.getElementById('fcem-svg');
     if (!svg) return;
-
-    const masa = parseFloat(document.getElementById('lev-masa-rotor')?.value || 32);
-    const gapFrontal = parseFloat(document.getElementById('lev-gap-frontal')?.value || 2.5);
-    const gapTrasero = parseFloat(document.getElementById('lev-gap-trasero')?.value || 2.5);
-    const fraccionPunta = parseFloat(document.getElementById('lev-fraccion-punta')?.value || 15) / 100;
-    const exponente = parseFloat(document.getElementById('lev-exponente')?.value || 2.7);
-    const factorGeom = parseFloat(document.getElementById('lev-factor')?.value || 1.0);
-    const desalineacion = parseFloat(document.getElementById('lev-desalineacion')?.value || 0);
-    const sepApoyos = parseFloat(document.getElementById('lev-separacion-apoyos')?.value || 110);
-    const idxBase = document.getElementById('lev-base-iman')?.value || 0;
-    const idxRotor = document.getElementById('lev-rotor-iman')?.value || 0;
-
-    const g = 9.81;
-    const peso = Math.max(0, masa) / 1000 * g;
-
-    const fBase = obtenerFactorIman(idxBase, 'base');
-    const fRotor = obtenerFactorIman(idxRotor, 'rotor');
-    const k = 0.16 * factorGeom * fBase * fRotor;
-
-    function fuerzaPar(gapMm) {
-        const gap = Math.max(0.2, gapMm);
-        const fuerzaPorIman = k / Math.pow(gap, exponente);
-        return 2 * fuerzaPorIman; // dos imanes de base por extremo
-    }
-
-    const fFrontal = fuerzaPar(gapFrontal + Math.max(0, desalineacion));
-    const fTrasera = fuerzaPar(gapTrasero + Math.max(0, -desalineacion));
-    const fTotal = fFrontal + fTrasera;
-    const cargaObjetivoPunta = peso * fraccionPunta;
-    const cargaRealPunta = Math.max(0, peso - fTotal);
-    const desequilibrio = Math.abs(fFrontal - fTrasera);
-    const rigidez = (exponente * fFrontal / Math.max(0.2, gapFrontal)) + (exponente * fTrasera / Math.max(0.2, gapTrasero));
-
-    let diagnostico = '🔴 Carga alta en la punta';
-    let lectura = 'La sustentación magnética es baja y la punta sigue soportando una parte grande del peso.';
-    if (cargaRealPunta <= cargaObjetivoPunta) {
-        diagnostico = '🟢 Sustentación favorable';
-        lectura = 'La mayor parte del peso la llevan los imanes. La punta trabaja sobre todo como guía y estabilizador.';
-    } else if (cargaRealPunta <= peso * 0.45) {
-        diagnostico = '🟡 Semisustentado';
-        lectura = 'Los imanes descargan una parte importante del peso, pero aún queda carga apreciable sobre la punta.';
-    }
-
-    const setText = (id, txt) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = txt;
-    };
-
-    setText('lev-res-f-frontal', `${fFrontal.toFixed(3)} N`);
-    setText('lev-res-f-trasera', `${fTrasera.toFixed(3)} N`);
-    setText('lev-res-f-total', `${fTotal.toFixed(3)} N`);
-    setText('lev-res-peso', `${peso.toFixed(3)} N`);
-    setText('lev-res-punta', `${cargaRealPunta.toFixed(3)} N`);
-    setText('lev-res-deseq', `${desequilibrio.toFixed(3)} N`);
-    setText('lev-res-rigidez', `${rigidez.toFixed(3)} N/mm`);
-    setText('lev-res-lectura', lectura);
-    setText('lev-diagnostico', diagnostico);
-
-    const badge = document.getElementById('lev-diagnostico');
-    if (badge) {
-        badge.style.background = diagnostico.startsWith('🟢') ? '#e8f7ee' : diagnostico.startsWith('🟡') ? '#fff7e0' : '#fdecec';
-        badge.style.color = diagnostico.startsWith('🟢') ? '#166534' : diagnostico.startsWith('🟡') ? '#92400e' : '#991b1b';
-        badge.style.border = '1px solid rgba(0,0,0,0.08)';
-        badge.style.padding = '10px 12px';
-        badge.style.borderRadius = '10px';
-        badge.style.fontWeight = '700';
-    }
-
-    dibujarLevitacionSVG({gapFrontal, gapTrasero, cargaRealPunta, peso, fFrontal, fTrasera, sepApoyos, diagnostico});
-}
-
-function dibujarLevitacionSVG({gapFrontal, gapTrasero, cargaRealPunta, peso, fFrontal, fTrasera, sepApoyos, diagnostico}) {
-    const svg = document.getElementById('levitacion-svg');
-    if (!svg) return;
-
-    const colorDiag = diagnostico.startsWith('🟢') ? '#166534' : diagnostico.startsWith('🟡') ? '#92400e' : '#991b1b';
-
-    svg.setAttribute('viewBox', '0 0 900 320');
-    svg.innerHTML = `
-      <rect x="0" y="0" width="900" height="320" fill="#efefef"/>
-
-      <!-- Dibujo lateral exacto basado en el esquema aportado -->
-      <rect x="70" y="235" width="430" height="52" fill="#cfcfd1" stroke="#555" stroke-width="2"/>
-      <rect x="85" y="248" width="54" height="54" fill="none" stroke="#444" stroke-width="2"/>
-      <text x="112" y="282" text-anchor="middle" font-size="28" font-weight="700">A</text>
-
-      <rect x="102" y="62" width="10" height="173" fill="#f8fafc" stroke="#666" stroke-width="2"/>
-      <line x1="102" y1="62" x2="112" y2="72" stroke="#999" stroke-width="2"/>
-      <line x1="102" y1="92" x2="112" y2="102" stroke="#999" stroke-width="2"/>
-      <line x1="102" y1="122" x2="112" y2="132" stroke="#999" stroke-width="2"/>
-      <line x1="102" y1="152" x2="112" y2="162" stroke="#999" stroke-width="2"/>
-      <line x1="102" y1="182" x2="112" y2="192" stroke="#999" stroke-width="2"/>
-      <rect x="52" y="75" width="44" height="44" fill="none" stroke="#444" stroke-width="2"/>
-      <text x="74" y="105" text-anchor="middle" font-size="28" font-weight="700">D</text>
-
-      <polygon points="112,170 130,160 185,160 185,180 130,180" fill="#d8d8da" stroke="#666" stroke-width="2"/>
-      <rect x="185" y="165" width="70" height="10" fill="#d8d8da" stroke="#666" stroke-width="2"/>
-      <rect x="255" y="165" width="145" height="10" fill="#d8d8da" stroke="#666" stroke-width="2"/>
-      <rect x="400" y="165" width="80" height="10" fill="#d8d8da" stroke="#666" stroke-width="2"/>
-
-      <rect x="215" y="110" width="150" height="120" fill="#7fb0d8" stroke="#4b5b68" stroke-width="2"/>
-
-      <rect x="152" y="138" width="14" height="60" fill="#3156e8" stroke="#333" stroke-width="1.5"/>
-      <rect x="166" y="138" width="14" height="60" fill="#ff3b30" stroke="#333" stroke-width="1.5"/>
-      <rect x="405" y="138" width="14" height="60" fill="#ff3b30" stroke="#333" stroke-width="1.5"/>
-      <rect x="419" y="138" width="14" height="60" fill="#3156e8" stroke="#333" stroke-width="1.5"/>
-
-      <rect x="174" y="185" width="14" height="50" fill="#3156e8" stroke="#333" stroke-width="1.5"/>
-      <rect x="188" y="185" width="14" height="50" fill="#ff3b30" stroke="#333" stroke-width="1.5"/>
-      <rect x="406" y="185" width="14" height="50" fill="#ff3b30" stroke="#333" stroke-width="1.5"/>
-      <rect x="420" y="185" width="14" height="50" fill="#3156e8" stroke="#333" stroke-width="1.5"/>
-
-      <rect x="227" y="235" width="145" height="16" fill="#ff3b30" stroke="#333" stroke-width="1.5"/>
-      <rect x="227" y="251" width="145" height="12" fill="#3156e8" stroke="#333" stroke-width="1.5"/>
-
-      <rect x="126" y="185" width="42" height="42" fill="none" stroke="#444" stroke-width="2"/>
-      <text x="147" y="214" text-anchor="middle" font-size="26" font-weight="700">C</text>
-      <rect x="476" y="185" width="42" height="42" fill="none" stroke="#444" stroke-width="2"/>
-      <text x="497" y="214" text-anchor="middle" font-size="26" font-weight="700">C</text>
-      <rect x="272" y="198" width="42" height="42" fill="none" stroke="#444" stroke-width="2"/>
-      <text x="293" y="227" text-anchor="middle" font-size="26" font-weight="700">B</text>
-
-      <!-- Texto informativo actual -->
-      <text x="590" y="88" font-size="18" font-weight="700" fill="#0f172a">Modelo lateral de levitación</text>
-      <text x="590" y="120" font-size="26" font-weight="700">A - Base impresa</text>
-      <text x="590" y="170" font-size="26" font-weight="700">B - Imán (40x20x5mm)</text>
-      <text x="590" y="220" font-size="26" font-weight="700">C - Imanes (30x10x5mm) x4</text>
-      <text x="590" y="270" font-size="26" font-weight="700">D - Cristal de muestras x2</text>
-
-      <text x="590" y="34" font-size="16" font-weight="700" fill="${colorDiag}">${diagnostico}</text>
-      <text x="590" y="300" font-size="14" fill="#334155">Gap izq.: ${gapFrontal.toFixed(1)} mm · Gap der.: ${gapTrasero.toFixed(1)} mm</text>
-      <text x="590" y="318" font-size="14" fill="#334155">Carga punta: ${cargaRealPunta.toFixed(2)} N · Peso: ${peso.toFixed(2)} N</text>
+    
+    const w = 300, h = 200;
+    const margin = 30;
+    const rpmMaxEje = Math.max(5000, rpmMaxReal * 1.3);
+    const vMaxEje = Math.max(vmp * 1.3, 5);
+    
+    const toX = (val) => margin + (val / rpmMaxEje) * (w - margin * 2);
+    const toY = (val) => (h - margin) - (val / vMaxEje) * (h - margin * 2);
+    
+    let contenido = `
+        <!-- Ejes -->
+        <line x1="${margin}" y1="${h-margin}" x2="${w-10}" y2="${h-margin}" stroke="#ccc" stroke-width="1"/>
+        <line x1="${margin}" y1="${h-margin}" x2="${margin}" y2="10" stroke="#ccc" stroke-width="1"/>
+        <text x="${w-10}" y="${h-5}" font-size="9" text-anchor="end">RPM</text>
+        <text x="${margin-5}" y="15" font-size="9" text-anchor="end" transform="rotate(-90 ${margin-5},15)">Voltaje (V)</text>
+        
+        <!-- Línea V. Panel (Roja) -->
+        <line x1="${margin}" y1="${toY(vmp)}" x2="${w-margin}" y2="${toY(vmp)}" stroke="#e74c3c" stroke-width="2" stroke-dasharray="4,2"/>
+        
+        <!-- Curva FCEM (Azul) -->
+        <path d="M ${toX(0)} ${toY(0)} L ${toX(rpmMaxEje)} ${toY(factorK * (rpmMaxEje * 2 * Math.PI / 60))}" stroke="#3498db" stroke-width="2.5" fill="none"/>
+        
+        <!-- Límite RPM (Verde) -->
+        <line x1="${toX(rpmMaxReal)}" y1="${h-margin}" x2="${toX(rpmMaxReal)}" y2="${toY(vmp)}" stroke="#2ecc71" stroke-width="2" stroke-dasharray="2,2"/>
+        <circle cx="${toX(rpmMaxReal)}" cy="${toY(vmp)}" r="4" fill="#2ecc71"/>
+        
+        <!-- Punto de simulación actual -->
+        <circle cx="${toX(rpmSim)}" cy="${toY(vfcemSim)}" r="5" fill="#34495e" stroke="white" stroke-width="2"/>
     `;
+    
+    svg.innerHTML = contenido;
 }
 
 function cambiarPaso(numPaso) {
@@ -3027,8 +2875,7 @@ function cambiarPaso(numPaso) {
         calcularPasoLuminico();
     }
     if (numPaso === 5) {
-        poblarSelectoresLevitacion();
-        actualizarModeloAxial();
+        calcularPasoFCEM();
     }
     if (numPaso === 5) {
         generarInformeAutomatico();

@@ -143,7 +143,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <div class="step-arrow">➔</div>
                 <div class="step-indicator" id="ind-4" onclick="cambiarPaso(4)"><span>4. Interacción lumínica</span></div>
                 <div class="step-arrow">➔</div>
-                <div class="step-indicator" id="ind-5" onclick="cambiarPaso(5)"><span>5. Levitación</span></div>
+                <div class="step-indicator" id="ind-5" onclick="cambiarPaso(5)"><span>5. FCEM y Velocidad</span></div>
                 <div class="step-arrow">➔</div>
                 <div class="step-indicator" id="ind-6" onclick="cambiarPaso(6)"><span>6. Informe</span></div>
             </div>
@@ -597,92 +597,62 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
 <div id="step-5" class="step-container">
+    <div class="form-section">
+        <h3 class="titulo-seccion-principal">⚡ 5. Fuerza Contraelectromotriz (FCEM)</h3>
+        <p class="texto-ayuda">Simula la velocidad de giro para ver cómo el voltaje generado por la bobina ($V_{fcem}$) aumenta hasta igualar al voltaje del panel solar, limitando la velocidad máxima.</p>
 
-                    <div class="form-section">
-                        <h3 class="titulo-seccion-principal">🧲 5. Modelo axial de levitación</h3>
-                        <p class="texto-ayuda-lev">Modelo simplificado del Mendocino real: cuatro imanes en la base (dos por cada punta), dos aros en el eje del rotor y apoyo puntual sobre cristal para estabilizar el conjunto.</p>
+        <div class="form-group">
+            <label>Simulación de velocidad [RPM]</label>
+            <input type="range" id="fcem-rpm-sim" min="0" max="5000" value="0" step="50" oninput="document.getElementById('fcem-rpm-val').textContent = this.value; calcularPasoFCEM()">
+            <div style="text-align: right; font-size: 11px; margin-top:2px;">Velocidad: <span id="fcem-rpm-val">0</span> RPM</div>
+        </div>
 
-                        <div class="lev-grid-2">
-                            <div class="form-group">
-                                <label>Imán de base</label>
-                                <select id="lev-base-iman" onchange="actualizarModeloAxial()"></select>
-                            </div>
-                            <div class="form-group">
-                                <label>Imán del rotor (aro)</label>
-                                <select id="lev-rotor-iman" onchange="actualizarModeloAxial()"></select>
-                            </div>
-                        </div>
+        <div class="lev-grid-2">
+            <div class="form-group">
+                <label>Factor de pérdidas mecánicas (%)</label>
+                <input type="number" id="fcem-perdidas" value="15" min="0" max="100" step="1" oninput="calcularPasoFCEM()">
+            </div>
+            <div class="form-group">
+                <label>Resistencia interna devanado [Ω]</label>
+                <input type="text" id="fcem-resistencia" class="calculado" readonly>
+            </div>
+        </div>
 
-                        <div class="lev-grid-3">
-                            <div class="form-group">
-                                <label>Masa del rotor (g)</label>
-                                <input type="number" id="lev-masa-rotor" value="32" min="1" step="0.1" oninput="actualizarModeloAxial()">
-                            </div>
-                            <div class="form-group">
-                                <label>Separación entre apoyos (mm)</label>
-                                <input type="number" id="lev-separacion-apoyos" value="110" min="10" step="0.5" oninput="actualizarModeloAxial()">
-                            </div>
-                            <div class="form-group">
-                                <label>Fracción soportada por la punta (%)</label>
-                                <input type="number" id="lev-fraccion-punta" value="15" min="0" max="100" step="1" oninput="actualizarModeloAxial()">
-                            </div>
-                        </div>
+        <div class="fcem-nota" style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid var(--primary-color); font-size: 13px; margin: 15px 0;">
+            <strong>Física del límite:</strong> El motor acelera mientras $V_{panel} > V_{fcem}$. Cuando el voltaje inducido iguala al disponible (menos pérdidas), el motor deja de acelerar.
+        </div>
 
-                        <h4 class="subtitulo-seccion">Separación magnética en cada extremo</h4>
-                        <div class="lev-grid-2">
-                            <div class="form-group">
-                                <label>Gap frontal base-rotor (mm)</label>
-                                <input type="number" id="lev-gap-frontal" value="2.5" min="0.1" step="0.1" oninput="actualizarModeloAxial()">
-                            </div>
-                            <div class="form-group">
-                                <label>Gap trasero base-rotor (mm)</label>
-                                <input type="number" id="lev-gap-trasero" value="2.5" min="0.1" step="0.1" oninput="actualizarModeloAxial()">
-                            </div>
-                        </div>
+        <div class="nav-buttons">
+            <button class="btn-nav btn-prev" onclick="cambiarPaso(4)">⮜ Anterior</button>
+            <button class="btn-nav btn-next" onclick="generarInformeAutomatico(); cambiarPaso(6);">Siguiente ⮞</button>
+        </div>
+    </div>
 
-                        <div class="lev-grid-3">
-                            <div class="form-group">
-                                <label>Desalineación axial relativa (mm)</label>
-                                <input type="number" id="lev-desalineacion" value="0" step="0.1" oninput="actualizarModeloAxial()">
-                            </div>
-                            <div class="form-group">
-                                <label>Exponente del modelo</label>
-                                <input type="number" id="lev-exponente" value="2.7" min="1.5" max="4.5" step="0.1" oninput="actualizarModeloAxial()">
-                            </div>
-                            <div class="form-group">
-                                <label>Factor geométrico</label>
-                                <input type="number" id="lev-factor" value="1.0" min="0.2" max="3" step="0.1" oninput="actualizarModeloAxial()">
-                            </div>
-                        </div>
+    <div class="summary-section">
+        <h3>Gráfica de Equilibrio de Velocidad</h3>
+        <div class="svg-illustration-container">
+            <svg id="fcem-svg" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; background: #fff; border-radius: 4px;"></svg>
+            <div style="display: flex; gap: 12px; font-size: 11px; margin-top: 8px; justify-content: center;">
+                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:2px; background:#e74c3c;"></span> V. Panel</span>
+                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:2px; background:#3498db;"></span> V. FCEM</span>
+                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:2px; background:#2ecc71; border-left:2px dashed #2ecc71;"></span> Límite RPM</span>
+            </div>
+        </div>
 
-                        <div class="lev-bloque-nota">
-                            <strong>Interpretación:</strong> el modelo calcula la repulsión axial equivalente en los dos extremos del eje, compara esa fuerza con el peso del rotor y estima si la punta de apoyo solo guía o si todavía está soportando demasiada carga.
-                        </div>
+        <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 20px 0 15px 0;">
 
-                        <div class="nav-buttons">
-                            <button class="btn-nav btn-prev" onclick="cambiarPaso(4)">⮜ Anterior</button>
-                            <button class="btn-nav btn-next" onclick="generarInformeAutomatico(); cambiarPaso(6);">Siguiente ⮞</button>
-                        </div>
-                    </div>
-
-                    <div class="summary-section lev-summary">
-                        <h3>Vista axial simplificada</h3>
-                        <div class="svg-illustration-container lev-svg-wrap">
-                            <svg id="levitacion-svg" viewBox="0 0 560 220" xmlns="http://www.w3.org/2000/svg"></svg>
-                        </div>
-
-                        <h3>Diagnóstico magnético</h3>
-                        <div class="lev-badge" id="lev-diagnostico">Pendiente de cálculo</div>
-                        <div class="summary-item"><span>Fuerza frontal</span><span class="value" id="lev-res-f-frontal">—</span></div>
-                        <div class="summary-item"><span>Fuerza trasera</span><span class="value" id="lev-res-f-trasera">—</span></div>
-                        <div class="summary-item"><span>Fuerza magnética total</span><span class="value" id="lev-res-f-total">—</span></div>
-                        <div class="summary-item"><span>Peso del rotor</span><span class="value" id="lev-res-peso">—</span></div>
-                        <div class="summary-item"><span>Carga restante sobre la punta</span><span class="value" id="lev-res-punta">—</span></div>
-                        <div class="summary-item"><span>Desequilibrio entre extremos</span><span class="value" id="lev-res-deseq">—</span></div>
-                        <div class="summary-item"><span>Rigidez axial estimada</span><span class="value" id="lev-res-rigidez">—</span></div>
-                        <div class="summary-item" style="border-bottom:none;"><span>Lectura física</span><span class="value" id="lev-res-lectura">—</span></div>
-                    </div>
-                </div>
+        <h3>Resultados del análisis</h3>
+        <div class="summary-item"><span>Voltaje Inducido (Vfcem)</span><span class="value" id="res-fcem-v">-</span></div>
+        <div class="summary-item"><span>Velocidad Máx. Teórica</span><span class="value" id="res-fcem-rpm-teo">-</span></div>
+        <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
+            <span style="font-weight: bold;">Velocidad Máx. Real (est.)</span>
+            <span class="value" id="res-fcem-rpm-real" style="color: #27ae60; font-size: 1.2em;">-</span>
+        </div>
+        <small style="color: #666; font-size: 11px; display: block; text-align: center; margin-top: 5px;">
+            * El valor real incluye el factor de pérdidas seleccionado.
+        </small>
+    </div>
+</div>
 
 <div id="step-6" class="step-container">
 
