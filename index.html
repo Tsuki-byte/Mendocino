@@ -500,12 +500,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
 
         <div class="teoria-nota">
-            <strong>Fundamento de Interacción Magnética:</strong> El par motor se genera por la <strong>Fuerza de Lorentz</strong>. Cuando la corriente (\( I \)) fluye por las espiras, el imán motriz ejerce un empuje sobre los conductores. 
+            <strong>Fundamento de Interacción Magnética:</strong> El par motor se genera por la <strong>Fuerza de Lorentz</strong>. Cuando la corriente (\( I \)) fluye por las espiras enfrentadas al imán motriz, se genera un empuje perpendicular al campo magnético. 
             <br><br>
-            A diferencia de un modelo ideal, en nuestro motor el imán puede influir sobre <strong>varias espiras</strong> de forma simultánea dependiendo de la anchura del panel; la fuerza total es la suma de todas esas interacciones. Además, el campo magnético (\( B \)) no es uniforme, concentrándose con mayor intensidad en los <strong>extremos del imán</strong>, que son las zonas que más contribuyen al par generado:
-            \[ F_{Lorentz} = \sum (N_i \cdot I \cdot L_{activa} \cdot B_i \cdot \sin(\beta)) \]
-            El Par Motor (\( \tau \)), o capacidad de torsión, resulta de multiplicar esa fuerza total por el radio de palanca (\( r \)):
-            \[ \tau = F_{total} \cdot r \cdot \cos(\theta) \]
+            Aunque el imán cubre gran parte del rotor, las fuerzas laterales tienden a anularse, por lo que el cálculo se centra en el haz de cables activo sometido al campo principal (\( B \)), que suele ser más intenso en los <strong>extremos del imán</strong>:
+            \[ F_{Lorentz} = N_{espiras} \cdot I \cdot L_{activa} \cdot B \]
+            El Par Motor (\( \tau \)), o capacidad de torsión, resulta de multiplicar esa fuerza por su radio de palanca (\( r \)):
+            \[ \tau = F_{Lorentz} \cdot r \cdot \cos(\theta) \]
         </div>
 
         <div class="nav-buttons">
@@ -877,6 +877,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
-    <script src="app-main-v35.js?v=35.53"></script>
+    <script src="app-main-v35.js?v=35.54"></script>
 </body>
 </html>
