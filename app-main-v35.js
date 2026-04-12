@@ -403,9 +403,11 @@ function cargarMotor(config, id_unico = null, titulo = null) {
     actualizarResumenPaso1();
     setTimeout(() => {
         // Encadenamos cálculos para que las gráficas se actualicen con los nuevos parámetros
+        if (typeof calcularPaso2 === 'function') calcularPaso2();
         if (typeof calcularPasoMagnetico === 'function') calcularPasoMagnetico();
         if (typeof calcularPasoLuminico === 'function') calcularPasoLuminico();
         if (typeof calcularPasoFCEM === 'function') calcularPasoFCEM();
+        if (typeof generarInformeAutomatico === 'function') generarInformeAutomatico();
     }, 100);
 }
 
@@ -2345,24 +2347,24 @@ function calcularOcupacionRanura() {
                     hilo: getVal('dia-hilo-select') || 0.15,
                     calidad: getVal('calidad-bobinado') || 'media',
 
-                    // Paso 3
+                    // Paso 3 (Magnetismo)
                     imanMotorNombre: getTxt('iman-motor'),
                     imanMotorOrientacion: getVal('iman-orientacion') || 'long',
                     imanMotorDistancia: getVal('iman-distancia') || 2.0,
                     campoB: getVal('campo-b') || 0.18,
                     radioEfectivo: getVal('radio-efectivo-mm') || 0,
 
-                    // Paso 4
+                    // Paso 4 (Luz)
                     lumGiro: getVal('lum-giro') || 0,
                     lumAnguloLuz: getVal('lum-angulo-luz') || 0,
                     lumConexion: getVal('lum-conexion') || '0',
 
-                    // Paso 5
+                    // Paso 5 (FCEM)
                     fcemRpmSim: getVal('fcem-rpm-sim') || 0,
                     fcemPerdidas: getVal('fcem-perdidas') || 15,
 
-                    // Paso 6 (Notas)
-                    informe,
+                    // Paso 6 (Informe)
+                    informe: document.getElementById('informe-automatico')?.value || "",
 
                     resumen: {
                         tipoRotor,
