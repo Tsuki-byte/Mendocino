@@ -1263,6 +1263,7 @@ function actualizarListaHilos() {
                 const rReal = (materialConductor.resistividad * lonTotalReal) / (seccionHilo * 1e-6);
                 const elResDev = document.getElementById('res-devanado');
                 if (elResDev) elResDev.value = rReal.toFixed(2);
+                EstadoDiseno.resistenciaTotal = rReal; // Persistimos el valor para otros pasos (FCEM)
 
                 const numDevanados = EstadoDiseno.numeroCaras / 2;
                 EstadoDiseno.numDevanados = numDevanados;
@@ -2889,8 +2890,16 @@ function descargarInformeAutomatico() {
 function calcularPasoFCEM() {
     // 1. Obtener datos de pasos anteriores
     const selPanel = document.getElementById('panel');
-    const panel = dbPaneles[selPanel?.value];
-    const vmp = panel ? (panel.v || panel.vmp || 0) : 0;
+    const idPanel = selPanel?.value || localStorage.getItem('mendocino_panel_last');
+    const panel = dbPaneles[idPanel];
+    
+    // Voltaje nominal del panel (Vmp)
+    const vmp = panel ? (panel.v || panel.vmp || 0.5) : 0.5; 
+    
+    // Si no hay panel cargado, intentamos usar el del estado persistido
+    if (!panel && EstadoDiseno.resistenciaPanelObjetivo > 0) {
+        console.warn("Panel no detectado por ID, usando fallback de resistencia objetivo.");
+    }
     
     const vueltas = EstadoDiseno.espirasPorDevanado || 100;
     
@@ -2943,8 +2952,12 @@ function dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim) {
     
     const w = 300, h = 200;
     const margin = 35;
-    const rpmMaxEje = Math.max(5000, Math.round((rpmMaxReal || 0) * 1.5 / 500) * 500);
-    const vMaxEje = Math.max(vmp * 1.3, 5);
+    
+    // Escala dinámica del Eje X: 
+    // Si la velocidad es muy baja (ej: 12 RPM), no mostramos hasta 5000.
+    // Usamos el máximo entre un suelo mínimo (100 RPM para ver algo de curva) y 1.5 veces el máximo real.
+    const rpmMaxEje = Math.max(100, Math.round((rpmMaxReal || 0) * 1.5 / 10) * 10);
+    const vMaxEje = Math.max(vmp * 1.3, 1.2);
     
     const toX = (val) => margin + (val / rpmMaxEje) * (w - margin * 1.5);
     const toY = (val) => (h - margin) - (val / vMaxEje) * (h - margin * 1.5);
