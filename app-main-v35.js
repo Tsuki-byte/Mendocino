@@ -1625,27 +1625,29 @@ function dibujarInteraccionMagneticaSVG() {
     }
 
     // --- 5. PAR ROTATORIO (CURVA) ---
-    // Recalibración: Para pares típicos de 0.005Nm a 0.02Nm
-    const strokeW = Math.min(10, 2 + (parActivo * 400)); // Grosor más reactivo
+    // Recalibración de grosor: más sutil (rango 2 a 7)
+    const strokeW = Math.min(7, 2 + (parActivo * 120)); 
     const rx = radioRotorSVG + 18;
     
-    // Curva indicadora de giro (sentido antihorario, el lado izquierdo baja)
-    const startX = cx - rx * 0.7; const startY = cy - rx * 0.7; // Empieza arriba izquierda
-    const endX = cx - rx * 0.7;   const endY = cy + rx * 0.7;   // Termina abajo izquierda
+    // Curva indicadora de giro (sentido horario, el lado izquierdo SUBE)
+    // Coordenadas calculadas para que el arco esté a la izquierda y apunte hacia ARRIBA
+    const startX = cx - rx * 0.7; const startY = cy + rx * 0.7; // Empieza abajo izquierda
+    const endX = cx - rx * 0.7;   const endY = cy - rx * 0.7;   // Termina arriba izquierda
     const tauPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 0 ${endX} ${endY}`);
+    // sweep-flag = 1 para que sea un arco convexo hacia fuera en sentido horario
+    tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 1 ${endX} ${endY}`);
     tauPath.setAttribute('stroke', '#2ecc71'); tauPath.setAttribute('stroke-width', strokeW);
     tauPath.setAttribute('fill', 'none');
     svg.appendChild(tauPath);
+    
     // Punta de flecha de par (proporcional al grosor)
-    const headSize = Math.max(12, strokeW * 1.8);
+    const headSize = Math.max(10, strokeW * 1.5);
     const tauArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    // Definimos un triángulo más grande y afilado
+    // Triángulo apuntando hacia la punta (0,0)
     tauArrow.setAttribute('points', `0,0 ${-headSize/2},${headSize} ${headSize/2},${headSize}`);
     tauArrow.setAttribute('fill', '#2ecc71');
-    // Posicionamos y rotamos para que apunte hacia adelante (sentido de giro)
-    // -45 grados (o 315) es la rotación correcta para apuntar abajo-derecha al final del arco
-    tauArrow.setAttribute('transform', `translate(${endX}, ${endY}) rotate(-45)`);
+    // Rotamos 45 grados para que apunte hacia arriba-derecha siguiendo la curva en el tope izquierdo
+    tauArrow.setAttribute('transform', `translate(${endX}, ${endY}) rotate(45)`);
     svg.appendChild(tauArrow);
 }
 
@@ -2223,6 +2225,35 @@ function calcularOcupacionRanura() {
 
     listaDiv.innerHTML = '';
 
+    // Nueva Cabecera con botón de sincronización
+    const cabecera = document.createElement('div');
+    cabecera.style.display = 'flex';
+    cabecera.style.justifyContent = 'space-between';
+    cabecera.style.alignItems = 'center';
+    cabecera.style.marginBottom = '15px';
+    cabecera.style.padding = '0 5px 10px 5px';
+    cabecera.style.borderBottom = '1px solid #e2e8f0';
+
+    const tituloModal = document.createElement('h3');
+    tituloModal.textContent = "Tus Diseños";
+    tituloModal.style.margin = "0";
+    tituloModal.style.fontSize = "16px";
+
+    const btnSync = document.createElement('button');
+    btnSync.innerHTML = "🔄 Sincronizar";
+    btnSync.className = "btn-voto"; // Reutilizamos estilo de botón pequeño
+    btnSync.style.height = "28px";
+    btnSync.style.padding = "0 10px";
+    btnSync.onclick = async () => {
+        btnSync.disabled = true;
+        btnSync.textContent = "⏳...";
+        await cargarConfiguracionLocal();
+    };
+
+    cabecera.appendChild(tituloModal);
+    cabecera.appendChild(btnSync);
+    listaDiv.appendChild(cabecera);
+
     const nombresDeMotores = Object.keys(misMotores);
 
     if (nombresDeMotores.length === 0) {
@@ -2439,7 +2470,13 @@ function calcularOcupacionRanura() {
 
             } catch (e) {
                 console.error("Error cargando galería:", e);
-                contenedor.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#ef4444;">Error al conectar con la galería: ${e.message}</div>`;
+                contenedor.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align:center; padding:50px; color:#ef4444;">
+                        <p>Error al conectar con la galería: ${e.message}</p>
+                        <button class="btn-config" style="max-width:250px; margin:20px auto; display:block;" onclick="renderizarProyectos()">
+                            🔄 Reintentar conexión con la galería
+                        </button>
+                    </div>`;
             }
         }
 
