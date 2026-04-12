@@ -15,6 +15,7 @@ window.sessionActiva = null;
 window.profileActual = null;
 window.authInicializada = false;
 window.modoRegistroAuth = false;
+window.proyectoActivo = null; // { id_unico, titulo }
 
 window.MATERIALES_CONDUCTORES = {
     cobre: { nombre: "Cobre", densidad: 8.95, resistividad: 1.75e-8, colorUI: "#d35400" },
@@ -219,13 +220,23 @@ function obtenerConfigNivel() {
         }
 
 
-function cargarMotor(config) {
+function cargarMotor(config, id_unico = null, titulo = null) {
     if (!config) {
         alert("La configuración no es válida.");
         return;
     }
 
     console.log("Cargando motor con config:", config);
+    
+    // Si viene con ID, lo marcamos como el proyecto activo del usuario
+    if (id_unico && titulo) {
+        window.proyectoActivo = { id_unico, titulo };
+    } else {
+        // Si cargamos algo sin ID (ej: desde la galería pública), reseteamos el activo
+        window.proyectoActivo = null;
+    }
+    actualizarUIProyectoActivo();
+
     cambiarPagina('calc');
 
     const caras = document.getElementById('caras');
@@ -2114,18 +2125,18 @@ function calcularOcupacionRanura() {
         async function obtenerMotoresGuardados() {
             let motoresFinales = {};
             
-            // 1. Cargar de LocalStorage primero (fallback inmediato)
+            // 1. Cargar de LocalStorage primero
             try {
                 const datosLocal = localStorage.getItem('listaMotoresMendocino');
                 if (datosLocal) motoresFinales = JSON.parse(datosLocal);
             } catch (e) { console.warn("Error leyendo LocalStorage:", e); }
 
-            // 2. Si hay sesión, cargar de Supabase con TIMEOUT y fusionar
+            // 2. Si hay sesión, cargar de Supabase
             if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
                 try {
                     const fetchPromise = dbMendocinoClient
                         .from('motores')
-                        .select('titulo, config')
+                        .select('id_unico, titulo, config')
                         .eq('usuario_id', sessionActiva.user.id);
                     
                     const timeoutPromise = new Promise((_, reject) => 
@@ -2136,12 +2147,15 @@ function calcularOcupacionRanura() {
                     
                     if (!error && motoresCloud) {
                         motoresCloud.forEach(m => {
-                            // La nube tiene prioridad sobre el local si hay colisión de nombres
-                            motoresFinales[m.titulo] = m.config;
+                            // Guardamos un objeto más completo para poder identificar el id_unico al cargar
+                            motoresFinales[m.titulo] = {
+                                config: m.config,
+                                id_unico: m.id_unico
+                            };
                         });
                     }
                 } catch (e) { 
-                    console.warn("DEBUG [Auth]: Usando solo local por timeout o error en nube:", e.message);
+                    console.warn("DEBUG [Auth]: Usando solo local:", e.message);
                 }
             }
             return motoresFinales;
@@ -2149,8 +2163,21 @@ function calcularOcupacionRanura() {
 
         
         async function guardarConfiguracionLocal() {
-            const nombreMotor = prompt("📝 Ponle un nombre a esta configuración (ej: 'Motor rápido 4 caras'):");
-            if (!nombreMotor || nombreMotor.trim() === "") return;
+            let nombreMotor = "";
+            let modoEdicion = false;
+
+            if (window.proyectoActivo) {
+                const confirmacion = confirm(`¿Quieres sobreescribir los cambios en "${window.proyectoActivo.titulo}"? \n\n Pulsa "Aceptar" para actualizar o "Cancelar" para guardar como un diseño nuevo.`);
+                if (confirmacion) {
+                    nombreMotor = window.proyectoActivo.titulo;
+                    modoEdicion = true;
+                }
+            }
+
+            if (!modoEdicion) {
+                nombreMotor = prompt("📝 Ponle un nombre a esta nueva configuración:");
+                if (!nombreMotor || nombreMotor.trim() === "") return;
+            }
 
             const panelSelect = document.getElementById('panel');
             const informe = document.getElementById('informe-automatico')?.value || "";
@@ -2179,35 +2206,54 @@ function calcularOcupacionRanura() {
                 fechaGuardado: new Date().toLocaleString('es-ES')
             };
 
-            // 1. Guardado Local (Seguridad inmediata)
+            // 1. Guardado Local
             const misMotores = await obtenerMotoresGuardados();
-            misMotores[nombreMotor] = miConfiguracion;
+            misMotores[nombreMotor] = { config: miConfiguracion, id_unico: modoEdicion ? window.proyectoActivo.id_unico : null };
             localStorage.setItem('listaMotoresMendocino', JSON.stringify(misMotores));
 
-            // 2. Sincronización con la Nube (con control de errores)
+            // 2. Sincronización con la Nube
             if (window.dbMendocinoClient && sessionActiva) {
                 try {
-                    const usrId = sessionActiva.user.id;
-                    const usrNombre = usuarioActual?.nombre || 'Alumno';
-                    const id_unico = (usuarioActual?.nombre || 'user') + '-' + Date.now();
-                    
-                    const { error } = await dbMendocinoClient.from('motores').insert([{
-                        id_unico: id_unico,
-                        titulo: nombreMotor,
-                        config: miConfiguracion,
-                        usuario_id: usrId,
-                        autor_nombre: usrNombre,
-                        es_publico: false 
-                    }]);
-
-                    if (error) throw error;
-                    mostrarToast(`Motor "${nombreMotor}" guardado en la nube.`, 'ok');
+                    if (modoEdicion && window.proyectoActivo.id_unico) {
+                        const { error } = await dbMendocinoClient
+                            .from('motores')
+                            .update({ config: miConfiguracion })
+                            .eq('id_unico', window.proyectoActivo.id_unico);
+                        if (error) throw error;
+                        mostrarToast(`"${nombreMotor}" actualizado en la nube.`, 'ok');
+                    } else {
+                        const id_unico = (usuarioActual?.nombre || 'user') + '-' + Date.now();
+                        const { error } = await dbMendocinoClient.from('motores').insert([{
+                            id_unico: id_unico,
+                            titulo: nombreMotor,
+                            config: miConfiguracion,
+                            usuario_id: sessionActiva.user.id,
+                            autor_nombre: usuarioActual?.nombre || 'Alumno',
+                            es_publico: false 
+                        }]);
+                        if (error) throw error;
+                        window.proyectoActivo = { id_unico, titulo: nombreMotor };
+                        actualizarUIProyectoActivo();
+                        mostrarToast(`"${nombreMotor}" guardado como nuevo en la nube.`, 'ok');
+                    }
                 } catch (e) {
-                    console.error("Error al sincronizar con la nube:", e);
-                    mostrarToast(`Guardado en navegador (local). No se pudo subir a la nube.`, 'aviso');
+                    console.error("Error nube:", e);
+                    mostrarToast(`Error al sincronizar. Guardado localmente.`, 'aviso');
                 }
             } else {
-                mostrarToast(`Motor "${nombreMotor}" guardado localmente.`, 'ok');
+                mostrarToast(`Guardado localmente.`, 'ok');
+            }
+        }
+
+        function actualizarUIProyectoActivo() {
+            const display = document.getElementById('proyecto-activo-display');
+            if (display) {
+                if (window.proyectoActivo) {
+                    display.textContent = `📋 Proyecto: ${window.proyectoActivo.titulo}`;
+                    display.style.display = 'block';
+                } else {
+                    display.style.display = 'none';
+                }
             }
         }
 
@@ -2260,7 +2306,10 @@ function calcularOcupacionRanura() {
         listaDiv.innerHTML = '<p class="texto-vacio-modal">No tienes ninguna configuración guardada todavía.</p>';
     } else {
         nombresDeMotores.forEach(nombre => {
-            const config = misMotores[nombre];
+            const entrada = misMotores[nombre];
+            // Manejamos tanto el formato nuevo {config, id_unico} como el antiguo (solo config)
+            const config = entrada.config || entrada;
+            const id_unico = entrada.id_unico || null;
 
             const renglon = document.createElement('div');
             renglon.style.display = 'flex';
@@ -2286,7 +2335,7 @@ function calcularOcupacionRanura() {
             btnCargar.style.marginTop = '0';
             btnCargar.onclick = function () {
                 try {
-                    cargarMotor(config);
+                    cargarMotor(config, id_unico, nombre);
                     cerrarModalConfigs();
                     mostrarToast(`Configuración "${nombre}" cargada.`, 'ok');
                 } catch (e) {
