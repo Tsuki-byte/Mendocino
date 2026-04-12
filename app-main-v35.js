@@ -60,6 +60,22 @@ window.toggleModoAuth = function(e) {
     if (lToggle) lToggle.textContent = window.modoRegistroAuth ? '¿Ya tienes cuenta? Inicia sesión aquí.' : '¿No tienes cuenta? Registrate aquí.';
 };
 
+window.sincronizarInputRPM = function(origen) {
+    const slider = document.getElementById('fcem-rpm-sim');
+    const num = document.getElementById('fcem-rpm-num');
+    if (!slider || !num) return;
+    
+    if (origen === 'slider') {
+        num.value = slider.value;
+    } else if (origen === 'num') {
+        const val = Number(num.value);
+        if (val > Number(slider.max)) {
+            slider.max = val + 100; // Auto-expande el slider si se teclea un numero mayor
+        }
+        slider.value = num.value;
+    }
+};
+
 window.ejecutarAuth = async function() {
     console.log("DEBUG: Ejecutando Auth...");
     const email = document.getElementById('auth-email')?.value.trim();
@@ -3116,17 +3132,22 @@ function calcularPasoFCEM() {
     // 4. Dibujar Gráfica
     dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim);
 
-    // 5. Fijar el slider de simulación a 3000 RPM (según requerimiento de usuario)
+    // 5. Ajustar el slider de simulación y el input manual para que se acomoden al motor real.
     const sliderRpm = document.getElementById('fcem-rpm-sim');
-    if (sliderRpm) {
-        const nuevoMax = 3000;
-        const nuevoStep = 10;
+    const numRpm = document.getElementById('fcem-rpm-num');
+    if (sliderRpm && numRpm) {
+        // Autoajuste: doble de la velocidad real (si es 17RPM -> max 100), pero si de forma manual teclea más, se respeta.
+        const ajusteMotor = Math.max(100, Math.round(rpmMaxReal * 2));
+        const simActual = Number(sliderRpm.value);
+        const nuevoMax = Math.max(ajusteMotor, simActual);
         
         if (parseFloat(sliderRpm.max) !== nuevoMax) {
             sliderRpm.max = nuevoMax;
         }
-        if (parseFloat(sliderRpm.step) !== nuevoStep) {
-            sliderRpm.step = nuevoStep;
+        
+        // Hacemos que siempre se inicialice con el valor correcto en el cuadro de texto.
+        if (numRpm.value === "" || (numRpm.value === "0" && sliderRpm.value !== "0")) {
+            numRpm.value = sliderRpm.value;
         }
     }
 }
@@ -3141,7 +3162,11 @@ function dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim) {
     // Escala dinámica del Eje X: 
     // Usamos el máximo entre un suelo mínimo (100 RPM), 1.5 veces el máximo real (para ver el punto de equilibrio) y la simulación actual
     const rpmMaxEje = Math.max(100, Math.round((rpmMaxReal || 0) * 1.5 / 10) * 10, rpmSim);
-    const vMaxEje = Math.max(vmp * 1.3, 1.2);
+    
+    // Escala del Eje Y autoajustable a la placa:
+    // El eje Y subirá hasta 1.8 veces el voltaje de la placa (vmp) para que la línea roja sea muy visible.
+    // Si la simulación dispara la FCEM muy por encima del voltaje del panel, el eje Y crecerá para mostrar el punto azul.
+    const vMaxEje = Math.max(vmp * 1.8, vfcemSim * 1.15, 0.5);
     
     const toX = (val) => margin + (val / rpmMaxEje) * (w - margin * 1.5);
     const toY = (val) => (h - margin) - (val / vMaxEje) * (h - margin * 1.5);

@@ -597,9 +597,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p class="texto-ayuda">Simula la velocidad de giro para ver cómo el voltaje generado por la bobina ($V_{fcem}$) aumenta hasta igualar al voltaje del panel de alimentación, limitando la velocidad máxima.</p>
 
         <div class="form-group">
-            <label>Simulación de velocidad [RPM]</label>
-            <input type="range" id="fcem-rpm-sim" min="0" max="5000" value="0" step="50" oninput="document.getElementById('fcem-rpm-val').textContent = this.value; calcularPasoFCEM()">
-            <div style="text-align: right; font-size: 11px; margin-top:2px;">Velocidad: <span id="fcem-rpm-val">0</span> RPM</div>
+            <label>Simulación de velocidad manual [RPM]</label>
+            <div style="display: flex; gap: 15px; align-items: center; padding: 10px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
+                <input type="range" id="fcem-rpm-sim" min="0" max="5000" value="0" step="1" oninput="sincronizarInputRPM('slider'); calcularPasoFCEM()" style="flex: 1; height: 8px;">
+                <input type="number" id="fcem-rpm-num" min="0" value="0" oninput="sincronizarInputRPM('num'); calcularPasoFCEM()" style="width: 110px; padding: 8px; border: 2px solid var(--primary-color); border-radius: 6px; font-weight: 800; font-family: inherit; font-size: 18px; color: var(--primary-color); text-align: center;">
+            </div>
         </div>
 
         <div class="lev-grid-2">
@@ -849,6 +851,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
-    <script src="app-main-v35.js?v=35.36"></script>
+    <script src="app-main-v35.js?v=35.39"></script>
 </body>
 </html>
