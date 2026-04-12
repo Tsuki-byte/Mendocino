@@ -2618,48 +2618,7 @@ function calcularOcupacionRanura() {
 }
 
 
-        // --- PROYECTOS Y VALORACIÓN ---
-        function obtenerValoracionesProyectos() {
-            return JSON.parse(localStorage.getItem('valoracionesProyectosMendocino') || '{}');
-        }
-
-        function guardarValoracionesProyectos(datos) {
-            localStorage.setItem('valoracionesProyectosMendocino', JSON.stringify(datos));
-        }
-
-        function obtenerVotosUsuario() {
-            return JSON.parse(localStorage.getItem('votosUsuarioProyectosMendocino') || '{}');
-        }
-
-        function guardarVotosUsuario(datos) {
-            localStorage.setItem('votosUsuarioProyectosMendocino', JSON.stringify(datos));
-        }
-
-        function calcularResumenVotos(lista) {
-            if (!Array.isArray(lista) || lista.length === 0) return { media: 0, total: 0 };
-            const suma = lista.reduce((acc, n) => acc + Number(n || 0), 0);
-            return { media: suma / lista.length, total: lista.length };
-        }
-
-        function votarProyecto(idProyecto, valor) {
-            const votosUsuario = obtenerVotosUsuario();
-            const valoraciones = obtenerValoracionesProyectos();
-            const votosProyecto = Array.isArray(valoraciones[idProyecto]) ? valoraciones[idProyecto] : [];
-
-            if (votosUsuario[idProyecto]) {
-                mostrarToast('Ya has valorado este proyecto en este navegador.', 'aviso');
-                return;
-            }
-
-            votosProyecto.push(Number(valor));
-            valoraciones[idProyecto] = votosProyecto;
-            votosUsuario[idProyecto] = Number(valor);
-
-            guardarValoracionesProyectos(valoraciones);
-            guardarVotosUsuario(votosUsuario);
-            renderizarProyectos();
-            mostrarToast('Gracias por tu voto.', 'ok');
-        }
+        // --- PROYECTOS ---
 
         async function renderizarProyectos() {
             const contenedor = obtenerElemento('contenedor-proyectos');
@@ -2688,12 +2647,7 @@ function calcularOcupacionRanura() {
                     return;
                 }
 
-                const valoraciones = obtenerValoracionesProyectos();
-                const votosUsuario = obtenerVotosUsuario();
-
                 contenedor.innerHTML = proyectos.map((proyecto) => {
-                    const resumen = calcularResumenVotos(valoraciones[proyecto.id_unico]);
-                    const votoUsuario = votosUsuario[proyecto.id_unico] || 0;
                     const autor = proyecto.autor_nombre ? `<span class="proyecto-autor">👤 Por: ${proyecto.autor_nombre}</span>` : '';
 
                     return `
@@ -2740,14 +2694,6 @@ function calcularOcupacionRanura() {
                                 </div>
 
                                 <div class="proyecto-bloque proyecto-acciones">
-                                    <h4>⭐ Ranking de la comunidad</h4>
-                                    <div class="proyecto-votos">
-                                        ${[1,2,3,4,5].map(n => `<button class="btn-voto ${votoUsuario === n ? 'activo' : ''}" onclick="votarProyecto('${proyecto.id_unico}', ${n})">${n}★</button>`).join('')}
-                                    </div>
-                                    <div class="proyecto-ranking">
-                                        <strong>${resumen.total ? resumen.media.toFixed(2) : 'Sin votos'}</strong>
-                                        ${resumen.total ? `<small> · ${resumen.total} voto${resumen.total === 1 ? '' : 's'}</small>` : ''}
-                                    </div>
                                     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
                                         <button class="btn-config" style="width: 100%; font-family: inherit !important; font-size:14px; height:42px; font-weight:700 !important; padding:0; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar en calculadora</button>
                                         <a href="${proyecto.video_url}" download class="btn-download" style="text-decoration:none; font-family: inherit !important; display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; height:42px; font-size:14px; font-weight:700 !important; padding:0; background-color:#10b981; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
