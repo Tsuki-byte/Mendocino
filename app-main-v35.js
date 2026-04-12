@@ -134,19 +134,19 @@ const CONFIG_NIVELES = {
     basico: {
         pasosPermitidos: [1, 2],
         puedeVerPasoMagnetico: false,
-        puedeVerPasoLevitacion: false,
+        puedeVerPasoFCEM: false,
         puedeVerInforme: false
     },
     avanzado: {
         pasosPermitidos: [1, 2, 3, 4],
         puedeVerPasoMagnetico: true,
-        puedeVerPasoLevitacion: false,
+        puedeVerPasoFCEM: false,
         puedeVerInforme: false
     },
     experto: {
         pasosPermitidos: [1, 2, 3, 4, 5, 6],
         puedeVerPasoMagnetico: true,
-        puedeVerPasoLevitacion: true,
+        puedeVerPasoFCEM: true,
         puedeVerInforme: true
     }
 };
@@ -167,7 +167,7 @@ function obtenerConfigNivel() {
                 return {
                     pasosPermitidos: pasos,
                     puedeVerPasoMagnetico: pasos.includes(3),
-                    puedeVerPasoLevitacion: pasos.includes(5),
+                    puedeVerPasoFCEM: pasos.includes(5),
                     puedeVerInforme: pasos.includes(6)
                 };
             }
@@ -1336,38 +1336,21 @@ function calcularPasoMagnetico() {
 
     const inputCampoB = document.getElementById('campo-b');
     const inputRadioEfectivo = document.getElementById('radio-efectivo-mm');
-    const inputCampoBLev = document.getElementById('campo-b-levitacion');
-    const inputLongitudLev = document.getElementById('longitud-activa-levitacion-mm');
-    const inputFactorLev = document.getElementById('factor-orientacion-levitacion');
 
     const campoB = parseFloat(inputCampoB?.value || 0) || 0;
     const radioEfectivo_m = (parseFloat(inputRadioEfectivo?.value || 0) || 0) / 1000;
     const longitudActiva_m = EstadoDiseno.longitudActiva_m || 0;
 
-    const campoBLev = parseFloat(inputCampoBLev?.value || 0) || 0;
-    const longitudLevitacion_m = (parseFloat(inputLongitudLev?.value || 0) || 0) / 1000;
-    const factorOrientacionLev = parseFloat(inputFactorLev?.value || 0) || 0;
-
     EstadoDiseno.campoB_T = campoB;
     EstadoDiseno.radioEfectivo_m = radioEfectivo_m;
-    EstadoDiseno.campoBLevitacion_T = campoBLev;
-    EstadoDiseno.longitudActivaLevitacion_m = longitudLevitacion_m;
-    EstadoDiseno.factorOrientacionLevitacion = factorOrientacionLev;
 
     const fmm = espiras * corrienteA;
 
-    const fuerzaLorentzPrincipal =
-        campoB * corrienteA * longitudActiva_m * espiras;
-
-    const fuerzaLorentzLevitacion =
-        campoBLev * corrienteA * longitudLevitacion_m * espiras * factorOrientacionLev;
-
-    const fuerzaLorentz = fuerzaLorentzPrincipal + fuerzaLorentzLevitacion;
+    // Fuerza de Lorentz únicamente por el imán principal
+    const fuerzaLorentz = campoB * corrienteA * longitudActiva_m * espiras;
     const par = fuerzaLorentz * radioEfectivo_m;
 
     EstadoDiseno.fmm_Av = fmm;
-    EstadoDiseno.fuerzaLorentzPrincipal_N = fuerzaLorentzPrincipal;
-    EstadoDiseno.fuerzaLorentzLevitacion_N = fuerzaLorentzLevitacion;
     EstadoDiseno.fuerzaLorentz_N = fuerzaLorentz;
     EstadoDiseno.par_Nm = par;
 
@@ -1397,12 +1380,6 @@ function calcularPasoMagnetico() {
         lectura = 'Par moderado';
     } else if (par > 0) {
         lectura = 'Par bajo';
-    }
-
-    if (fuerzaLorentzLevitacion > 0) {
-        lectura += ' + ayuda de levitación';
-    } else if (fuerzaLorentzLevitacion < 0) {
-        lectura += ' + levitación opuesta';
     }
 
     setText('res-lectura-magnetica', lectura);
@@ -2444,8 +2421,6 @@ function calcularOcupacionRanura() {
         function inicializarAplicacionBase() {
             inicializarNavegacionProfesional();
             renderizarProyectos();
-            poblarSelectoresLevitacion();
-            actualizarModeloAxial();
         }
 
 
@@ -3049,7 +3024,7 @@ function aplicarVisibilidadPorNivel() {
     const nivel = usuarioActual.nivel;
 
     document.querySelectorAll('.solo-experto-paso3').forEach(el => {
-        el.style.display = config.puedeVerPasoLevitacion ? '' : 'none';
+        el.style.display = config.puedeVerPasoFCEM ? '' : 'none';
     });
 
     document.querySelectorAll('.solo-avanzado').forEach(el => {
@@ -3057,7 +3032,7 @@ function aplicarVisibilidadPorNivel() {
     });
 
     document.querySelectorAll('.solo-experto').forEach(el => {
-        el.style.display = config.puedeVerPasoLevitacion ? '' : 'none';
+        el.style.display = config.puedeVerPasoFCEM ? '' : 'none';
     });
 
     document.querySelectorAll('.oculto-basico').forEach(el => {
@@ -3437,9 +3412,9 @@ function guardarProgresoCalculadora() {
         const inputs = [
             'caras', 'margen-placa', 'ranura-ancho', 'ranura-alto', 'ranura-tipo', 
             'material-hilo', 'dia-hilo-select', 'calidad-bobinado', 
-            'campo-b', 'radio-efectivo-mm', 'campo-b-levitacion', 
-            'longitud-activa-levitacion-mm', 'factor-orientacion-levitacion',
-            'iman-motor', 'iman-orientacion', 'iman-distancia'
+            'campo-b', 'radio-efectivo-mm',
+            'iman-motor', 'iman-orientacion', 'iman-distancia',
+            'fcem-rpm-sim', 'fcem-perdidas'
         ];
 
         const estado = {

@@ -474,8 +474,8 @@
                                                     permitido = step <= limitePaso;
                                                 }
                                                 
-                                                const labels = ['G', 'D', 'M', 'L', 'V', 'I'];
-                                                const titles = ['Geometría', 'Devanados', 'Magnetismo', 'Lumínica', 'Levitación', 'Informe'];
+                                                const labels = ['G', 'D', 'M', 'L', 'F', 'I'];
+                                                const titles = ['Geometría', 'Devanados', 'Magnetismo', 'Lumínica', 'FCEM / Vel.', 'Informe'];
                                                 return `<div class="step-toggle ${permitido ? 'active' : ''}" 
                                                              title="${titles[step-1]}"
                                                              onclick="togglePasoDesdePanel('${u.id}', ${step}, '${u.permisos_pasos || ''}', '${u.nivel}')">

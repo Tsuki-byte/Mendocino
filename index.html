@@ -471,30 +471,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
 
 
-        <div class="solo-experto-paso3">
-            <h4 class="subtitulo-seccion">Contribución de los imanes de levitación</h4>
-            <div class="mag-grid-3">
-                <div class="form-group">
-                    <label>Campo de levitación sobre la espira [T]</label>
-                    <input type="number" id="campo-b-levitacion" value="0" min="0" step="0.01" oninput="calcularPasoMagnetico()">
-                </div>
-
-                <div class="form-group">
-                    <label>Longitud de espira expuesta [mm]</label>
-                    <input type="number" id="longitud-activa-levitacion-mm" value="0" min="0" step="0.1" oninput="calcularPasoMagnetico()">
-                </div>
-
-                <div class="form-group">
-                    <label>Factor de orientación [-1 a 1]</label>
-                    <input type="number" id="factor-orientacion-levitacion" value="1" min="-1" max="1" step="0.1" oninput="calcularPasoMagnetico()">
-                </div>
-            </div>
-        </div>
+        <!-- Contribución de levitación eliminada por redundancia -->
 
         <div class="mag-nota">
             <strong>Modelo usado:</strong>
-            FMM = N·I · Fuerza de Lorenz total ≈ (B·L + Blev·Llev·k)·I·N · Par ≈ F·r.
-            El aporte de levitación solo suma si la orientación del campo ayuda al sentido útil de la fuerza.
+            FMM = N·I · Fuerza de Lorenz total ≈ B·L·I·N · Par ≈ F·r.
+            Se calcula la interacción del campo magnético principal con la corriente efectiva circulante por la bobina inferior.
         </div>
 
         <div class="nav-buttons">
