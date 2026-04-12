@@ -152,7 +152,26 @@ const CONFIG_NIVELES = {
 };
 
 function obtenerConfigNivel() {
-    return CONFIG_NIVELES[usuarioActual.nivel] || CONFIG_NIVELES.basico;
+    const configBase = CONFIG_NIVELES[usuarioActual.nivel] || CONFIG_NIVELES.basico;
+    
+    // Si el usuario tiene permisos granulares definidos, los usamos
+    if (usuarioActual.permisos_pasos) {
+        try {
+            const pasos = usuarioActual.permisos_pasos.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            if (pasos.length > 0) {
+                return {
+                    pasosPermitidos: pasos,
+                    puedeVerPasoMagnetico: pasos.includes(3),
+                    puedeVerPasoLevitacion: pasos.includes(5),
+                    puedeVerInforme: pasos.includes(6)
+                };
+            }
+        } catch (e) {
+            console.error("Error procesando permisos_pasos:", e);
+        }
+    }
+    
+    return configBase;
 }
 
 
@@ -3107,7 +3126,7 @@ function aplicarNivelUsuario() {
         selectorNivel.value = usuarioActual.nivel;
     }
 
-    const pasos = [1, 2, 3, 4, 5];
+    const pasos = [1, 2, 3, 4, 5, 6];
 
     pasos.forEach((numPaso) => {
         const indicador = document.getElementById(`ind-${numPaso}`);
@@ -3117,7 +3136,10 @@ function aplicarNivelUsuario() {
 
         indicador.style.opacity = permitido ? '1' : '0.35';
         indicador.style.pointerEvents = permitido ? 'auto' : 'none';
-        indicador.title = permitido ? '' : 'Bloqueado para este nivel';
+        indicador.title = permitido ? '' : 'Bloqueado para tu configuración actual';
+        
+        // Opcionalmente podemos ocultar o mostrar
+        indicador.style.display = permitido ? 'flex' : (usuarioActual.nivel === 'experto' ? 'flex' : 'none');
     });
 
     aplicarVisibilidadPorNivel();
@@ -3125,7 +3147,9 @@ function aplicarNivelUsuario() {
 
     const pasoActual = obtenerPasoActual();
     if (!config.pasosPermitidos.includes(pasoActual)) {
-        cambiarPaso(config.pasosPermitidos[0]);
+        // No redirigimos automáticamente para no molestar, 
+        // pero podrías hacerlo al primer paso permitido:
+        // cambiarPaso(config.pasosPermitidos[0]);
     }
 }
 
@@ -3138,22 +3162,23 @@ function obtenerPasoActual() {
 
 
 function aplicarVisibilidadPorNivel() {
+    const config = obtenerConfigNivel();
     const nivel = usuarioActual.nivel;
 
     document.querySelectorAll('.solo-experto-paso3').forEach(el => {
-        el.style.display = (nivel === 'experto') ? '' : 'none';
+        el.style.display = config.puedeVerPasoLevitacion ? '' : 'none';
     });
 
     document.querySelectorAll('.solo-avanzado').forEach(el => {
-        el.style.display = (nivel === 'avanzado' || nivel === 'experto') ? '' : 'none';
+        el.style.display = (config.puedeVerPasoMagnetico) ? '' : 'none';
     });
 
     document.querySelectorAll('.solo-experto').forEach(el => {
-        el.style.display = (nivel === 'experto') ? '' : 'none';
+        el.style.display = config.puedeVerPasoLevitacion ? '' : 'none';
     });
 
     document.querySelectorAll('.oculto-basico').forEach(el => {
-        el.style.display = (nivel === 'basico') ? 'none' : '';
+        el.style.display = (config.pasosPermitidos.length > 2 || nivel !== 'basico') ? '' : 'none';
     });
 }
 
@@ -3340,7 +3365,7 @@ async function cargarPerfilUsuario(user) {
         // Optimizamos la consulta para evitar posibles errores 500 por columnas calculadas o inexistentes
         const { data: profile, error } = await client
             .from('profiles')
-            .select('id, nombre, nivel, rol')
+            .select('id, nombre, nivel, rol, permisos_pasos')
             .eq('id', user.id)
             .single();
             
@@ -3350,11 +3375,13 @@ async function cargarPerfilUsuario(user) {
             esAdmin = esAdmin || (profile.rol === 'admin');
             usuarioActual.nombre = profile.nombre || user.email;
             usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
+            usuarioActual.permisos_pasos = profile.permisos_pasos || null;
         } else {
             // Error controlado o fila no existente: el whitelist por email ya nos protege arriba
             profileActual = null;
             usuarioActual.nombre = user.user_metadata?.nombre || user.email || 'Alumno';
             usuarioActual.nivel = NIVELES_USUARIO.BASICO;
+            usuarioActual.permisos_pasos = null;
         }
     } catch (err) {
         console.error("DEBUG [Perfil]: Error crítico cargando perfil:", err);
