@@ -152,6 +152,11 @@ const CONFIG_NIVELES = {
 };
 
 function obtenerConfigNivel() {
+    // Si es administrador, acceso TOTAL ignorando restricciones
+    if (window.esAdmin) {
+        return CONFIG_NIVELES.experto;
+    }
+
     const configBase = CONFIG_NIVELES[usuarioActual.nivel] || CONFIG_NIVELES.basico;
     
     // Si el usuario tiene permisos granulares definidos, los usamos
