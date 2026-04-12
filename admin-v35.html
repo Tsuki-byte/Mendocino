@@ -451,13 +451,13 @@
                                 <td>
                                     <div style="display:flex; flex-direction:column; gap:6px;">
                                         <div class="preset-toggles">
-                                            <div class="preset-toggle ${u.nivel === 'basico' ? 'active' : ''}" 
+                                            <div class="preset-toggle ${u.nivel === 'basico' && !u.permisos_pasos ? 'active' : ''}" 
                                                  onclick="cambiarNivelYPasos('${u.id}', 'basico')" title="Preset Básico">B</div>
-                                            <div class="preset-toggle ${u.nivel === 'avanzado' ? 'active' : ''}" 
+                                            <div class="preset-toggle ${u.nivel === 'avanzado' && !u.permisos_pasos ? 'active' : ''}" 
                                                  onclick="cambiarNivelYPasos('${u.id}', 'avanzado')" title="Preset Avanzado">A</div>
-                                            <div class="preset-toggle ${u.nivel === 'experto' ? 'active' : ''}" 
+                                            <div class="preset-toggle ${u.nivel === 'experto' && !u.permisos_pasos ? 'active' : ''}" 
                                                  onclick="cambiarNivelYPasos('${u.id}', 'experto')" title="Preset Experto">E</div>
-                                            <div class="preset-toggle ${!['basico','avanzado','experto'].includes(u.nivel) ? 'active' : ''}" 
+                                            <div class="preset-toggle ${u.permisos_pasos ? 'active' : ''}" 
                                                  style="cursor:default; margin-left:auto; opacity:0.5; font-size:9px;" title="Configuración Personalizada">P</div>
                                         </div>
                                         <div class="step-toggles">
@@ -519,13 +519,11 @@
         }
 
         async function cambiarNivelYPasos(id, nuevoNivel) {
-            let nuevosPasos = '';
-            if (nuevoNivel === 'basico') nuevosPasos = '1,2';
-            else if (nuevoNivel === 'avanzado') nuevosPasos = '1,2,3,4';
-            else if (nuevoNivel === 'experto') nuevosPasos = '1,2,3,4,5,6';
-            
-            const updates = { nivel: nuevoNivel };
-            if (nuevosPasos) updates.permisos_pasos = nuevosPasos;
+            // Al elegir un preset, limpiamos permisos_pasos para que mande el nivel
+            const updates = { 
+                nivel: nuevoNivel,
+                permisos_pasos: null // Al ser null, app-main usará los defaults del nivel
+            };
 
             const { error } = await dbMendocinoClient.from('profiles').update(updates).eq('id', id);
             if (error) {
@@ -539,7 +537,7 @@
         async function togglePasoDesdePanel(id, paso, permisosActuales, nivelActual) {
             let lista = permisosActuales ? permisosActuales.split(',').filter(x => x) : [];
             
-            // Si estaba vacío y venía de un nivel preset, primero poblamos con el preset
+            // Si estaba vacío, primero poblamos con los defaults del nivel actual para poder añadir/quitar
             if (lista.length === 0) {
                 if (nivelActual === 'basico') lista = ['1','2'];
                 else if (nivelActual === 'avanzado') lista = ['1','2','3','4'];
@@ -555,15 +553,24 @@
             
             const nuevosPermisos = lista.sort().join(',');
             
-            // Al tocar un paso individual, el nivel pasa a ser 'custom' si no coincide con los presets
-            let nuevoNivel = nivelActual;
-            if (nuevosPermisos === '1,2') nuevoNivel = 'basico';
-            else if (nuevosPermisos === '1,2,3,4') nuevoNivel = 'avanzado';
-            else if (nuevosPermisos === '1,2,3,4,5,6') nuevoNivel = 'experto';
-            else nuevoNivel = 'custom';
+            // Verificamos si los nuevos permisos coinciden exactamente con algún preset
+            // Si coinciden, limpiamos permisos_pasos y ponemos el nivel correspondiente
+            // Si no coinciden, mantenemos el nivel actual pero guardamos los permisos_pasos
+            let updates = { permisos_pasos: nuevosPermisos };
+            
+            if (nuevosPermisos === '1,2') {
+                updates.nivel = 'basico';
+                updates.permisos_pasos = null;
+            } else if (nuevosPermisos === '1,2,3,4') {
+                updates.nivel = 'avanzado';
+                updates.permisos_pasos = null;
+            } else if (nuevosPermisos === '1,2,3,4,5,6') {
+                updates.nivel = 'experto';
+                updates.permisos_pasos = null;
+            }
 
             const { error } = await dbMendocinoClient.from('profiles')
-                .update({ permisos_pasos: nuevosPermisos, nivel: nuevoNivel })
+                .update(updates)
                 .eq('id', id);
                 
             if (error) {
