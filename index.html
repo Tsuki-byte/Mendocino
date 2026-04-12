@@ -16,8 +16,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- KaTeX para fórmulas matemáticas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvIaas99n36M/" crossorigin="anonymous">
+    
     <title>Motor Mendocino - Calculadora y Datos</title>
-        <link rel="stylesheet" href="styles.css?v=1.2">
+        <link rel="stylesheet" href="styles.css?v=35.32">
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -818,6 +822,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- Cliente de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=19"></script>
-    <script src="app-main-v35.js?v=35.31"></script>
+
+    <!-- KaTeX JS y Extensión Auto-render -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkInuTyB73TfmNxVVMm61uyJJ1n/+WjUXq7P0W12X+7WIDV8C8W2QcO532qF6di" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"
+        onload="renderizarMatematicas();"></script>
+
+    <script>
+        function renderizarMatematicas() {
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError : false
+                });
+            }
+        }
+    </script>
+
+    <script src="app-main-v35.js?v=35.32"></script>
 </body>
 </html>

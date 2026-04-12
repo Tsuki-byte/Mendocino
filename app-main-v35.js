@@ -1772,6 +1772,11 @@ function calcularPasoLuminico() {
     if (document.getElementById('step-4').classList.contains('active')) {
         dibujarInteraccionLuminicaSVG();
     }
+    
+    // Renderizar fórmulas matemáticas si existen en el nuevo paso
+    if (typeof renderizarMatematicas === 'function') {
+        setTimeout(renderizarMatematicas, 100);
+    }
 }
 
 function dibujarInteraccionLuminicaSVG() {
@@ -2706,6 +2711,9 @@ function calcularOcupacionRanura() {
                     `;
                 }).join('');
 
+                // Renderizar fórmulas en la galería
+                if (typeof renderizarMatematicas === 'function') renderizarMatematicas();
+
             } catch (e) {
                 console.error("Error cargando galería:", e);
                 contenedor.innerHTML = `
@@ -3230,6 +3238,11 @@ function cambiarPaso(numPaso) {
 
     // Guardar el número de paso en el progreso
     guardarProgresoCalculadora();
+
+    // Renderizar fórmulas matemáticas si existen en el nuevo paso (KaTeX)
+    if (typeof renderizarMatematicas === 'function') {
+        setTimeout(renderizarMatematicas, 100);
+    }
 }
 
 
