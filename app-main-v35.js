@@ -3162,12 +3162,22 @@ async function inicializarAuth() {
                     mostrarUIAutenticada();
 
                     // 2. Cargar perfil y datos globales en segundo plano (para no bloquear)
-                    cargarPerfilUsuario(session.user).then(() => actualizarPanelAdminUI());
+                    try {
+                        await cargarPerfilUsuario(session.user);
+                        actualizarPanelAdminUI();
+                    } catch (e) {
+                         console.error("Error cargando perfil:", e);
+                    }
                     
-                    await cargarDatosGlobales();
-                    renderizarUI(); // Segundo renderizado con datos frescos de la nube
-                    actualizarPanelAdminUI();
-                    aplicarNivelUsuario();
+                    try {
+                        await cargarDatosGlobales();
+                        renderizarUI(); // Segundo renderizado con datos frescos de la nube
+                        actualizarPanelAdminUI();
+                        aplicarNivelUsuario();
+                    } catch (e) {
+                        console.error("Error cargando datos globales:", e);
+                        alert("Error al cargar datos del motor: " + e.message);
+                    }
                 } else {
                     console.log("DEBUG [Auth]: Sin sesión. Mostrando login.");
                     if (!window.location.pathname.includes('admin-v35.html')) {
@@ -3175,7 +3185,8 @@ async function inicializarAuth() {
                     }
                 }
             } catch (error) {
-                console.error("Error en flujo de arranque:", error);
+                console.error("Error crítico en flujo de arranque:", error);
+                alert("ERROR CRÍTICO EN ARRANQUE: " + error.name + " - " + error.message);
             } finally {
                 if (!arranqueInicialCompletado) {
                     arranqueInicialCompletado = true;
