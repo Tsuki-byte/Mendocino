@@ -3342,33 +3342,35 @@ async function inicializarAuth() {
                 sessionActiva = session;
                 authInicializada = true;
 
+                // --- 1. RESOLVER DE INMEDIATO ---
+                // Marcamos como completado y resolvemos para que window.onload siga adelante
+                if (!arranqueInicialCompletado) {
+                    arranqueInicialCompletado = true;
+                    resolve();
+                    console.log("DEBUG [Auth]: Promesa resuelta (UI desbloqueada)");
+                }
+
                 if (session) {
                     console.log("DEBUG [Auth]: Usuario detectado. Inicializando interfaz...");
-                    const modalAuth = document.getElementById('modal-auth');
-                    if (modalAuth) modalAuth.style.display = 'none';
-
-                    // 1. Mostrar identidad base de inmediato (sin esperar a DB)
                     actualizarPanelAdminUI(); 
-                    renderizarUI(); // Renderizado rápido con lo que haya en memoria/local
+                    renderizarUI(); 
                     mostrarUIAutenticada();
 
-                    // 2. Cargar perfil y datos globales en segundo plano (para no bloquear)
-                    try {
-                        await cargarPerfilUsuario(session.user);
-                        actualizarPanelAdminUI();
-                    } catch (e) {
-                         console.error("Error cargando perfil:", e);
-                    }
-                    
-                    try {
-                        await cargarDatosGlobales();
-                        renderizarUI(); // Segundo renderizado con datos frescos de la nube
-                        actualizarPanelAdminUI();
-                        aplicarNivelUsuario();
-                    } catch (e) {
-                        console.error("Error cargando datos globales:", e);
-                        alert("Error al cargar datos del motor: " + e.message);
-                    }
+                    // --- 2. CARGA EN SEGUNDO PLANO (Sin bloquear el arranque) ---
+                    // Lanzamos las tareas asíncronas pero no las esperamos aquí
+                    (async () => {
+                        try {
+                            await cargarPerfilUsuario(session.user);
+                            actualizarPanelAdminUI();
+                            
+                            await cargarDatosGlobales();
+                            renderizarUI(); 
+                            actualizarPanelAdminUI();
+                            aplicarNivelUsuario();
+                        } catch (e) {
+                            console.error("Error en carga de fondo:", e);
+                        }
+                    })();
                 } else {
                     console.log("DEBUG [Auth]: Sin sesión. Mostrando login.");
                     if (!window.location.pathname.includes('admin-v35.html')) {
@@ -3377,8 +3379,6 @@ async function inicializarAuth() {
                 }
             } catch (error) {
                 console.error("Error crítico en flujo de arranque:", error);
-                alert("ERROR CRÍTICO EN ARRANQUE: " + error.name + " - " + error.message);
-            } finally {
                 if (!arranqueInicialCompletado) {
                     arranqueInicialCompletado = true;
                     resolve();
@@ -3742,15 +3742,21 @@ window.onload = async function() {
 
     ocultarUIHastaAutenticacion();
 
-    // 1. PRIMERO inicializamos la conexión y autenticación (ESENCIAL)
+    // 1. PRIMERO inicializamos la conexión y autenticación (CON TIMEOUT DE SEGURIDAD)
+    const authPromise = inicializarAuth();
+    const timeoutPromise = new Promise(res => setTimeout(() => res('timeout'), 5000)); // 5 seg max
+
     try {
-        await inicializarAuth();
-        console.log("Auth inicializada. Estado sesión:", sessionActiva ? "Activa" : "No detectada");
+        const result = await Promise.race([authPromise, timeoutPromise]);
+        if (result === 'timeout') {
+            console.warn("ADVERTENCIA: inicializarAuth ha tardado demasiado. Forzando UI.");
+        }
+        console.log("Arranque: Fase de Auth terminada o saltada por timeout.");
     } catch (e) {
-        console.error("Error crítico inicializando Auth:", e);
+        console.error("Error inesperado en arranque:", e);
     }
 
-    // 2. DESPUÉS inicializamos la UI base y cargamos datos
+    // 2. DESPUÉS inicializamos la UI base y cargamos datos (Si Auth falló o es lenta, al menos el usuario ve algo)
     inicializarAplicacionBase();
     renderizarProyectos();
 
