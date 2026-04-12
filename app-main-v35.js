@@ -3116,17 +3116,17 @@ function calcularPasoFCEM() {
     // 4. Dibujar Gráfica
     dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim);
 
-    // 5. Ajustar dinámicamente el slider de simulación para que sea suave
+    // 5. Fijar el slider de simulación a 3000 RPM (según requerimiento de usuario)
     const sliderRpm = document.getElementById('fcem-rpm-sim');
     if (sliderRpm) {
-        const nuevoMax = Math.round(rpmMaxReal * 1.5) || 100;
-        const nuevoStep = nuevoMax / 100; // Siempre 100 pasos de resolución
+        const nuevoMax = 3000;
+        const nuevoStep = 10;
         
         if (parseFloat(sliderRpm.max) !== nuevoMax) {
             sliderRpm.max = nuevoMax;
         }
         if (parseFloat(sliderRpm.step) !== nuevoStep) {
-            sliderRpm.step = nuevoStep.toFixed(2);
+            sliderRpm.step = nuevoStep;
         }
     }
 }
@@ -3139,9 +3139,8 @@ function dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim) {
     const margin = 35;
     
     // Escala dinámica del Eje X: 
-    // Si la velocidad es muy baja (ej: 12 RPM), no mostramos hasta 5000.
-    // Usamos el máximo entre un suelo mínimo (100 RPM para ver algo de curva) y 1.5 veces el máximo real.
-    const rpmMaxEje = Math.max(100, Math.round((rpmMaxReal || 0) * 1.5 / 10) * 10);
+    // Usamos el máximo entre un suelo mínimo (100 RPM), 1.5 veces el máximo real (para ver el punto de equilibrio) y la simulación actual
+    const rpmMaxEje = Math.max(100, Math.round((rpmMaxReal || 0) * 1.5 / 10) * 10, rpmSim);
     const vMaxEje = Math.max(vmp * 1.3, 1.2);
     
     const toX = (val) => margin + (val / rpmMaxEje) * (w - margin * 1.5);
