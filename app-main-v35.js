@@ -1636,13 +1636,16 @@ function dibujarInteraccionMagneticaSVG() {
     tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 0 ${endX} ${endY}`);
     tauPath.setAttribute('stroke', '#2ecc71'); tauPath.setAttribute('stroke-width', strokeW);
     tauPath.setAttribute('fill', 'none');
-    svg.appendChild(tauPath); // <--- REPARED: Was missing before!
-    
-    // Punta de flecha de par
+    svg.appendChild(tauPath);
+    // Punta de flecha de par (proporcional al grosor)
+    const headSize = Math.max(12, strokeW * 1.8);
     const tauArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    tauArrow.setAttribute('points', `${endX},${endY+8} ${endX-5},${endY-3} ${endX+5},${endY-3}`);
+    // Definimos un triángulo más grande y afilado
+    tauArrow.setAttribute('points', `0,0 ${-headSize/2},${headSize} ${headSize/2},${headSize}`);
     tauArrow.setAttribute('fill', '#2ecc71');
-    tauArrow.setAttribute('transform', `rotate(-35 ${endX} ${endY})`);
+    // Posicionamos y rotamos para que apunte hacia adelante (sentido de giro)
+    // -45 grados (o 315) es la rotación correcta para apuntar abajo-derecha al final del arco
+    tauArrow.setAttribute('transform', `translate(${endX}, ${endY}) rotate(-45)`);
     svg.appendChild(tauArrow);
 }
 
@@ -2109,85 +2112,102 @@ function calcularOcupacionRanura() {
         async function obtenerMotoresGuardados() {
             let motoresFinales = {};
             
-            // 1. Cargar de LocalStorage primero (fallback/persistente)
+            // 1. Cargar de LocalStorage primero (fallback inmediato)
             try {
                 const datosLocal = localStorage.getItem('listaMotoresMendocino');
                 if (datosLocal) motoresFinales = JSON.parse(datosLocal);
-            } catch (e) { console.warn("Error local:", e); }
+            } catch (e) { console.warn("Error leyendo LocalStorage:", e); }
 
-            // 2. Si hay sesión, cargar de Supabase y fusionar
+            // 2. Si hay sesión, cargar de Supabase con TIMEOUT y fusionar
             if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
                 try {
-                    const { data: motoresCloud, error } = await dbMendocinoClient
+                    const fetchPromise = dbMendocinoClient
                         .from('motores')
                         .select('titulo, config')
                         .eq('usuario_id', sessionActiva.user.id);
                     
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error("Timeout")), 10000)
+                    );
+
+                    const { data: motoresCloud, error } = await Promise.race([fetchPromise, timeoutPromise]);
+                    
                     if (!error && motoresCloud) {
                         motoresCloud.forEach(m => {
+                            // La nube tiene prioridad sobre el local si hay colisión de nombres
                             motoresFinales[m.titulo] = m.config;
                         });
                     }
-                } catch (e) { console.error("Error sincronizando nube:", e); }
+                } catch (e) { 
+                    console.warn("DEBUG [Auth]: Usando solo local por timeout o error en nube:", e.message);
+                }
             }
             return motoresFinales;
         }
 
         
         async function guardarConfiguracionLocal() {
-        const nombreMotor = prompt("📝 Ponle un nombre a esta configuración (ej: 'Motor rápido 4 caras'):");
-        if (!nombreMotor || nombreMotor.trim() === "") return;
+            const nombreMotor = prompt("📝 Ponle un nombre a esta configuración (ej: 'Motor rápido 4 caras'):");
+            if (!nombreMotor || nombreMotor.trim() === "") return;
 
-        const panelSelect = document.getElementById('panel');
-        const informe = document.getElementById('informe-automatico')?.value || "";
-        const tipoRotor = document.getElementById('res-tipo-rotor')?.textContent || "";
-        const comportamiento = document.getElementById('res-comportamiento')?.textContent || "";
-        const nivel = document.getElementById('res-nivel')?.textContent || "";
+            const panelSelect = document.getElementById('panel');
+            const informe = document.getElementById('informe-automatico')?.value || "";
+            const tipoRotor = document.getElementById('res-tipo-rotor')?.textContent || "";
+            const comportamiento = document.getElementById('res-comportamiento')?.textContent || "";
+            const nivel = document.getElementById('res-nivel')?.textContent || "";
 
-        const miConfiguracion = {
-            caras: document.getElementById('caras').value,
-            panel: panelSelect.value,
-            panelNombre: panelSelect.options[panelSelect.selectedIndex]?.text || '',
-            panelData: dbPaneles[panelSelect.value] ? {...dbPaneles[panelSelect.value]} : null,
-            margen: document.getElementById('margen-placa').value,
-            ranuraAncho: document.getElementById('ranura-ancho').value,
-            ranuraAlto: document.getElementById('ranura-alto').value,
-            ranuraTipo: document.getElementById('ranura-tipo').value,
-            material: document.getElementById('material-hilo').value,
-            hilo: document.getElementById('dia-hilo-select').value,
-            calidad: document.getElementById('calidad-bobinado').value,
+            const miConfiguracion = {
+                caras: document.getElementById('caras').value,
+                panel: panelSelect.value,
+                panelNombre: panelSelect.options[panelSelect.selectedIndex]?.text || '',
+                panelData: dbPaneles[panelSelect.value] ? {...dbPaneles[panelSelect.value]} : null,
+                margen: document.getElementById('margen-placa').value,
+                ranuraAncho: document.getElementById('ranura-ancho').value,
+                ranuraAlto: document.getElementById('ranura-alto').value,
+                ranuraTipo: document.getElementById('ranura-tipo').value,
+                material: document.getElementById('material-hilo').value,
+                hilo: document.getElementById('dia-hilo-select').value,
+                calidad: document.getElementById('calidad-bobinado').value,
+                informe,
+                resumen: {
+                    tipoRotor,
+                    comportamiento,
+                    nivel
+                },
+                fechaGuardado: new Date().toLocaleString('es-ES')
+            };
 
-            // Nuevo
-            informe,
-            resumen: {
-                tipoRotor,
-                comportamiento,
-                nivel
-            },
-            fechaGuardado: new Date().toLocaleString('es-ES')
-        };
+            // 1. Guardado Local (Seguridad inmediata)
+            const misMotores = await obtenerMotoresGuardados();
+            misMotores[nombreMotor] = miConfiguracion;
+            localStorage.setItem('listaMotoresMendocino', JSON.stringify(misMotores));
 
-    const misMotores = await obtenerMotoresGuardados();
-    misMotores[nombreMotor] = miConfiguracion;
-    localStorage.setItem('listaMotoresMendocino', JSON.stringify(misMotores));
+            // 2. Sincronización con la Nube (con control de errores)
+            if (window.dbMendocinoClient && sessionActiva) {
+                try {
+                    const usrId = sessionActiva.user.id;
+                    const usrNombre = usuarioActual?.nombre || 'Alumno';
+                    const id_unico = (usuarioActual?.nombre || 'user') + '-' + Date.now();
+                    
+                    const { error } = await dbMendocinoClient.from('motores').insert([{
+                        id_unico: id_unico,
+                        titulo: nombreMotor,
+                        config: miConfiguracion,
+                        usuario_id: usrId,
+                        autor_nombre: usrNombre,
+                        es_publico: false 
+                    }]);
 
-        if (window.dbMendocinoClient) {
-            const usrId = sessionActiva?.user?.id;
-            const usrNombre = usuarioActual?.nombre || 'Alumno';
-            const id_unico = (usuarioActual?.nombre || 'demo') + '-' + new Date().getTime();
-            
-            await dbMendocinoClient.from('motores').insert([{
-                id_unico: id_unico,
-                titulo: nombreMotor,
-                config: miConfiguracion,
-                usuario_id: usrId,
-                autor_nombre: usrNombre,
-                es_publico: false // Por defecto privado hasta que el admin lo publique
-            }]);
+                    if (error) throw error;
+                    mostrarToast(`Motor "${nombreMotor}" guardado en la nube.`, 'ok');
+                } catch (e) {
+                    console.error("Error al sincronizar con la nube:", e);
+                    mostrarToast(`Guardado en navegador (local). No se pudo subir a la nube.`, 'aviso');
+                }
+            } else {
+                mostrarToast(`Motor "${nombreMotor}" guardado localmente.`, 'ok');
+            }
         }
-
-    mostrarToast(`Motor "${nombreMotor}" guardado correctamente.`, 'ok');
-}
 
     async function cargarConfiguracionLocal() {
     const misMotores = await obtenerMotoresGuardados();
@@ -2326,12 +2346,18 @@ function calcularOcupacionRanura() {
             contenedor.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#64748b;">⏳ Cargando galería de proyectos...</div>';
 
             try {
-                // 1. Obtener proyectos públicos de Supabase
-                const { data: proyectos, error } = await dbMendocinoClient
+                // 1. Obtener proyectos públicos de Supabase con TIMEOUT de seguridad
+                const fetchPromise = dbMendocinoClient
                     .from('motores')
                     .select('*')
                     .eq('es_publico', true)
                     .order('creado_en', { ascending: false });
+
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Tiempo de espera agotado al conectar con el servidor.")), 10000)
+                );
+
+                const { data: proyectos, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
                 if (error) throw error;
                 if (!proyectos || proyectos.length === 0) {
@@ -2751,11 +2777,14 @@ function descargarInformeAutomatico() {
 
 function calcularPasoFCEM() {
     // 1. Obtener datos de pasos anteriores
-    const vmp = panelActual?.vmp || 0;
+    const selPanel = document.getElementById('panel');
+    const panel = dbPaneles[selPanel?.value];
+    const vmp = panel ? (panel.v || panel.vmp || 0) : 0;
+    
     const vueltas = EstadoDiseno.espirasPorDevanado || 100;
     
-    // Campo B del imán base calculado en el Paso 3
-    const campoB = parseFloat(document.getElementById('campo-b')?.value || 0.18);
+    // Campo B del imán base calculado en el Paso 3 (objeto global)
+    const campoB = EstadoDiseno.campoB_T || 0.18;
     
     // Geometría para el área efectiva (L * D)
     const L_m = (EstadoDiseno.longitudPanel || 50) / 1000;
@@ -2771,19 +2800,27 @@ function calcularPasoFCEM() {
     const vfcemSim = 2 * vueltas * campoB * L_m * R_m * omegaSim;
     
     // RPM Máximas (cuando Vfcem = Vmp * factorPerdidas)
-    // Despejando: omega_max = (Vmp * factorPerdidas) / (2 * N * B * L * r)
     const factorK = 2 * vueltas * campoB * L_m * R_m;
-    const rpmMaxTeo = factorK > 0 ? (vmp * 60) / (2 * Math.PI * factorK) : 0;
+    const rpmMaxTeo = (vmp > 0 && factorK > 0) ? (vmp * 60) / (2 * Math.PI * factorK) : 0;
     const rpmMaxReal = rpmMaxTeo * factorPerdidas;
+
+    // Persistir para el informe
+    EstadoDiseno.rpmMaxTotal = rpmMaxReal;
+    EstadoDiseno.vfcemMax = vfcemSim;
     
     // 3. Actualizar UI
-    document.getElementById('res-fcem-v').textContent = vfcemSim.toFixed(3) + ' V';
-    document.getElementById('res-fcem-rpm-teo').textContent = Math.round(rpmMaxTeo) + ' RPM';
-    document.getElementById('res-fcem-rpm-real').textContent = Math.round(rpmMaxReal) + ' RPM';
+    const elV = document.getElementById('res-fcem-v');
+    const elTeo = document.getElementById('res-fcem-rpm-teo');
+    const elReal = document.getElementById('res-fcem-rpm-real');
+
+    if (elV) elV.textContent = vfcemSim.toFixed(3) + ' V';
+    if (elTeo) elTeo.textContent = Math.round(rpmMaxTeo) + ' RPM';
+    if (elReal) elReal.textContent = Math.round(rpmMaxReal) + ' RPM';
     
     // Resistencia (ya calculada en paso 2)
     const resTotal = (EstadoDiseno.resistenciaTotal || 0);
-    document.getElementById('fcem-resistencia').value = resTotal.toFixed(2) + ' Ω';
+    const elRes = document.getElementById('fcem-resistencia');
+    if (elRes) elRes.value = resTotal.toFixed(2) + ' Ω';
     
     // 4. Dibujar Gráfica
     dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim);
@@ -2794,29 +2831,32 @@ function dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim) {
     if (!svg) return;
     
     const w = 300, h = 200;
-    const margin = 30;
-    const rpmMaxEje = Math.max(5000, rpmMaxReal * 1.3);
+    const margin = 35;
+    const rpmMaxEje = Math.max(5000, Math.round((rpmMaxReal || 0) * 1.5 / 500) * 500);
     const vMaxEje = Math.max(vmp * 1.3, 5);
     
-    const toX = (val) => margin + (val / rpmMaxEje) * (w - margin * 2);
-    const toY = (val) => (h - margin) - (val / vMaxEje) * (h - margin * 2);
+    const toX = (val) => margin + (val / rpmMaxEje) * (w - margin * 1.5);
+    const toY = (val) => (h - margin) - (val / vMaxEje) * (h - margin * 1.5);
     
     let contenido = `
         <!-- Ejes -->
-        <line x1="${margin}" y1="${h-margin}" x2="${w-10}" y2="${h-margin}" stroke="#ccc" stroke-width="1"/>
-        <line x1="${margin}" y1="${h-margin}" x2="${margin}" y2="10" stroke="#ccc" stroke-width="1"/>
-        <text x="${w-10}" y="${h-5}" font-size="9" text-anchor="end">RPM</text>
-        <text x="${margin-5}" y="15" font-size="9" text-anchor="end" transform="rotate(-90 ${margin-5},15)">Voltaje (V)</text>
+        <line x1="${margin}" y1="${h-margin}" x2="${w-10}" y2="${h-margin}" stroke="#333" stroke-width="1.5"/>
+        <line x1="${margin}" y1="${h-margin}" x2="${margin}" y2="10" stroke="#333" stroke-width="1.5"/>
+        <text x="${w-10}" y="${h-15}" font-size="9" text-anchor="end" font-weight="bold">Velocidad (RPM)</text>
+        <text x="${margin-10}" y="20" font-size="9" text-anchor="middle" font-weight="bold" transform="rotate(-90 ${margin-10},20)">Voltaje (V)</text>
         
         <!-- Línea V. Panel (Roja) -->
         <line x1="${margin}" y1="${toY(vmp)}" x2="${w-margin}" y2="${toY(vmp)}" stroke="#e74c3c" stroke-width="2" stroke-dasharray="4,2"/>
+        <text x="${w-margin-5}" y="${toY(vmp)-4}" font-size="8" fill="#e74c3c" text-anchor="end">V. Panel (${vmp.toFixed(1)}V)</text>
         
         <!-- Curva FCEM (Azul) -->
         <path d="M ${toX(0)} ${toY(0)} L ${toX(rpmMaxEje)} ${toY(factorK * (rpmMaxEje * 2 * Math.PI / 60))}" stroke="#3498db" stroke-width="2.5" fill="none"/>
+        <text x="${toX(rpmMaxEje*0.8)}" y="${toY(factorK * (rpmMaxEje*0.8 * 2 * Math.PI / 60))-6}" font-size="8" fill="#3498db" transform="rotate(${-30} ${toX(rpmMaxEje*0.8)}, ${toY(factorK * (rpmMaxEje*0.8 * 2 * Math.PI / 60))})">Pendiente FCEM</text>
         
         <!-- Límite RPM (Verde) -->
         <line x1="${toX(rpmMaxReal)}" y1="${h-margin}" x2="${toX(rpmMaxReal)}" y2="${toY(vmp)}" stroke="#2ecc71" stroke-width="2" stroke-dasharray="2,2"/>
         <circle cx="${toX(rpmMaxReal)}" cy="${toY(vmp)}" r="4" fill="#2ecc71"/>
+        <text x="${toX(rpmMaxReal)}" y="${h-5}" font-size="9" fill="#27ae60" text-anchor="middle" font-weight="bold">${Math.round(rpmMaxReal)} RPM</text>
         
         <!-- Punto de simulación actual -->
         <circle cx="${toX(rpmSim)}" cy="${toY(vfcemSim)}" r="5" fill="#34495e" stroke="white" stroke-width="2"/>
