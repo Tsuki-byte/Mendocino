@@ -341,9 +341,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         </div>
 
                         <div class="teoria-nota">
-                            <strong>Fundamento Eléctrico:</strong> La resistencia de la bobina (\( R \)) depende de la resistividad del material (\( \rho \)), la longitud media de cada espira y el área de la sección del conductor (\( A_{hilo} \)). Según la Ley de Pouillet:
-                            \[ R = \rho \cdot \frac{N_{espiras} \cdot L_{espira}}{A_{hilo}} \]
-                            El desafío del diseño es maximizar el número de espiras para ganar fuerza sin aumentar tanto la resistencia que ahogue la corriente (\( I \)) producida por las placas solares.
+                            <strong>Fundamento Eléctrico:</strong> La resistencia de la bobina (\( R \)) depende de la resistividad del material (\( \rho \)), la longitud total del hilo (\( L \)) y el área de su sección (\( A \)). Según la Ley de Pouillet:
+                            \[ R = \rho \frac{L}{A} \]
+                            En nuestro motor, \( L = N_{espiras} \cdot L_{espira} \). El desafío del diseño es maximizar el número de espiras para ganar fuerza magnética sin aumentar tanto la resistencia \( R \), lo cual ahogaría la corriente generada por las placas solares.
                         </div>
 
                         <div class="nav-buttons">
@@ -882,6 +882,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
-    <script src="app-main-v35.js?v=35.44"></script>
+    <script src="app-main-v35.js?v=35.45"></script>
 </body>
 </html>
