@@ -2850,6 +2850,37 @@ function dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim) {
     svg.innerHTML = contenido;
 }
 
+function poblarInfoImanMotor() {
+    const sel = document.getElementById('iman-motor');
+    const info = document.getElementById('info-iman-motor');
+    if (!sel || !info) return;
+
+    const im = dbImanes?.[Number(sel.value)];
+    if (!im) {
+        info.style.display = 'none';
+        return;
+    }
+
+    const dims = [Number(im.l), Number(im.a), Number(im.h)];
+    const T = Math.min(...dims); // espesor = eje N-S
+    const baseDims = dims.filter((_, i) => i !== dims.indexOf(T));
+    const L_base = Math.max(...baseDims);
+    const W_base = Math.min(...baseDims);
+
+    info.style.display = 'block';
+    info.innerHTML = `
+        <strong>Detalles:</strong> ${im.forma} de ${L_base}x${W_base}x${T} mm. <br>
+        <strong>Br:</strong> ${im.br} T | <strong>Caras polares:</strong> ${L_base}x${W_base} mm.
+    `;
+}
+
+function calcularCampoBPrisma(Br, L, W, T, z) {
+    if (z < 0.1) z = 0.1; // Evitar singularidades
+    const term1 = Math.atan((L * W) / (2 * z * Math.sqrt(L*L + W*W + 4*z*z)));
+    const term2 = Math.atan((L * W) / (2 * (z + T) * Math.sqrt(L*L + W*W + 4*(z + T)*(z + T))));
+    return (Br / Math.PI) * (term1 - term2);
+}
+
 function cambiarPaso(numPaso) {
     const config = obtenerConfigNivel();
 
