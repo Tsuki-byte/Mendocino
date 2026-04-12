@@ -216,7 +216,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <div class="teoria-nota">
                             <strong>Fundamento Geométrico:</strong> El diámetro total del rotor (\( D_{rotor} \)) se determina inscribiendo el ancho del panel solar (\( W_{panel} \)) y sus márgenes plásticos (\( M \)) sobre un polígono regular de \( N \) caras. Mediante trigonometría, la circunferencia delimitadora mínima necesaria es:
                             \[ D_{rotor} = \frac{W_{panel} + 2M}{\sin(\frac{\pi}{N})} \]
-                            Para evitar que el hilo sobresalga y choque con los paneles, el núcleo se debe rebajar formando unas "ranuras". La geometría de dichos huecos (ancho y profundidad) es la que dictará exactamente qué área física máxima tendrás disponible para lograr meter todo tu paquete de espiras de cobre.
+                            El núcleo se debe rebajar formando unas "ranuras". La geometría de dichos huecos (ancho y profundidad) es la que dictará exactamente el área física disponible para bobinar todas las espiras de cobre. Matemáticamente, el área útil de la ranura (\( A_{ranura} \)) se puede simplificar al área del corte:
+                            \[ A_{ranura} \approx w \cdot h \]
+                            donde \( w \) es la anchura y \( h \) es la profundidad del vaciado hacia el centro.
                         </div>
 
                         <div class="nav-buttons nav-buttons-fin">
@@ -882,6 +884,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
-    <script src="app-main-v35.js?v=35.48"></script>
+    <script src="app-main-v35.js?v=35.49"></script>
 </body>
 </html>
