@@ -824,13 +824,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script src="supabase-config.js?v=19"></script>
 
     <!-- KaTeX JS y Extensión Auto-render -->
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkInuTyB73TfmNxVVMm61uyJJ1n/+WjUXq7P0W12X+7WIDV8C8W2QcO532qF6di" crossorigin="anonymous"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkInuTyB73TfmNxVVMm61uyJJ1n/+WjUXq7P0W12X+7WIDV8C8W2QcO532qF6di" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"
         onload="renderizarMatematicas();"></script>
 
     <script>
         function renderizarMatematicas() {
-            if (typeof renderMathInElement === 'function') {
+            // Verificamos que tanto la base de katex como la extensión auto-render estén listas
+            if (typeof katex !== 'undefined' && typeof renderMathInElement === 'function') {
                 renderMathInElement(document.body, {
                     delimiters: [
                         {left: '$$', right: '$$', display: true},
@@ -838,10 +839,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     ],
                     throwOnError : false
                 });
+            } else {
+                console.warn("KaTeX no está listo aún para renderizar.");
             }
         }
     </script>
 
-    <script src="app-main-v35.js?v=35.32"></script>
+    <script src="app-main-v35.js?v=35.33"></script>
 </body>
 </html>
