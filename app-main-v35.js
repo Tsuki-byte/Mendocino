@@ -1655,8 +1655,8 @@ function dibujarInteraccionMagneticaSVG() {
         const damping_lateral = Math.exp(-Math.pow(distHorizontal / (imanWidth * 0.8), 2));
         const localRatio = Math.min(1, (1 / (1 + z_norm * z_norm)) * damping_lateral);
         
-        // Solo dibujamos flechas si la fuerza es significativa
-        if (localRatio > 0.05) {
+        // Solo dibujamos la flecha de fuerza en la espira inferior (i=0) para simplificar el diagrama
+        if (i === 0 && localRatio > 0.05) {
             const F_len = 5 + (localRatio * 80); 
             const f_x1 = sx + devanadoR + 2;
             const f_x2 = f_x1 + F_len;
