@@ -2264,6 +2264,22 @@ function calcularOcupacionRanura() {
             });
         }
 
+        async function nuevoProyecto() {
+            if (await mostrarConfirmacion("Nuevo Diseño", "¿Deseas limpiar el diseño actual y empezar uno nuevo? Se perderán los cambios que no hayas guardado en la nube.")) {
+                localStorage.removeItem('progresoMendocino');
+                // Al recargar, como hemos borrado el progreso, iniciará de cero
+                location.reload();
+            }
+        }
+
+        async function nuevoProyecto() {
+            if (await mostrarConfirmacion("Nuevo Diseño", "¿Deseas limpiar el diseño actual y empezar uno nuevo? Se perderán los cambios que no hayas guardado en la nube.")) {
+                localStorage.removeItem('progresoMendocino');
+                // Al recargar, como hemos borrado el progreso, iniciará de cero
+                location.reload();
+            }
+        }
+
         async function guardarConfiguracionLocal() {
             const btnGuardar = document.querySelector('button[onclick*="guardarConfiguracionLocal"]');
             const textoOriginal = btnGuardar ? btnGuardar.innerHTML : '';
