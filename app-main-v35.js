@@ -2553,9 +2553,36 @@ function calcularOcupacionRanura() {
             btnBorrar.className = 'btn-delete';
             btnBorrar.onclick = async function () {
                 if (await mostrarConfirmacion("Borrar Diseño", `¿Seguro que quieres borrar la configuración "${nombre}"?`)) {
-                    delete misMotores[nombre];
-                    localStorage.setItem('listaMotoresMendocino', JSON.stringify(misMotores));
-                    cargarConfiguracionLocal();
+                    try {
+                        // 1. Intentar borrar en la nube si tiene ID
+                        if (id_unico && window.dbMendocinoClient && sessionActiva) {
+                            console.log("DEBUG [Delete]: Borrando de Supabase ID:", id_unico);
+                            const { error } = await dbMendocinoClient
+                                .from('motores')
+                                .delete()
+                                .eq('id_unico', id_unico);
+                            
+                            if (error) {
+                                console.error("Error borrando en Supabase:", error);
+                                // Opcional: podrías decidir NO borrar localmente si falla la nube,
+                                // pero para el usuario suele ser mejor que desaparezca de su vista.
+                            } else {
+                                console.log("DEBUG [Delete]: Borrado de Supabase OK.");
+                            }
+                        }
+
+                        // 2. Borrar de LocalStorage
+                        delete misMotores[nombre];
+                        localStorage.setItem('listaMotoresMendocino', JSON.stringify(misMotores));
+                        
+                        mostrarToast(`"${nombre}" eliminado.`, 'ok');
+                        
+                        // 3. Refrescar la lista en el modal
+                        await cargarConfiguracionLocal();
+                    } catch (e) {
+                        console.error("Error en proceso de borrado:", e);
+                        mostrarToast("Error al eliminar el diseño.", "error");
+                    }
                 }
             };
 
