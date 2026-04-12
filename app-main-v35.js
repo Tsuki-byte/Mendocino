@@ -2369,7 +2369,10 @@ function calcularOcupacionRanura() {
                     resumen: {
                         tipoRotor,
                         comportamiento,
-                        nivel
+                        nivel,
+                        espiras: getVal('espiras') || 0,
+                        pesoTotal: getTxt('res-peso-total-todos') || '0 g',
+                        velocidadMax: getTxt('res-fcem-rpm-real') || '0 RPM'
                     },
                     fechaGuardado: new Date().toLocaleString('es-ES')
                 };
@@ -2706,11 +2709,11 @@ function calcularOcupacionRanura() {
                                 <div class="proyecto-bloque">
                                     <h4>⚙️ Características generales</h4>
                                     <div class="proyecto-ficha">
-                                        <div class="proyecto-ficha__fila"><span>Panel</span><strong>${proyecto.ficha?.panel || '--'}</strong></div>
-                                        <div class="proyecto-ficha__fila"><span>Hilo</span><strong>${proyecto.ficha?.hilo || '--'}</strong></div>
-                                        <div class="proyecto-ficha__fila"><span>Espiras</span><strong>${proyecto.ficha?.espiras || '--'}</strong></div>
-                                        <div class="proyecto-ficha__fila"><span>Velocidad</span><strong>${proyecto.ficha?.velocidad || '--'}</strong></div>
-                                        <div class="proyecto-ficha__fila"><span>Peso</span><strong>${proyecto.ficha?.peso || '--'}</strong></div>
+                                        <div class="proyecto-ficha__fila"><span>Panel</span><strong>${proyecto.ficha?.panel || proyecto.config?.panelNombre || '--'}</strong></div>
+                                        <div class="proyecto-ficha__fila"><span>Hilo</span><strong>${proyecto.ficha?.hilo || (proyecto.config?.hilo ? (proyecto.config.hilo + ' mm') : '--')}</strong></div>
+                                        <div class="proyecto-ficha__fila"><span>Espiras</span><strong>${proyecto.ficha?.espiras || proyecto.config?.resumen?.espiras || '--'}</strong></div>
+                                        <div class="proyecto-ficha__fila"><span>Velocidad</span><strong>${proyecto.ficha?.velocidad || proyecto.config?.resumen?.velocidadMax || '--'}</strong></div>
+                                        <div class="proyecto-ficha__fila"><span>Peso</span><strong>${proyecto.ficha?.peso || proyecto.config?.resumen?.pesoTotal || '--'}</strong></div>
                                     </div>
                                 </div>
 
