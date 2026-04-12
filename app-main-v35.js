@@ -2331,51 +2331,7 @@ function calcularOcupacionRanura() {
                 const comportamiento = getTxt('res-comportamiento');
                 const nivel = getTxt('res-nivel');
 
-                const miConfiguracion = {
-                    // Paso 1
-                    caras: getVal('caras') || 4,
-                    panel: getVal('panel'),
-                    panelNombre: panelSelect ? (panelSelect.options[panelSelect.selectedIndex]?.text || '') : '',
-                    panelData: (panelSelect && dbPaneles[panelSelect.value]) ? {...dbPaneles[panelSelect.value]} : null,
-                    margen: getVal('margen-placa') || 2,
-
-                    // Paso 2
-                    ranuraAncho: getVal('ranura-ancho') || 10,
-                    ranuraAlto: getVal('ranura-alto') || 15,
-                    ranuraTipo: getVal('ranura-tipo') || 'rect',
-                    material: getVal('material-hilo') || 'cobre',
-                    hilo: getVal('dia-hilo-select') || 0.15,
-                    calidad: getVal('calidad-bobinado') || 'media',
-
-                    // Paso 3 (Magnetismo)
-                    imanMotorNombre: getTxt('iman-motor'),
-                    imanMotorOrientacion: getVal('iman-orientacion') || 'long',
-                    imanMotorDistancia: getVal('iman-distancia') || 2.0,
-                    campoB: getVal('campo-b') || 0.18,
-                    radioEfectivo: getVal('radio-efectivo-mm') || 0,
-
-                    // Paso 4 (Luz)
-                    lumGiro: getVal('lum-giro') || 0,
-                    lumAnguloLuz: getVal('lum-angulo-luz') || 0,
-                    lumConexion: getVal('lum-conexion') || '0',
-
-                    // Paso 5 (FCEM)
-                    fcemRpmSim: getVal('fcem-rpm-sim') || 0,
-                    fcemPerdidas: getVal('fcem-perdidas') || 15,
-
-                    // Paso 6 (Informe)
-                    informe: document.getElementById('informe-automatico')?.value || "",
-
-                    resumen: {
-                        tipoRotor,
-                        comportamiento,
-                        nivel,
-                        espiras: getVal('espiras') || 0,
-                        pesoTotal: getTxt('res-peso-total-todos') || '0 g',
-                        velocidadMax: getTxt('res-fcem-rpm-real') || '0 RPM'
-                    },
-                    fechaGuardado: new Date().toLocaleString('es-ES')
-                };
+                const miConfiguracion = capturarEstadoConfiguracionActual();
 
                 // 1. Guardado Local
                 const misMotores = await obtenerMotoresGuardados();
@@ -2437,6 +2393,120 @@ function calcularOcupacionRanura() {
                     btnGuardar.disabled = false;
                     btnGuardar.innerHTML = textoOriginal;
                 }
+            }
+        }
+
+        function capturarEstadoConfiguracionActual() {
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                if (!el) return null;
+                const val = el.value;
+                return (el.tagName === 'SELECT') ? val : val;
+            };
+            const getTxt = (id) => {
+                const el = document.getElementById(id);
+                if (!el) return '';
+                if (el.tagName === 'SELECT') {
+                    return el.selectedIndex >= 0 ? el.options[el.selectedIndex]?.text : '';
+                }
+                return el.textContent || '';
+            };
+
+            const panelSelect = document.getElementById('panel');
+            const tipoRotor = getTxt('res-tipo-rotor');
+            const comportamiento = getTxt('res-comportamiento');
+            const nivel = getTxt('res-nivel');
+
+            return {
+                caras: getVal('caras') || 4,
+                panel: getVal('panel'),
+                panelNombre: panelSelect ? (panelSelect.options[panelSelect.selectedIndex]?.text || '') : '',
+                panelData: (panelSelect && dbPaneles[panelSelect.value]) ? { ...dbPaneles[panelSelect.value] } : null,
+                margen: getVal('margen-placa') || 2,
+                ranuraAncho: getVal('ranura-ancho') || 10,
+                ranuraAlto: getVal('ranura-alto') || 15,
+                ranuraTipo: getVal('ranura-tipo') || 'rect',
+                material: getVal('material-hilo') || 'cobre',
+                hilo: getVal('dia-hilo-select') || 0.15,
+                calidad: getVal('calidad-bobinado') || 'media',
+                imanMotorNombre: getTxt('iman-motor'),
+                imanMotorOrientacion: getVal('iman-orientacion') || 'long',
+                imanMotorDistancia: getVal('iman-distancia') || 2.0,
+                campoB: getVal('campo-b') || 0.18,
+                radioEfectivo: getVal('radio-efectivo-mm') || 0,
+                lumGiro: getVal('lum-giro') || 0,
+                lumAnguloLuz: getVal('lum-angulo-luz') || 0,
+                lumConexion: getVal('lum-conexion') || '0',
+                fcemRpmSim: getVal('fcem-rpm-sim') || 0,
+                fcemPerdidas: getVal('fcem-perdidas') || 15,
+                informe: document.getElementById('informe-automatico')?.value || "",
+                resumen: {
+                    tipoRotor,
+                    comportamiento,
+                    nivel,
+                    espiras: getVal('espiras') || 0,
+                    pesoTotal: getTxt('res-peso-total-todos') || '0 g',
+                    velocidadMax: getTxt('res-fcem-rpm-real') || '0 RPM'
+                },
+                fechaGuardado: new Date().toLocaleString('es-ES')
+            };
+        }
+
+        async function repararMetadatosPublicos() {
+            if (!confirm("Esta operación recorrerá todos los proyectos PÚBLICOS y actualizará sus metadatos (espiras, peso, velocidad) para la galería. Puede tardar unos minutos. ¿Continuar?")) return;
+            
+            try {
+                // 1. Obtener motores públicos
+                const { data: motores, error } = await dbMendocinoClient
+                    .from('motores')
+                    .select('*')
+                    .eq('es_publico', true);
+                
+                if (error) throw error;
+                if (!motores || motores.length === 0) {
+                    mostrarToast("No hay motores públicos para reparar.", "info");
+                    return;
+                }
+
+                mostrarToast(`Iniciando reparación de ${motores.length} motores...`, 'info');
+                
+                let exitos = 0;
+                let errores = 0;
+
+                for (let i = 0; i < motores.length; i++) {
+                    const m = motores[i];
+                    console.log(`REPARAR [${i+1}/${motores.length}]: ${m.titulo}`);
+                    
+                    try {
+                        // Cargar motor (esto dispara recálculos en el DOM)
+                        await cargarMotor(m.config, m.id_unico, m.titulo);
+                        
+                        // Espera técnica para que los cálculos de Paso 2 y Paso 5 terminen
+                        await new Promise(r => setTimeout(r, 600)); 
+
+                        // Capturar nuevo estado con metadatos corregidos
+                        const nuevaConfig = capturarEstadoConfiguracionActual();
+
+                        // Actualizar en Supabase
+                        const { error: errorUpd } = await dbMendocinoClient
+                            .from('motores')
+                            .update({ config: nuevaConfig })
+                            .eq('id_unico', m.id_unico);
+                        
+                        if (errorUpd) throw errorUpd;
+                        exitos++;
+                    } catch (err) {
+                        console.error(`Error reparando ${m.titulo}:`, err);
+                        errores++;
+                    }
+                }
+
+                mostrarToast(`Reparación finalizada. Éxitos: ${exitos}, Errores: ${errores}`, exitos > 0 ? 'ok' : 'error');
+                if (typeof renderizarProyectos === 'function') renderizarProyectos();
+
+            } catch (e) {
+                console.error("Fallo general en reparación:", e);
+                mostrarToast("Fallo crítico en el reparador.", "error");
             }
         }
 
@@ -3724,8 +3794,13 @@ function actualizarPanelAdminUI() {
 
     if (btnIrAdmin) {
         btnIrAdmin.style.display = esRealAdmin ? 'inline-flex' : 'none';
+    }
+
+    const btnReparar = document.getElementById('btn-reparar-galeria');
+    if (btnReparar) {
+        btnReparar.style.display = esRealAdmin ? 'inline-flex' : 'none';
         if (esRealAdmin) {
-            console.log("DEBUG [AdminUI]: Mostrando botón de administración.");
+            console.log("DEBUG [AdminUI]: Panel Admin y Reparador habilitados.");
         }
     }
 
