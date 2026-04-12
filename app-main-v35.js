@@ -302,6 +302,7 @@ function cargarMotor(config, id_unico = null, titulo = null) {
     if (ranuraAlto) ranuraAlto.value = config.ranuraAlto ?? 15;
     if (ranuraTipo) ranuraTipo.value = config.ranuraTipo ?? 'rect';
     if (materialHilo) materialHilo.value = config.material ?? 'cobre';
+    if (diaHilo) {
         // Buscamos el valor exacto del hilo en el select
         const diaBuscado = parseFloat(config.hilo);
         let encontrado = false;
