@@ -284,9 +284,7 @@
                     <div class="page-title">
                         <h1>Galería Pública y Proyectos</h1>
                         <p>Gestiona qué diseños son visibles para todos los alumnos.</p>
-                    </div>
-                    <div>
-                        <button id="btn-migrar-todo" class="btn-action" style="background:#10b981; padding:10px 15px;" onclick="migrarTodosLosVideos()">📦 Migrar todo a Supabase</button>
+                        <!-- Herramienta de migración eliminada por desuso -->
                     </div>
                 </header>
 
@@ -786,70 +784,7 @@
             }
         }
 
-        async function migrarTodosLosVideos() {
-            const btn = document.getElementById('btn-migrar-todo');
-            if (!confirm('Este proceso buscará vídeos en GitHub, los subirá a Supabase y actualizará los enlaces. ¿Continuar?')) return;
-            
-            btn.disabled = true;
-            btn.textContent = 'Migrando... ⏳';
-
-            const { data: motores, error } = await dbMendocinoClient.from('motores').select('*');
-            if (error) {
-                mostrarToast('Error al obtener motores: ' + error.message, 'error');
-                btn.disabled = false;
-                return;
-            }
-
-            let migrados = 0;
-            let errores = 0;
-
-            for (const m of motores) {
-                // Solo migrar si la URL es de GitHub (relativa o absoluta a github.io)
-                if (m.video_url && (m.video_url.startsWith('videos/') || m.video_url.includes('github.io'))) {
-                    try {
-                        console.log(`Migrando: ${m.titulo}...`);
-                        
-                        // 1. Descargar el vídeo desde la URL actual
-                        const urlDescarga = m.video_url.startsWith('videos/') ? `https://tsuki-byte.github.io/Mendocino/${m.video_url}` : m.video_url;
-                        const response = await fetch(urlDescarga);
-                        if (!response.ok) throw new Error('No se pudo descargar el archivo de GitHub');
-                        const blob = await response.blob();
-                        const archivo = new File([blob], `${m.id_unico}.mp4`, { type: 'video/mp4' });
-
-                        // 2. Subir a Supabase Storage
-                        const ruta = `videos/${m.id_unico}.mp4`;
-                        const { error: uploadError } = await dbMendocinoClient.storage
-                            .from('motores')
-                            .upload(ruta, archivo, { upsert: true });
-
-                        if (uploadError) throw uploadError;
-
-                        // 3. Obtener URL Pública
-                        const { data: { publicUrl } } = dbMendocinoClient.storage
-                            .from('motores')
-                            .getPublicUrl(ruta);
-
-                        // 4. Actualizar Base de Datos
-                        const { error: dbError } = await dbMendocinoClient
-                            .from('motores')
-                            .update({ video_url: publicUrl })
-                            .eq('id', m.id);
-
-                        if (dbError) throw dbError;
-
-                        migrados++;
-                    } catch (err) {
-                        console.error(`Error migrando ${m.titulo}:`, err);
-                        errores++;
-                    }
-                }
-            }
-
-            btn.disabled = false;
-            btn.textContent = '📦 Migrar todo a Supabase';
-            mostrarToast(`Migración finalizada: ${migrados} éxitos, ${errores} errores.`, migrados > 0 ? 'ok' : 'error');
-            cargarTodosLosMotores();
-        }
+        // Herramientas de migración manual eliminadas v35.31
 
         async function salirModoAdminDesdePanel() {
             if (confirm('¿Cerrar sesión de administrador?')) {
