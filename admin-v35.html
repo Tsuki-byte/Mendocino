@@ -232,6 +232,105 @@
             .admin-layout { grid-template-columns: 1fr; }
             .admin-sidebar { display: none; }
         }
+
+        /* Modal de Edición */
+        .modal-edit {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-edit-content {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-edit-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-edit-header h2 { margin: 0; font-size: 1.25rem; color: var(--admin-secondary); }
+
+        .modal-edit-body {
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .edit-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .edit-form-group label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .edit-form-group input, .edit-form-group textarea {
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        .edit-form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal-edit-footer {
+            padding: 20px 24px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: #f8fafc;
+        }
+
+        .btn-cancel {
+            padding: 10px 20px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            padding: 10px 24px;
+            background: var(--admin-accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-save:hover { background: #2563eb; }
     </style>
 </head>
 <body>
@@ -622,6 +721,8 @@
             return String(texto).replace(/'/g, "\\'");
         }
 
+        let listaMotoresLocal = [];
+
         async function cargarTodosLosMotores() {
             const contenedor = document.getElementById('contenedor-lista-motores-admin');
             if (!contenedor) return;
@@ -636,11 +737,12 @@
                 contenedor.innerHTML = `<div style="padding:40px; text-align:center; color:#ef4444;">Error: ${error.message}</div>`;
                 return;
             }
-
             if (!motores || motores.length === 0) {
                 contenedor.innerHTML = '<div style="padding:40px; text-align:center; color:#64748b;">No hay motores guardados aún.</div>';
                 return;
             }
+
+            listaMotoresLocal = motores;
 
             contenedor.innerHTML = `
                 <table class="admin-tabla">
@@ -667,6 +769,9 @@
                                 </td>
                                 <td style="text-align:right;">
                                     <div style="display:flex; gap:8px; justify-content:flex-end;">
+                                        <button class="btn-icon" title="Editar descripción" onclick="abrirModalEdicionMotor('${m.id}')">
+                                            📝
+                                        </button>
                                         <button class="btn-icon" title="Subir o cambiar vídeo" onclick="solicitarSubidaVideo('${m.id}', '${m.id_unico}')">
                                             📁
                                         </button>
@@ -793,6 +898,67 @@
             }
         }
 
+        function abrirModalEdicionMotor(id) {
+            const motor = listaMotoresLocal.find(m => m.id === id);
+            if (!motor) return;
+
+            document.getElementById('edit-motor-id').value = motor.id;
+            document.getElementById('edit-motor-titulo').value = motor.titulo || '';
+            document.getElementById('edit-motor-subtitulo').value = motor.subtitulo || '';
+            document.getElementById('edit-motor-explicacion').value = motor.explicacion || '';
+            document.getElementById('edit-motor-etiquetas').value = (motor.etiquetas || []).join(', ');
+            document.getElementById('edit-motor-notas').value = (motor.notas || []).join(', ');
+
+            document.getElementById('modal-edicion-motor').style.display = 'flex';
+        }
+
+        function cerrarModalEdicionMotor() {
+            document.getElementById('modal-edicion-motor').style.display = 'none';
+        }
+
+        async function guardarCambiosMotor() {
+            const id = document.getElementById('edit-motor-id').value;
+            const titulo = document.getElementById('edit-motor-titulo').value;
+            const subtitulo = document.getElementById('edit-motor-subtitulo').value;
+            const explicacion = document.getElementById('edit-motor-explicacion').value;
+            const etiquetasStr = document.getElementById('edit-motor-etiquetas').value;
+            const notasStr = document.getElementById('edit-motor-notas').value;
+
+            // Procesar etiquetas y notas
+            const etiquetas = etiquetasStr.split(',').map(s => s.trim()).filter(s => s !== '');
+            const notas = notasStr.split(',').map(s => s.trim()).filter(s => s !== '');
+
+            const btnSave = document.querySelector('.btn-save');
+            const originalText = btnSave.textContent;
+            btnSave.disabled = true;
+            btnSave.textContent = 'Guardando...';
+
+            try {
+                const { error } = await dbMendocinoClient
+                    .from('motores')
+                    .update({
+                        titulo,
+                        subtitulo,
+                        explicacion,
+                        etiquetas,
+                        notas
+                    })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                mostrarToast('Cambios guardados correctamente', 'ok');
+                cerrarModalEdicionMotor();
+                cargarTodosLosMotores();
+            } catch (e) {
+                console.error("Error al guardar motor:", e);
+                mostrarToast('Error al guardar: ' + e.message, 'error');
+            } finally {
+                btnSave.disabled = false;
+                btnSave.textContent = originalText;
+            }
+        }
+
         window.addEventListener('load', async () => {
             const esAdminOK = await asegurarAdminPanel();
             if (esAdminOK) {
@@ -801,5 +967,42 @@
         });
     </script>
     <div id="contenedor-toast" class="contenedor-toast"></div>
+
+    <!-- Modal para editar motores -->
+    <div id="modal-edicion-motor" class="modal-edit">
+        <div class="modal-edit-content">
+            <div class="modal-edit-header">
+                <h2 id="modal-edit-titulo">Editar Proyecto</h2>
+                <button class="btn-icon" onclick="cerrarModalEdicionMotor()">&times;</button>
+            </div>
+            <div class="modal-edit-body">
+                <input type="hidden" id="edit-motor-id">
+                <div class="edit-form-group">
+                    <label>Título del Proyecto</label>
+                    <input type="text" id="edit-motor-titulo" placeholder="Nombre del motor">
+                </div>
+                <div class="edit-form-group">
+                    <label>Subtítulo / Versión</label>
+                    <input type="text" id="edit-motor-subtitulo" placeholder="Ej: v2.1 Prototipo">
+                </div>
+                <div class="edit-form-group">
+                    <label>Comentario Técnico (Explicación)</label>
+                    <textarea id="edit-motor-explicacion" placeholder="Detalles sobre el funcionamiento..."></textarea>
+                </div>
+                <div class="edit-form-group">
+                    <label>Etiquetas (separadas por comas)</label>
+                    <input type="text" id="edit-motor-etiquetas" placeholder="neodimio, solar, alta velocidad">
+                </div>
+                <div class="edit-form-group">
+                    <label>Notas Técnicas (separadas por comas)</label>
+                    <textarea id="edit-motor-notas" placeholder="Ej: Rotor equilibrado, Bobinado artesanal..."></textarea>
+                </div>
+            </div>
+            <div class="modal-edit-footer">
+                <button class="btn-cancel" onclick="cerrarModalEdicionMotor()">Cancelar</button>
+                <button class="btn-save" onclick="guardarCambiosMotor()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
