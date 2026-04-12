@@ -508,8 +508,8 @@ function cargarMotor(config, id_unico = null, titulo = null) {
             renderizarUI(); 
         }
 
-        function resetearBaseDatos() {
-            if(confirm("¿Estás seguro de que quieres borrar tus componentes y volver a los de defecto?")) {
+        async function resetearBaseDatos() {
+            if(await mostrarConfirmacion("Restaurar Datos", "¿Estás seguro de que quieres borrar tus componentes y volver a los de defecto?")) {
                 dbPaneles = [...defaultPaneles];
                 dbHilos = [...defaultHilos];
                 dbImanes = [...defaultImanes];
@@ -2186,6 +2186,84 @@ function calcularOcupacionRanura() {
         }
 
         
+        // --- DIÁLOGOS PERSONALIZADOS (MODALES) ---
+        function mostrarConfirmacion(titulo, mensaje) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('modal-dialogo');
+                const t = document.getElementById('modal-dialogo-titulo');
+                const m = document.getElementById('modal-dialogo-mensaje');
+                const iCont = document.getElementById('modal-dialogo-input-cont');
+                const btnAceptar = document.getElementById('modal-dialogo-btn-aceptar');
+                const btnCancelar = document.getElementById('modal-dialogo-btn-cancelar');
+
+                t.textContent = titulo;
+                m.textContent = mensaje;
+                iCont.style.display = 'none';
+                modal.style.display = 'flex';
+
+                const limpiarEventos = () => {
+                    btnAceptar.onclick = null;
+                    btnCancelar.onclick = null;
+                };
+
+                btnAceptar.onclick = () => {
+                    limpiarEventos();
+                    modal.style.display = 'none';
+                    resolve(true);
+                };
+                btnCancelar.onclick = () => {
+                    limpiarEventos();
+                    modal.style.display = 'none';
+                    resolve(false);
+                };
+            });
+        }
+
+        function mostrarPrompt(titulo, mensaje, valorDefecto = "") {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('modal-dialogo');
+                const t = document.getElementById('modal-dialogo-titulo');
+                const m = document.getElementById('modal-dialogo-mensaje');
+                const iCont = document.getElementById('modal-dialogo-input-cont');
+                const input = document.getElementById('modal-dialogo-input');
+                const btnAceptar = document.getElementById('modal-dialogo-btn-aceptar');
+                const btnCancelar = document.getElementById('modal-dialogo-btn-cancelar');
+
+                t.textContent = titulo;
+                m.textContent = mensaje;
+                iCont.style.display = 'block';
+                input.value = valorDefecto;
+                modal.style.display = 'flex';
+                setTimeout(() => input.focus(), 100);
+
+                const limpiarEventos = () => {
+                    btnAceptar.onclick = null;
+                    btnCancelar.onclick = null;
+                    input.onkeydown = null;
+                };
+
+                const aceptar = () => {
+                    const val = input.value;
+                    limpiarEventos();
+                    modal.style.display = 'none';
+                    resolve(val);
+                };
+
+                const cancelar = () => {
+                    limpiarEventos();
+                    modal.style.display = 'none';
+                    resolve(null);
+                };
+
+                btnAceptar.onclick = aceptar;
+                btnCancelar.onclick = cancelar;
+                input.onkeydown = (e) => {
+                    if (e.key === 'Enter') aceptar();
+                    if (e.key === 'Escape') cancelar();
+                };
+            });
+        }
+
         async function guardarConfiguracionLocal() {
             const btnGuardar = document.querySelector('button[onclick*="guardarConfiguracionLocal"]');
             const textoOriginal = btnGuardar ? btnGuardar.innerHTML : '';
@@ -2195,7 +2273,10 @@ function calcularOcupacionRanura() {
                 let modoEdicion = false;
 
                 if (window.proyectoActivo) {
-                    const confirmacion = confirm(`¿Quieres sobreescribir los cambios en "${window.proyectoActivo.titulo}"? \n\n Pulsa "Aceptar" para actualizar o "Cancelar" para guardar como un diseño nuevo.`);
+                    const confirmacion = await mostrarConfirmacion(
+                        "Actualizar Diseño", 
+                        `¿Quieres sobreescribir los cambios en "${window.proyectoActivo.titulo}"? \n\n Pulsa "Aceptar" para actualizar o "Cancelar" para guardar como un diseño nuevo.`
+                    );
                     if (confirmacion) {
                         nombreMotor = window.proyectoActivo.titulo;
                         modoEdicion = true;
@@ -2203,8 +2284,11 @@ function calcularOcupacionRanura() {
                 }
 
                 if (!modoEdicion) {
-                    nombreMotor = prompt("📝 Ponle un nombre a esta nueva configuración:");
-                    if (!nombreMotor || nombreMotor.trim() === "") return;
+                    nombreMotor = await mostrarPrompt(
+                        "Guardar Nuevo Diseño", 
+                        "📝 Ponle un nombre a esta nueva configuración:"
+                    );
+                    if (nombreMotor === null || nombreMotor.trim() === "") return;
                 }
 
                 if (btnGuardar) {
@@ -2449,8 +2533,8 @@ function calcularOcupacionRanura() {
             const btnBorrar = document.createElement('button');
             btnBorrar.textContent = '🗑️';
             btnBorrar.className = 'btn-delete';
-            btnBorrar.onclick = function () {
-                if (confirm(`¿Seguro que quieres borrar la configuración "${nombre}"?`)) {
+            btnBorrar.onclick = async function () {
+                if (await mostrarConfirmacion("Borrar Diseño", `¿Seguro que quieres borrar la configuración "${nombre}"?`)) {
                     delete misMotores[nombre];
                     localStorage.setItem('listaMotoresMendocino', JSON.stringify(misMotores));
                     cargarConfiguracionLocal();

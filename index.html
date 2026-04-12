@@ -785,6 +785,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
     </div>
 
+    <!-- MODAL PARA DIÁLOGOS PERSONALIZADOS (PROMPT/CONFIRM) -->
+    <div id="modal-dialogo" class="modal-configs" style="backdrop-filter: blur(12px); background: rgba(15, 23, 42, 0.75);">
+        <div class="modal-configs__panel" style="max-width: 420px; text-align: center;">
+            <h3 id="modal-dialogo-titulo" class="modal-configs__titulo" style="border-bottom:none; margin-bottom:10px;">Confirmación</h3>
+            <p id="modal-dialogo-mensaje" style="color: #4b5563; font-size: 15px; line-height: 1.5; margin-bottom: 20px;">¿Estás seguro de realizar esta acción?</p>
+            
+            <div id="modal-dialogo-input-cont" style="display: none; margin-bottom: 20px;">
+                <input type="text" id="modal-dialogo-input" placeholder="Escribe aquí..." style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px;">
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button id="modal-dialogo-btn-cancelar" class="btn-action" style="flex: 1; background: #94a3b8; margin-top: 0;">Cancelar</button>
+                <button id="modal-dialogo-btn-aceptar" class="btn-action" style="flex: 1; background: var(--primary-color); margin-top: 0;">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
 
 
 
@@ -793,6 +810,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- Cliente de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=19"></script>
-    <script src="app-main-v35.js?v=35.20"></script>
+    <script src="app-main-v35.js?v=35.21"></script>
 </body>
 </html>
