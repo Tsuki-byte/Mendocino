@@ -2279,24 +2279,43 @@ function calcularOcupacionRanura() {
 
                 // 2. Sincronización con la Nube
                 if (window.dbMendocinoClient && sessionActiva) {
+                    const uid = sessionActiva.user.id;
+                    console.log("DEBUG [Save]: Iniciando sincronización con Supabase para UID:", uid);
+                    
                     if (modoEdicion && window.proyectoActivo.id_unico) {
                         const { error } = await dbMendocinoClient
                             .from('motores')
-                            .update({ config: miConfiguracion })
+                            .update({ config: miConfiguracion, usuario_id: uid })
                             .eq('id_unico', window.proyectoActivo.id_unico);
                         if (error) throw error;
                         mostrarToast(`"${nombreMotor}" actualizado en la nube.`, 'ok');
                     } else {
                         const id_nuevo = (usuarioActual?.nombre || 'user').replace(/\s+/g, '_') + '-' + Date.now();
-                        const { error } = await dbMendocinoClient.from('motores').insert([{
+                        const payload = {
                             id_unico: id_nuevo,
                             titulo: nombreMotor,
                             config: miConfiguracion,
-                            usuario_id: sessionActiva.user.id,
+                            usuario_id: uid,
                             autor_nombre: usuarioActual?.nombre || 'Alumno',
                             es_publico: false 
-                        }]);
-                        if (error) throw error;
+                        };
+                        
+                        console.log("DEBUG [Save]: Enviando nuevo diseño:", payload);
+                        
+                        const { data, error } = await dbMendocinoClient
+                            .from('motores')
+                            .insert([payload])
+                            .select(); // Forzamos select para validar la inserción inmediata
+                            
+                        if (error) {
+                            console.error("DEBUG [Save]: Error de Supabase:", error);
+                            // Si el error es RLS, intentamos dar una pista más clara
+                            if (error.code === '42501') {
+                                throw new Error("Permiso denegado (RLS). Tu sesión podría haber expirado o la base de datos no reconoce tu usuario.");
+                            }
+                            throw error;
+                        }
+                        
                         window.proyectoActivo = { id_unico: id_nuevo, titulo: nombreMotor };
                         actualizarUIProyectoActivo();
                         mostrarToast(`"${nombreMotor}" guardado en la nube.`, 'ok');
