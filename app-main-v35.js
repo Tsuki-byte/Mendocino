@@ -2163,6 +2163,9 @@ function calcularOcupacionRanura() {
 
         
         async function guardarConfiguracionLocal() {
+            const btnGuardar = document.querySelector('button[onclick*="guardarConfiguracionLocal"]');
+            const textoOriginal = btnGuardar ? btnGuardar.innerHTML : '';
+
             let nombreMotor = "";
             let modoEdicion = false;
 
@@ -2177,6 +2180,11 @@ function calcularOcupacionRanura() {
             if (!modoEdicion) {
                 nombreMotor = prompt("📝 Ponle un nombre a esta nueva configuración:");
                 if (!nombreMotor || nombreMotor.trim() === "") return;
+            }
+
+            if (btnGuardar) {
+                btnGuardar.disabled = true;
+                btnGuardar.innerHTML = '<span>Guardando...</span> ⏳';
             }
 
             const panelSelect = document.getElementById('panel');
@@ -2243,6 +2251,11 @@ function calcularOcupacionRanura() {
             } else {
                 mostrarToast(`Guardado localmente.`, 'ok');
             }
+
+            if (btnGuardar) {
+                btnGuardar.disabled = false;
+                btnGuardar.innerHTML = textoOriginal;
+            }
         }
 
         function actualizarUIProyectoActivo() {
@@ -2258,7 +2271,19 @@ function calcularOcupacionRanura() {
         }
 
     async function cargarConfiguracionLocal() {
+    const btnToolbar = document.querySelector('button[onclick="cargarConfiguracionLocal()"]');
+    const textoOriginal = btnToolbar ? btnToolbar.innerHTML : '';
+    if (btnToolbar) {
+        btnToolbar.disabled = true;
+        btnToolbar.innerHTML = '<span>Cargando...</span> ⏳';
+    }
+
     const misMotores = await obtenerMotoresGuardados();
+
+    if (btnToolbar) {
+        btnToolbar.disabled = false;
+        btnToolbar.innerHTML = textoOriginal;
+    }
 
     const listaDiv = document.getElementById('lista-configs');
     const modal = document.getElementById('modal-configs');
