@@ -2957,6 +2957,20 @@ function calcularPasoFCEM() {
     
     // 4. Dibujar Gráfica
     dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim);
+
+    // 5. Ajustar dinámicamente el slider de simulación para que sea suave
+    const sliderRpm = document.getElementById('fcem-rpm-sim');
+    if (sliderRpm) {
+        const nuevoMax = Math.round(rpmMaxReal * 1.5) || 100;
+        const nuevoStep = nuevoMax / 100; // Siempre 100 pasos de resolución
+        
+        if (parseFloat(sliderRpm.max) !== nuevoMax) {
+            sliderRpm.max = nuevoMax;
+        }
+        if (parseFloat(sliderRpm.step) !== nuevoStep) {
+            sliderRpm.step = nuevoStep.toFixed(2);
+        }
+    }
 }
 
 function dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim) {
