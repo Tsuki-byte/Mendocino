@@ -213,6 +213,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <select id="panel" onchange="actualizarResumenPaso1()"></select>
                         </div>
 
+                        <div class="teoria-nota">
+                            <strong>Fundamento Geométrico:</strong> El diámetro total del rotor (\( D_{rotor} \)) se determina inscribiendo el ancho del panel solar (\( W_{panel} \)) y sus márgenes plásticos (\( M \)) sobre un polígono regular de \( N \) caras. Mediante trigonometría, la circunferencia delimitadora mínima necesaria es:
+                            \[ D_{rotor} = \frac{W_{panel} + 2M}{\sin(\frac{\pi}{N})} \]
+                            Las ranuras internas restan volumen útil al núcleo, definiendo el área máxima real disponible para alojar los cables de cobre.
+                        </div>
+
                         <div class="nav-buttons nav-buttons-fin">
                             <button class="btn-nav btn-next btn-nav-compacto" onclick="cambiarPaso(2)">Siguiente ⮞</button>
                         </div>
@@ -263,12 +269,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             </div>
 
                             <small style="color: #666; margin-top: -5px; margin-bottom: 10px; text-align: center;">* Objetivo a alcanzar con el devanado.</small>
-                        </div>
-
-                        <div class="teoria-nota">
-                            <strong>Fundamento Geométrico:</strong> El diámetro total del rotor (\( D_{rotor} \)) se determina inscribiendo el ancho del panel solar (\( W_{panel} \)) y sus márgenes plásticos (\( M \)) sobre un polígono regular de \( N \) caras. Mediante trigonometría, la circunferencia delimitadora mínima necesaria es:
-                            \[ D_{rotor} = \frac{W_{panel} + 2M}{\sin(\frac{\pi}{N})} \]
-                            Las ranuras internas restan volumen útil al núcleo, definiendo el área máxima real disponible para alojar los cables de cobre.
                         </div>
 
                     </div>
@@ -338,6 +338,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
                         <div id="alerta-ranura" style="display: none; background-color: #fdeaea; color: #c0392b; padding: 10px; border-radius: 6px; border-left: 4px solid #c0392b; font-size: 13px; margin-bottom: 15px;">
                             <strong>⚠️ Cuidado:</strong> El hilo sobresaldrá de la ranura.
+                        </div>
+
+                        <div class="teoria-nota">
+                            <strong>Fundamento Eléctrico:</strong> La resistencia de la bobina (\( R \)) depende de la resistividad del material (\( \rho \)), la longitud media de cada espira y el área de la sección del conductor (\( A_{hilo} \)). Según la Ley de Pouillet:
+                            \[ R = \rho \cdot \frac{N_{espiras} \cdot L_{espira}}{A_{hilo}} \]
+                            El desafío del diseño es maximizar el número de espiras para ganar fuerza sin aumentar tanto la resistencia que ahogue la corriente (\( I \)) producida por las placas solares.
                         </div>
 
                         <div class="nav-buttons">
@@ -423,11 +429,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             </div>
                         </div>
 
-                        <div class="teoria-nota">
-                            <strong>Fundamento Eléctrico:</strong> La resistencia de la bobina (\( R \)) depende de la resistividad del material (\( \rho \)), la longitud media de cada espira y el área de la sección del conductor (\( A_{hilo} \)). Según la Ley de Pouillet:
-                            \[ R = \rho \cdot \frac{N_{espiras} \cdot L_{espira}}{A_{hilo}} \]
-                            El desafío del diseño es maximizar el número de espiras para ganar fuerza sin aumentar tanto la resistencia que ahogue la corriente (\( I \)) producida por las placas solares.
-                        </div>
                     </div>
                 </div>
 
@@ -505,6 +506,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             Se calcula la interacción del campo magnético principal con la corriente efectiva circulante por la bobina inferior.
         </div>
 
+        <div class="teoria-nota">
+            <strong>Física Magnética:</strong> El giro se produce gracias a la Fuerza de Lorentz. Cuando la corriente (\( I \)) fluye por un haz de cables de una longitud activa (\( L_{activa} \)) expuesto a un campo magnético (\( B \)), se genera un empuje:
+            \[ F_{Lorentz} = N_{espiras} \cdot I \cdot L_{activa} \cdot B \cdot \sin(\beta) \]
+            El Par Motor (\( \tau \)), que es la capacidad real de torsión del rotor, se obtiene multiplicando esta fuerza por su radio de palanca (\( r \)):
+            \[ \tau = F_{Lorentz} \cdot r \cdot \cos(\theta) \]
+        </div>
+
         <div class="nav-buttons">
             <button class="btn-nav btn-prev" onclick="cambiarPaso(2)">⮜ Anterior</button>
             <button class="btn-nav btn-next" onclick="cambiarPaso(4)">Siguiente ⮞</button>
@@ -556,12 +564,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             * Cálculo simplificado para comparar variantes del rotor. Más adelante podemos refinarlo con la geometría exacta del imán y la orientación del flujo.
         </small>
 
-        <div class="teoria-nota">
-            <strong>Física Magnética:</strong> El giro se produce gracias a la Fuerza de Lorentz. Cuando la corriente (\( I \)) fluye por un haz de cables de una longitud activa (\( L_{activa} \)) expuesto a un campo magnético (\( B \)), se genera un empuje:
-            \[ F_{Lorentz} = N_{espiras} \cdot I \cdot L_{activa} \cdot B \cdot \sin(\beta) \]
-            El Par Motor (\( \tau \)), que es la capacidad real de torsión del rotor, se obtiene multiplicando esta fuerza por su radio de palanca (\( r \)):
-            \[ \tau = F_{Lorentz} \cdot r \cdot \cos(\theta) \]
-        </div>
     </div>
 </div>
 
@@ -592,6 +594,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </select>
         </div>
 
+        <div class="teoria-nota">
+            <strong>Óptica Teórica:</strong> A medida que el rotor gira, el ángulo de las placas (\( \alpha \)) respecto a la fuente de luz cambia constantemente. La captación de energía decae según una variante de la Ley de Lambert:
+            \[ P_{efectiva} = P_{max} \cdot \cos(\alpha) \cdot k_{sombra} \]
+            Esto provoca que la excitación electromagnética en un motor Mendocino nunca sea constante, sino pulsante a lo largo de cada vuelta.
+        </div>
+
         <div class="nav-buttons">
             <button class="btn-nav btn-prev" onclick="cambiarPaso(3)">⮜ Anterior</button>
             <button class="btn-nav btn-next" onclick="cambiarPaso(5)">Siguiente ⮞</button>
@@ -609,11 +617,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="summary-item"><span>Factor de Placas Activas</span><span class="value" id="lum-res-factor">1.00</span></div>
         <div class="summary-item"><span>Corriente Entregada (I)</span><span class="value" id="lum-res-corriente">0 A</span></div>
 
-        <div class="teoria-nota">
-            <strong>Óptica Teórica:</strong> A medida que el rotor gira, el ángulo de las placas (\( \alpha \)) respecto a la fuente de luz cambia constantemente. La captación de energía decae según una variante de la Ley de Lambert:
-            \[ P_{efectiva} = P_{max} \cdot \cos(\alpha) \cdot k_{sombra} \]
-            Esto provoca que la excitación electromagnética en un motor Mendocino nunca sea constante, sino pulsante a lo largo de cada vuelta.
-        </div>
     </div>
 </div>
 
@@ -641,7 +644,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
         </div>
 
-        <div class="fcem-nota" style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid var(--primary-color); font-size: 13px; margin: 15px 0;">
+        <div class="teoria-nota">
             <strong>Física del límite:</strong> El motor acelera mientras \( V_{panel} > V_{fcem} \). Cuando el voltaje inducido iguala al disponible (menos pérdidas), el motor deja de acelerar.
         </div>
 
@@ -877,6 +880,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
-    <script src="app-main-v35.js?v=35.41"></script>
+    <script src="app-main-v35.js?v=35.42"></script>
 </body>
 </html>
