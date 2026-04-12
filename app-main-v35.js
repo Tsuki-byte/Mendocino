@@ -300,18 +300,11 @@ function cargarMotor(config, id_unico = null, titulo = null) {
         panelSelect.value = panelValue;
     }
 
-    if (margen) margen.value = config.margen ?? 0;
-    if (ranuraAncho) ranuraAncho.value = config.ranuraAncho ?? 6.5;
-    if (ranuraAlto) ranuraAlto.value = config.ranuraAlto ?? 3.5;
-    if (ranuraTipo) ranuraTipo.value = config.ranuraTipo ?? 'trapecio';
-
-    // --- Lógica de Material e Hilo ---
+    if (margen) margen.value = config.margen ?? 2;
+    if (ranuraAncho) ranuraAncho.value = config.ranuraAncho ?? 10;
+    if (ranuraAlto) ranuraAlto.value = config.ranuraAlto ?? 15;
+    if (ranuraTipo) ranuraTipo.value = config.ranuraTipo ?? 'rect';
     if (materialHilo) materialHilo.value = config.material ?? 'cobre';
-    if (typeof actualizarListaHilos === 'function') {
-        actualizarListaHilos(); // Regenerar las opciones del select de hilos
-    }
-
-    if (diaHilo && config.hilo !== undefined) {
         // Buscamos el valor exacto del hilo en el select
         const diaBuscado = parseFloat(config.hilo);
         let encontrado = false;
@@ -2195,18 +2188,38 @@ function calcularOcupacionRanura() {
             const nivel = document.getElementById('res-nivel')?.textContent || "";
 
             const miConfiguracion = {
+                // Paso 1
                 caras: document.getElementById('caras').value,
                 panel: panelSelect.value,
                 panelNombre: panelSelect.options[panelSelect.selectedIndex]?.text || '',
                 panelData: dbPaneles[panelSelect.value] ? {...dbPaneles[panelSelect.value]} : null,
                 margen: document.getElementById('margen-placa').value,
+                imanDistancia: document.getElementById('iman-distancia')?.value || 2.0,
+
+                // Paso 2
                 ranuraAncho: document.getElementById('ranura-ancho').value,
                 ranuraAlto: document.getElementById('ranura-alto').value,
                 ranuraTipo: document.getElementById('ranura-tipo').value,
                 material: document.getElementById('material-hilo').value,
                 hilo: document.getElementById('dia-hilo-select').value,
                 calidad: document.getElementById('calidad-bobinado').value,
+
+                // Paso 3
+                campoB: document.getElementById('campo-b')?.value || 0.18,
+                radioEfectivo: document.getElementById('radio-efectivo-mm')?.value || 0,
+
+                // Paso 4
+                lumGiro: document.getElementById('lum-giro')?.value || 0,
+                lumAnguloLuz: document.getElementById('lum-angulo-luz')?.value || 0,
+                lumConexion: document.getElementById('lum-conexion')?.value || '0',
+
+                // Paso 5
+                fcemRpmSim: document.getElementById('fcem-rpm-sim')?.value || 0,
+                fcemPerdidas: document.getElementById('fcem-perdidas')?.value || 15,
+
+                // Paso 6 (Notas)
                 informe,
+
                 resumen: {
                     tipoRotor,
                     comportamiento,
