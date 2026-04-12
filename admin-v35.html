@@ -899,8 +899,13 @@
         }
 
         function abrirModalEdicionMotor(id) {
-            const motor = listaMotoresLocal.find(m => m.id === id);
-            if (!motor) return;
+            // Usamos == para permitir comparación entre string (del DOM) y number (de la DB)
+            const motor = listaMotoresLocal.find(m => m.id == id);
+            if (!motor) {
+                console.error("Motor no encontrado en local:", id);
+                mostrarToast('Error: No se encontró el motor en la lista local', 'error');
+                return;
+            }
 
             document.getElementById('edit-motor-id').value = motor.id;
             document.getElementById('edit-motor-titulo').value = motor.titulo || '';
@@ -934,7 +939,8 @@
             btnSave.textContent = 'Guardando...';
 
             try {
-                const { error } = await dbMendocinoClient
+                // Realizamos el update y pedimos que nos devuelva la fila para confirmar
+                const { data, error, status } = await dbMendocinoClient
                     .from('motores')
                     .update({
                         titulo,
@@ -943,9 +949,14 @@
                         etiquetas,
                         notas
                     })
-                    .eq('id', id);
+                    .eq('id', id)
+                    .select();
 
                 if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    throw new Error("No se encontró el motor en la base de datos o no tienes permisos para editarlo.");
+                }
 
                 mostrarToast('Cambios guardados correctamente', 'ok');
                 cerrarModalEdicionMotor();
