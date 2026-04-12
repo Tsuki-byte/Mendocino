@@ -499,20 +499,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
         </div>
 
-
-        <!-- Contribución de levitación eliminada por redundancia -->
-
-        <div class="mag-nota">
-            <strong>Modelo usado:</strong>
-            FMM = N·I · Fuerza de Lorenz total ≈ B·L·I·N · Par ≈ F·r.
-            Se calcula la interacción del campo magnético principal con la corriente efectiva circulante por la bobina inferior.
-        </div>
-
         <div class="teoria-nota">
-            <strong>Física Magnética:</strong> El giro se produce gracias a la Fuerza de Lorentz. Cuando la corriente (\( I \)) fluye por un haz de cables de una longitud activa (\( L_{activa} \)) expuesto a un campo magnético (\( B \)), se genera un empuje:
-            \[ F_{Lorentz} = N_{espiras} \cdot I \cdot L_{activa} \cdot B \cdot \sin(\beta) \]
-            El Par Motor (\( \tau \)), que es la capacidad real de torsión del rotor, se obtiene multiplicando esta fuerza por su radio de palanca (\( r \)):
-            \[ \tau = F_{Lorentz} \cdot r \cdot \cos(\theta) \]
+            <strong>Fundamento de Interacción Magnética:</strong> El par motor se genera por la <strong>Fuerza de Lorentz</strong>. Cuando la corriente (\( I \)) fluye por las espiras, el imán motriz ejerce un empuje sobre los conductores. 
+            <br><br>
+            A diferencia de un modelo ideal, en nuestro motor el imán puede influir sobre <strong>varias espiras</strong> de forma simultánea dependiendo de la anchura del panel; la fuerza total es la suma de todas esas interacciones. Además, el campo magnético (\( B \)) no es uniforme, concentrándose con mayor intensidad en los <strong>extremos del imán</strong>, que son las zonas que más contribuyen al par generado:
+            \[ F_{Lorentz} = \sum (N_i \cdot I \cdot L_{activa} \cdot B_i \cdot \sin(\beta)) \]
+            El Par Motor (\( \tau \)), o capacidad de torsión, resulta de multiplicar esa fuerza total por el radio de palanca (\( r \)):
+            \[ \tau = F_{total} \cdot r \cdot \cos(\theta) \]
         </div>
 
         <div class="nav-buttons">
@@ -884,6 +877,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
-    <script src="app-main-v35.js?v=35.51"></script>
+    <script src="app-main-v35.js?v=35.52"></script>
 </body>
 </html>
