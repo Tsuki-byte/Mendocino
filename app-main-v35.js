@@ -2449,8 +2449,6 @@ function calcularOcupacionRanura() {
             };
         }
 
-        }
-
         function actualizarUIProyectoActivo() {
             const display = document.getElementById('proyecto-activo-display');
             if (display) {
