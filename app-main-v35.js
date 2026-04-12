@@ -180,14 +180,11 @@ function obtenerConfigNivel() {
     return configBase;
 }
 
-
-
-
-        // --- UTILIDADES ---
-        function parsearNumero(valor) {
-            if (!valor) return NaN;
-            return parseFloat(valor.replace(',', '.'));
-        }
+// --- UTILIDADES ---
+function parsearNumero(valor) {
+    if (!valor) return NaN;
+    return parseFloat(valor.replace(',', '.'));
+}
 
 
         function obtenerElemento(id) {
@@ -3480,7 +3477,9 @@ async function cerrarSesion() {
     } catch (e) {
         console.error("Error crítico al salir:", e);
         localStorage.clear();
-        window.location.href = window.location.pathname;
+        sessionStorage.clear();
+        // Redirigimos solo si es estrictamente necesario, pero idealmente dejamos que el estado se limpie
+        window.location.reload();
     }
 }
 
@@ -3735,6 +3734,8 @@ function cargarUsuarioActualDesdeStorage() {
 }
 
 window.onload = async function() {
+    console.log("Mendocino App: Iniciando carga de ventana...");
+    
     // Si estamos en el panel de administración, no inicializamos la app principal
     if (window.location.pathname.includes('admin-v35.html')) {
         return;
@@ -3742,35 +3743,35 @@ window.onload = async function() {
 
     ocultarUIHastaAutenticacion();
 
-    // 1. PRIMERO inicializamos la conexión y autenticación (CON TIMEOUT DE SEGURIDAD)
-    const authPromise = inicializarAuth();
-    const timeoutPromise = new Promise(res => setTimeout(() => res('timeout'), 5000)); // 5 seg max
-
+    // 1. Inicialización de Auth con protección
     try {
+        const authPromise = inicializarAuth();
+        const timeoutPromise = new Promise(res => setTimeout(() => res('timeout'), 6000));
+        
         const result = await Promise.race([authPromise, timeoutPromise]);
         if (result === 'timeout') {
-            console.warn("ADVERTENCIA: inicializarAuth ha tardado demasiado. Forzando UI.");
+            console.warn("ADVERTENCIA: inicializarAuth timeout.");
         }
-        console.log("Arranque: Fase de Auth terminada o saltada por timeout.");
     } catch (e) {
-        console.error("Error inesperado en arranque:", e);
+        console.error("Fallo durante inicialización de Auth:", e);
     }
 
-    // 2. DESPUÉS inicializamos la UI base y cargamos datos (Si Auth falló o es lenta, al menos el usuario ve algo)
-    inicializarAplicacionBase();
-    renderizarProyectos();
+    // 2. Carga de UI y Lógica base (siempre se intenta, independientemente de auth)
+    try {
+        inicializarAplicacionBase();
+        renderizarProyectos();
 
-    if (!sessionActiva) {
-        const modalAuth = document.getElementById('modal-auth');
-        if (modalAuth) {
-            modalAuth.style.display = 'flex';
+        if (sessionActiva) {
+            mostrarUIAutenticada();
+            cargarProgresoCalculadora();
+            inicializarAutoGuardado();
+        } else {
+            console.log("No hay sesión activa. Manteniendo modal de login.");
+            const modalAuth = document.getElementById('modal-auth');
+            if (modalAuth) modalAuth.style.display = 'flex';
         }
-    } else {
-        mostrarUIAutenticada();
-        
-        // --- RESTAURAR PROGRESO ---
-        cargarProgresoCalculadora();
-        inicializarAutoGuardado();
+    } catch (uiBaseErr) {
+        console.error("Error crítico en inicialización UI base:", uiBaseErr);
     }
 };
 
