@@ -1480,24 +1480,43 @@ function dibujarInteraccionMagneticaSVG() {
         }
     }
 
-    // --- 2. DIBUJO DE LÍNEAS B (Flujo Magnético) ---
+    // --- 2. DIBUJO DE LÍNEAS B (Flujo Magnético Realista) ---
     const numLineas = Math.min(15, Math.max(3, Math.floor(campoB * 30)));
+    const expansionFactor = 1.35; // Factor de divergencia (cuánto se abren las líneas)
+    
     for(let i=0; i<numLineas; i++){
-        const lx = cx - (imanWidth/2) + (imanWidth*0.1) + (i * ((imanWidth*0.8) / Math.max(1, numLineas-1)));
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', lx); line.setAttribute('y1', imanY);
-        line.setAttribute('x2', lx); line.setAttribute('y2', cy + radioRotorSVG - 2);
-        line.setAttribute('stroke', '#3498db');
-        line.setAttribute('stroke-width', '1.2');
-        line.setAttribute('stroke-dasharray', '3,3');
-        line.setAttribute('opacity', '0.4');
+        // lx1: Punto de origen en la superficie del imán
+        const lx1 = cx - (imanWidth/2) + (imanWidth*0.1) + (i * ((imanWidth*0.8) / Math.max(1, numLineas-1)));
         
-        // Flecha B
+        // lx2: Punto de destino cerca del rotor (abierto en abanico)
+        const dx = lx1 - cx;
+        const lx2 = cx + dx * expansionFactor;
+        const yDest = cy + radioRotorSVG;
+        
+        // Generamos un camino curvo (Bezier cuadrática)
+        const pathB = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const cpX = lx1; // Punto de control para mantener la verticalidad inicial
+        const cpY = imanY - (imanY - yDest) * 0.4;
+        
+        const d = `M ${lx1} ${imanY} Q ${cpX} ${cpY} ${lx2} ${yDest + 2}`;
+        pathB.setAttribute('d', d);
+        pathB.setAttribute('stroke', '#3498db');
+        pathB.setAttribute('stroke-width', '1.2');
+        pathB.setAttribute('stroke-dasharray', '3,3');
+        pathB.setAttribute('fill', 'none');
+        // La opacidad cae ligeramente en los extremos para realismo
+        pathB.setAttribute('opacity', 0.45 - (Math.abs(dx)/imanWidth)*0.3);
+        
+        // Flecha B: Orientada según la trayectoria final de la curva
+        const anguloDeg = Math.atan2(yDest - cpY, lx2 - cpX) * 180 / Math.PI;
         const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        arrow.setAttribute('points', `${lx},${cy + radioRotorSVG} ${lx-3},${cy + radioRotorSVG + 6} ${lx+3},${cy + radioRotorSVG + 6}`);
-        arrow.setAttribute('fill', '#3498db'); arrow.setAttribute('opacity', '0.5');
+        arrow.setAttribute('points', `0,0 -3,7 3,7`);
+        arrow.setAttribute('fill', '#3498db'); 
+        arrow.setAttribute('opacity', '0.5');
+        // Rotamos y trasladamos la flecha a la punta de la curva
+        arrow.setAttribute('transform', `translate(${lx2}, ${yDest}) rotate(${anguloDeg - 90})`);
         
-        svg.appendChild(line); svg.appendChild(arrow);
+        svg.appendChild(pathB); svg.appendChild(arrow);
     }
 
     // --- 3. IMÁN BASE (Bipolo: Norte Rojo / Sur Azul) a escala ---
