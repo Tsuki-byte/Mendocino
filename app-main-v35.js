@@ -1488,14 +1488,15 @@ function dibujarInteraccionMagneticaSVG() {
         // lx1: Punto de origen en la superficie del imán
         const lx1 = cx - (imanWidth/2) + (imanWidth*0.1) + (i * ((imanWidth*0.8) / Math.max(1, numLineas-1)));
         
-        // lx2: Punto de destino cerca del rotor (abierto en abanico)
+        // lx2: Punto de destino (ahora con un margen para no solapar con el rotor)
         const dx = lx1 - cx;
+        const expansionFactor = 1.35; 
         const lx2 = cx + dx * expansionFactor;
-        const yDest = cy + radioRotorSVG;
+        const yDest = cy + radioRotorSVG + 8; // Aumentado margen de 2 a 8
         
         // Generamos un camino curvo (Bezier cuadrática)
         const pathB = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        const cpX = lx1; // Punto de control para mantener la verticalidad inicial
+        const cpX = lx1; 
         const cpY = imanY - (imanY - yDest) * 0.4;
         
         const d = `M ${lx1} ${imanY} Q ${cpX} ${cpY} ${lx2} ${yDest + 2}`;
@@ -1504,16 +1505,14 @@ function dibujarInteraccionMagneticaSVG() {
         pathB.setAttribute('stroke-width', '1.2');
         pathB.setAttribute('stroke-dasharray', '3,3');
         pathB.setAttribute('fill', 'none');
-        // La opacidad cae ligeramente en los extremos para realismo
         pathB.setAttribute('opacity', 0.45 - (Math.abs(dx)/imanWidth)*0.3);
         
-        // Flecha B: Orientada según la trayectoria final de la curva
+        // Flecha B
         const anguloDeg = Math.atan2(yDest - cpY, lx2 - cpX) * 180 / Math.PI;
         const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
         arrow.setAttribute('points', `0,0 -3,7 3,7`);
         arrow.setAttribute('fill', '#3498db'); 
         arrow.setAttribute('opacity', '0.5');
-        // Rotamos y trasladamos la flecha a la punta de la curva (corregido para que apunte hacia afuera del N)
         arrow.setAttribute('transform', `translate(${lx2}, ${yDest}) rotate(${anguloDeg + 90})`);
         
         svg.appendChild(pathB); svg.appendChild(arrow);
@@ -1677,8 +1676,8 @@ function dibujarInteraccionMagneticaSVG() {
         // Solo dibujamos la flecha de fuerza en la espira inferior (i=0) para simplificar el diagrama
         if (i === 0 && localRatio > 0.05) {
             const F_len = 5 + (localRatio * 80); 
-            // Apuntar hacia la IZQUIERDA (Física: Corriente entrando + Campo arriba = Fuerza Izquierda)
-            const f_x1 = sx - devanadoR - 2;
+            // Apuntar hacia la IZQUIERDA. Separamos el inicio (f_x1) para que no pise el círculo naranja
+            const f_x1 = sx - devanadoR - 8;
             const f_x2 = f_x1 - F_len;
             
             const lineF = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -1699,7 +1698,7 @@ function dibujarInteraccionMagneticaSVG() {
     // --- 5. PAR ROTATORIO (CURVA) ---
     // Recalibración de grosor: más sutil (rango 2 a 7)
     const strokeW = Math.min(7, 2 + (parActivo * 120)); 
-    const rx = radioRotorSVG + 18;
+    const rx = radioRotorSVG + 25; // Aumentado de 18 a 25 para dar más aire al dibujo
     
     // Curva indicadora de giro (sentido horario, el lado izquierdo SUBE)
     // Coordenadas calculadas para que el arco esté a la izquierda y apunte hacia ARRIBA
