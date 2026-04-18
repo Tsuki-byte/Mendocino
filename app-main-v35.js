@@ -1680,13 +1680,13 @@ function dibujarInteraccionMagneticaSVG() {
     const strokeW = Math.min(7, 2 + (parActivo * 120)); 
     const rx = radioRotorSVG + 18;
     
-    // Curva indicadora de giro (sentido horario, el lado izquierdo SUBE)
-    // Coordenadas calculadas para que el arco esté a la izquierda y apunte hacia ARRIBA
-    const startX = cx - rx * 0.7; const startY = cy + rx * 0.7; // Empieza abajo izquierda
-    const endX = cx - rx * 0.7;   const endY = cy - rx * 0.7;   // Termina arriba izquierda
+    // Curva indicadora de giro (sentido antihorario, el lado izquierdo BAJA)
+    // Coordenadas calculadas para que el arco esté a la izquierda y apunte hacia ABAJO
+    const startX = cx - rx * 0.7; const startY = cy - rx * 0.7; // Empieza arriba izquierda
+    const endX = cx - rx * 0.7;   const endY = cy + rx * 0.7;   // Termina abajo izquierda
     const tauPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    // sweep-flag = 1 para que sea un arco convexo hacia fuera en sentido horario
-    tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 1 ${endX} ${endY}`);
+    // sweep-flag = 0 para que sea un arco convexo hacia fuera en sentido antihorario
+    tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 0 ${endX} ${endY}`);
     tauPath.setAttribute('stroke', '#2ecc71'); tauPath.setAttribute('stroke-width', strokeW);
     tauPath.setAttribute('fill', 'none');
     svg.appendChild(tauPath);
@@ -1697,8 +1697,8 @@ function dibujarInteraccionMagneticaSVG() {
     // Triángulo apuntando hacia la punta (0,0)
     tauArrow.setAttribute('points', `0,0 ${-headSize/2},${headSize} ${headSize/2},${headSize}`);
     tauArrow.setAttribute('fill', '#2ecc71');
-    // Rotamos 45 grados para que apunte hacia arriba-derecha siguiendo la curva en el tope izquierdo
-    tauArrow.setAttribute('transform', `translate(${endX}, ${endY}) rotate(45)`);
+    // Rotamos para que apunte hacia abajo-izquierda siguiendo la curva en el tope inferior izquierdo
+    tauArrow.setAttribute('transform', `translate(${endX}, ${endY}) rotate(135)`);
     svg.appendChild(tauArrow);
 }
 
