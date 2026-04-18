@@ -1513,8 +1513,8 @@ function dibujarInteraccionMagneticaSVG() {
         arrow.setAttribute('points', `0,0 -3,7 3,7`);
         arrow.setAttribute('fill', '#3498db'); 
         arrow.setAttribute('opacity', '0.5');
-        // Rotamos y trasladamos la flecha a la punta de la curva
-        arrow.setAttribute('transform', `translate(${lx2}, ${yDest}) rotate(${anguloDeg - 90})`);
+        // Rotamos y trasladamos la flecha a la punta de la curva (corregido para que apunte hacia afuera del N)
+        arrow.setAttribute('transform', `translate(${lx2}, ${yDest}) rotate(${anguloDeg + 90})`);
         
         svg.appendChild(pathB); svg.appendChild(arrow);
     }
