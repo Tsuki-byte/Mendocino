@@ -1658,8 +1658,9 @@ function dibujarInteraccionMagneticaSVG() {
         // Solo dibujamos la flecha de fuerza en la espira inferior (i=0) para simplificar el diagrama
         if (i === 0 && localRatio > 0.05) {
             const F_len = 5 + (localRatio * 80); 
-            const f_x1 = sx + devanadoR + 2;
-            const f_x2 = f_x1 + F_len;
+            // Apuntar hacia la IZQUIERDA (Física: Corriente entrando + Campo arriba = Fuerza Izquierda)
+            const f_x1 = sx - devanadoR - 2;
+            const f_x2 = f_x1 - F_len;
             
             const lineF = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             lineF.setAttribute('x1', f_x1); lineF.setAttribute('y1', sy);
@@ -1669,7 +1670,8 @@ function dibujarInteraccionMagneticaSVG() {
             svg.appendChild(lineF);
 
             const arrF = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            arrF.setAttribute('points', `${f_x2},${sy} ${f_x2-6},${sy-3.5} ${f_x2-6},${sy+3.5}`);
+            // Triángulo apuntando a la izquierda
+            arrF.setAttribute('points', `${f_x2},${sy} ${f_x2+6},${sy-3.5} ${f_x2+6},${sy+3.5}`);
             arrF.setAttribute('fill', '#e74c3c'); arrF.setAttribute('opacity', localRatio * 1.5);
             svg.appendChild(arrF);
         }
@@ -1680,13 +1682,13 @@ function dibujarInteraccionMagneticaSVG() {
     const strokeW = Math.min(7, 2 + (parActivo * 120)); 
     const rx = radioRotorSVG + 18;
     
-    // Curva indicadora de giro (sentido antihorario, el lado izquierdo BAJA)
-    // Coordenadas calculadas para que el arco esté a la izquierda y apunte hacia ABAJO
-    const startX = cx - rx * 0.7; const startY = cy - rx * 0.7; // Empieza arriba izquierda
-    const endX = cx - rx * 0.7;   const endY = cy + rx * 0.7;   // Termina abajo izquierda
+    // Curva indicadora de giro (sentido horario, el lado izquierdo SUBE)
+    // Coordenadas calculadas para que el arco esté a la izquierda y apunte hacia ARRIBA
+    const startX = cx - rx * 0.7; const startY = cy + rx * 0.7; // Empieza abajo izquierda
+    const endX = cx - rx * 0.7;   const endY = cy - rx * 0.7;   // Termina arriba izquierda
     const tauPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    // sweep-flag = 0 para que sea un arco convexo hacia fuera en sentido antihorario
-    tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 0 ${endX} ${endY}`);
+    // sweep-flag = 1 para que sea un arco convexo hacia fuera en sentido horario
+    tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 1 ${endX} ${endY}`);
     tauPath.setAttribute('stroke', '#2ecc71'); tauPath.setAttribute('stroke-width', strokeW);
     tauPath.setAttribute('fill', 'none');
     svg.appendChild(tauPath);
@@ -1697,8 +1699,8 @@ function dibujarInteraccionMagneticaSVG() {
     // Triángulo apuntando hacia la punta (0,0)
     tauArrow.setAttribute('points', `0,0 ${-headSize/2},${headSize} ${headSize/2},${headSize}`);
     tauArrow.setAttribute('fill', '#2ecc71');
-    // Rotamos para que apunte hacia abajo-izquierda siguiendo la curva en el tope inferior izquierdo
-    tauArrow.setAttribute('transform', `translate(${endX}, ${endY}) rotate(135)`);
+    // Rotamos 45 grados para que apunte hacia arriba-derecha siguiendo la curva en el tope izquierdo
+    tauArrow.setAttribute('transform', `translate(${endX}, ${endY}) rotate(45)`);
     svg.appendChild(tauArrow);
 }
 
