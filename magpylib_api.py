@@ -675,20 +675,20 @@ def calculate_levitation():
                 col_v.add(s_body)
 
             # --- DIBUJAR BASE ---
-            base_plate = data.get('base_plate', {})
-            bp_x = base_plate.get('x', 120)
-            bp_y = base_plate.get('y', 80)
-            bp_z = base_plate.get('z_pos', -15)
-            if bp_x > 0 and bp_y > 0:
-                bp_body = magpy.magnet.Cuboid(
-                    polarization=[0, 0, 0],
-                    dimension=[bp_x*1e-3, bp_y*1e-3, 5*1e-3], # 5mm thickness
-                    position=[0, 0, bp_z*1e-3]
-                )
-                bp_body.style.color = "#f1f5f9" # Light gray
-                bp_body.style.opacity = 0.9
-                bp_body.style.magnetization.show = False
-                col_v.add(bp_body)
+            # base_plate = data.get('base_plate', {})
+            # bp_x = base_plate.get('x', 120)
+            # bp_y = base_plate.get('y', 80)
+            # bp_z = base_plate.get('z_pos', -15)
+            # if bp_x > 0 and bp_y > 0:
+            #     bp_body = magpy.magnet.Cuboid(
+            #         polarization=[0, 0, 0],
+            #         dimension=[bp_x*1e-3, bp_y*1e-3, 5*1e-3], # 5mm thickness
+            #         position=[0, 0, bp_z*1e-3]
+            #     )
+            #     bp_body.style.color = "#f1f5f9" # Light gray
+            #     bp_body.style.opacity = 0.9
+            #     bp_body.style.magnetization.show = False
+            #     col_v.add(bp_body)
 
 
             try:
@@ -1075,21 +1075,22 @@ def calculate_global_forces():
             s_body.style.magnetization.show = False
             col_imanes.add(s_body)
 
-        # Base de apoyo
-        base_plate = data.get('base_plate', {})
-        bp_x = base_plate.get('x', 0)
-        bp_y = base_plate.get('y', 0)
-        bp_z = base_plate.get('z_pos', -2.5)
-        if bp_x > 0 and bp_y > 0:
-            bp_body = magpy.magnet.Cuboid(
-                polarization=[0, 0, 0],
-                dimension=[bp_x*1e-3, bp_y*1e-3, 5*1e-3], # 5mm thickness
-                position=[0, 0, bp_z*1e-3]
-            )
-            bp_body.style.color = "#f1f5f9"
-            bp_body.style.opacity = 0.4
-            bp_body.style.magnetization.show = False
-            col_imanes.add(bp_body)
+        # Base de apoyo (ocultada visualmente para que el bounding box de Plotly sea más ajustado al motor
+        # y no aleje tanto la cámara, evitando el efecto 'espagueti' en el eje Y)
+        # base_plate = data.get('base_plate', {})
+        # bp_x = base_plate.get('x', 0)
+        # bp_y = base_plate.get('y', 0)
+        # bp_z = base_plate.get('z_pos', -2.5)
+        # if bp_x > 0 and bp_y > 0:
+        #     bp_body = magpy.magnet.Cuboid(
+        #         polarization=[0, 0, 0],
+        #         dimension=[bp_x*1e-3, bp_y*1e-3, 5*1e-3],
+        #         position=[0, 0, bp_z*1e-3]
+        #     )
+        #     bp_body.style.color = "#f1f5f9"
+        #     bp_body.style.opacity = 0.4
+        #     bp_body.style.magnetization.show = False
+        #     col_imanes.add(bp_body)
         
         # --- PLOTLY 3D ---
         plotly_html = ""
