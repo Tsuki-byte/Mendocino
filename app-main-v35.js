@@ -202,6 +202,26 @@ function parsearNumero(valor) {
     return parseFloat(valor.replace(',', '.'));
 }
 
+function cargarScriptsSecuencialmente(contenedor) {
+    const scripts = Array.from(contenedor.querySelectorAll('script'));
+    const loadScript = (index) => {
+        if (index >= scripts.length) return;
+        const oldScript = scripts[index];
+        const newScript = document.createElement('script');
+        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+        newScript.text = oldScript.innerHTML;
+        
+        if (newScript.src) {
+            newScript.onload = () => loadScript(index + 1);
+            newScript.onerror = () => loadScript(index + 1);
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        } else {
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+            loadScript(index + 1);
+        }
+    };
+    loadScript(0);
+}
 
         function obtenerElemento(id) {
             return document.getElementById(id);
@@ -5275,13 +5295,7 @@ async function renderizarPasoMagpylib() {
         
         // Ejecutar los scripts incrustados de Plotly
         if (data.plotly_html) {
-            const scripts = contenedorResultados.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            });
+            cargarScriptsSecuencialmente(contenedorResultados);
         }
 
     } catch (error) {
@@ -8066,13 +8080,7 @@ async function ejecutarMagpylibLevitacion() {
         
         // Ejecutar los scripts incrustados de Plotly
         if (data.plotly_html) {
-            const scripts = contenedor.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            });
+            cargarScriptsSecuencialmente(contenedor);
         }
         
     } catch (error) {
@@ -8252,13 +8260,7 @@ async function renderizarPasoMagpylibGlobal() {
         contenedor.innerHTML = html;
         
         if (dataGlobal.plotly_html) {
-            const scripts = contenedor.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            });
+            cargarScriptsSecuencialmente(contenedor);
         }
         
     } catch (error) {
