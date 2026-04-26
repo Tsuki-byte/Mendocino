@@ -342,7 +342,7 @@ function inyectarMemoriaTecnica() {
 </div>
 
 <h3>Fase 7: FCEM y Velocidad</h3>
-<p>Todo motor eléctrico genera su propio voltaje "freno" al rodar. Sin él, aceleraría hasta desintegrarse.</p>
+<p>Todo motor eléctrico genera su propio voltaje "freno" al rodar. Sin él, el rotor aceleraría indefinidamente hasta alcanzar velocidades irreales que excederían los límites de la física clásica.</p>
 <p><strong>Concepto Teórico:</strong> Al pasar por el campo magnético del imán central, la Ley de Faraday-Lenz induce una <em>Fuerza Contraelectromotriz</em> opuesta que actúa como freno asintótico de velocidad:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
