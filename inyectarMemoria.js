@@ -120,7 +120,7 @@ function inyectarMemoriaTecnica() {
 
 <h1>Memoria Técnica y Cálculos de Diseño: Motor Mendocino</h1>
 
-<p>Este documento constituye la memoria técnica que desglosa el diseño, la parametrización geométrica y los cálculos físicos del prototipo de motor Mendocino que ha configurado. Sirve como registro de ingeniería detallado sobre la viabilidad, el equilibrio de masas, y las fuerzas electrodinámicas de levitación y rotación de este modelo específico.</p>
+<p>Este documento constituye la memoria técnica que desglosa el diseño, la parametrización geométrica y los cálculos físicos del prototipo de motor Mendocino que ha configurado. Sirve como registro de ingeniería detallado sobre la viabilidad, el equilibrio de masas, así como las fuerzas electrodinámicas de levitación y rotación de este modelo específico.</p>
 
 <hr>
 
