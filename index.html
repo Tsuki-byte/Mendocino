@@ -1441,23 +1441,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
                     <div class="informe-layout">
-                        <div class="informe-panel-principal" style="flex:2;">
-                            <label class="informe-label" for="informe-automatico-html">Memoria Técnica del Proyecto</label>
+                        <div class="informe-panel-principal" style="flex:1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <label class="informe-label" for="informe-automatico-html" style="margin-bottom: 0;">Memoria Técnica del Proyecto</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn-action" style="padding: 8px 15px; font-size: 14px;" onclick="finalizarConfiguracion()">💾 Guardar diseño</button>
+                                    <button class="btn-download" style="padding: 8px 15px; font-size: 14px;" onclick="descargarInformePDF()">⬇️ Descargar PDF</button>
+                                </div>
+                            </div>
                             <textarea id="informe-automatico" style="display:none;"></textarea>
-                            <div id="informe-automatico-html" class="informe-textarea" style="background: white; padding: 40px; overflow-y: auto; height: 60vh; font-family: 'Segoe UI', sans-serif; cursor: text; text-align: left;">
+                            <div id="informe-automatico-html" class="informe-textarea" style="background: white; padding: 40px; overflow-y: auto; height: 60vh; font-family: 'Segoe UI', sans-serif; cursor: text; text-align: left; border: 1px solid #cbd5e1; border-radius: 8px;">
                                 <!-- Se inyectará dinámicamente -->
                             </div>
                         </div>
-
-                        <aside class="informe-panel-lateral">
-                            <h3>Acciones</h3>
-
-                            <div class="acciones-informe acciones-informe-vertical">
-                                <button class="btn-action" onclick="finalizarConfiguracion()">💾 Guardar diseño</button>
-                                <button class="btn-config" onclick="copiarInformeAutomatico()">📋 Copiar</button>
-                                <button class="btn-download" onclick="descargarInformePDF()">⬇️ Descargar PDF</button>
-                            </div>
-                        </aside>
                     </div>
 
                     <div class="nav-buttons nav-buttons-informe">
