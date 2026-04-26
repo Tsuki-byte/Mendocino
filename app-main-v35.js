@@ -8753,6 +8753,14 @@ window.poblarSelectProyectosInforme = function() {
 
 window.cargarProyectoEnInforme = function() {
     const select = document.getElementById('select-proyecto-informe');
+    const container = document.getElementById('informe-automatico-html');
+    
+    // Feedback visual inmediato
+    if (container) {
+        container.innerHTML = '<div style="text-align:center; padding: 60px; font-family: sans-serif; color: #3b82f6; font-size: 20px; font-weight: bold;">⚙️ Recalculando físicas y generando Memoria Técnica...<br><span style="font-size:14px; color:#64748b; font-weight:normal; display:block; margin-top:10px;">Por favor espera unos instantes</span></div>';
+        container.style.opacity = '0.5';
+    }
+
     if(select && select.value !== "") {
         const p = window.proyectosCargados[select.value];
         // Utilizamos la función cargarMotor global
@@ -8763,12 +8771,16 @@ window.cargarProyectoEnInforme = function() {
                 window.inyectarMemoriaTecnica();
                 if (typeof window.renderizarMatematicas === 'function') window.renderizarMatematicas();
             }
-        }, 500);
+            if (container) container.style.opacity = '1';
+        }, 1000);
     } else {
         // Generar informe con lo actual
-        if (typeof window.inyectarMemoriaTecnica === 'function') {
-            window.inyectarMemoriaTecnica();
-            if (typeof window.renderizarMatematicas === 'function') window.renderizarMatematicas();
-        }
+        setTimeout(() => {
+            if (typeof window.inyectarMemoriaTecnica === 'function') {
+                window.inyectarMemoriaTecnica();
+                if (typeof window.renderizarMatematicas === 'function') window.renderizarMatematicas();
+            }
+            if (container) container.style.opacity = '1';
+        }, 500);
     }
 };
