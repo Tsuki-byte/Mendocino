@@ -996,8 +996,9 @@ def calculate_global_forces():
                 vertices=np.array(vertices_mm) * 1e-3,
                 position=np.array(clean_pos_bobina) * 1e-3
             )
+            anchor_pt = np.array(clean_pos_bobina) * 1e-3
             if angle_x != 0:
-                poly.rotate_from_angax(angle_x, 'x', anchor=(0,0,0))
+                poly.rotate_from_angax(angle_x, 'x', anchor=anchor_pt)
                 
             bobinas_vis.append(poly)
             
@@ -1019,7 +1020,8 @@ def calculate_global_forces():
             Forces = np.cross(wire_vecs, B_at_wire) * total_current
             
             # Torque = r x F
-            Torques = np.cross(wire_pts, Forces)
+            r_vecs = np.array(wire_pts) - anchor_pt
+            Torques = np.cross(r_vecs, Forces)
             
             total_torque_x += np.sum(Torques[:, 0])
             total_f_x += np.sum(Forces[:, 0])

@@ -8182,9 +8182,19 @@ async function renderizarPasoMagpylibGlobal() {
         const baseY = parseFloat(document.getElementById('lev-base-y')?.value) || 80;
         const diamEje = parseFloat(document.getElementById('diametro-eje')?.value) || EstadoDiseno.diametroEje || 8;
 
+        const imanes_base_elevados = payloadForces.imanes_base.map(iman => {
+            const p = iman.posicion || [0, 0, 0];
+            return { ...iman, posicion: [p[0], p[1], p[2] + h_eje_base] };
+        });
+
+        const bobinas_elevadas = payloadForces.bobinas.map(bobina => {
+            const p = bobina.posicion || [0, 0, 0];
+            return { ...bobina, posicion: [p[0], p[1], p[2] + h_eje_base] };
+        });
+
         const payloadGlobal = {
-            imanes_base: payloadForces.imanes_base,
-            bobinas: payloadForces.bobinas,
+            imanes_base: imanes_base_elevados,
+            bobinas: bobinas_elevadas,
             imanes_sustentacion: imanes_sustentacion,
             imanes_rotor: imanes_rotor,
             style_2d: document.getElementById('magpylib-style-global')?.value || 'scifi',
