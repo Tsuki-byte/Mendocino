@@ -13,6 +13,18 @@ function inyectarMemoriaTecnica() {
     
     const diametroHilo = window.EstadoDiseno?.diametroHilo_mm || parseFloat(document.getElementById("diametro-hilo")?.value) || 0.315;
     
+    // --- Variables Solares del Panel ---
+    const pVoc = parseFloat(document.getElementById("res-panel-voc")?.textContent) || 1.15;
+    const pIsc = parseFloat(document.getElementById("res-panel-isc")?.textContent) || 230.0;
+    const pVmp = parseFloat(document.getElementById("res-panel-vmp")?.textContent) || 0.95;
+    const pImp = parseFloat(document.getElementById("res-panel-imp")?.textContent) || 205.0;
+    const pPmax = parseFloat(document.getElementById("res-panel-pmax")?.textContent) || 194.75;
+    
+    const FF = (pVoc * pIsc > 0) ? (pPmax / (pVoc * pIsc)) : 0.73;
+    const area_cm2 = (L * W) / 100;
+    const irrad_mW = area_cm2 * 100; // Asumiendo AM1.5 1000 W/m2 -> 100 mW/cm2
+    const eficiencia = (irrad_mW > 0) ? (pPmax / irrad_mW) * 100 : 20;
+    
     // --- 2. Cálculos físicos en tiempo real ---
     const R_circ = W / (2 * Math.sin(Math.PI / N));
     const Apotema = R_circ * Math.cos(Math.PI / N);
@@ -378,7 +390,9 @@ function inyectarMemoriaTecnica() {
 
 <h3>Fase 8: Par Motriz y Fuerza de Lorentz (Imán Central)</h3>
 <p>El centro de gravedad computacional para entender qué hace girar al motor: el cálculo exhaustivo de elementos finitos aplicado exclusivamente a la interacción motriz.</p>
-<p><strong>Concepto Teórico:</strong> El simulador segmenta cada espira de la bobina en microvectores espaciales. Utilizando la posición 3D exacta del imán central de la base (Estator) y la intensidad de corriente inyectada por el panel solar iluminado, se aplica la Ley de Lorentz tridimensional a lo largo de todo el devanado. Esto genera un vector de fuerza neta que, multiplicado por el brazo de palanca (distancia al eje de giro), se traduce en el <strong>Par Motriz (Torque)</strong>, que es la magnitud mecánica real que dicta con cuánta fuerza gira el motor Mendocino.</p>
+<p><strong>Cálculos Exactos con Magpylib:</strong> En lugar de aproximaciones genéricas, el simulador se apoya en la potencia matemática de la librería científica <code>Magpylib</code>. Esta herramienta resuelve las ecuaciones de Maxwell para geometrías magnéticas complejas, ofreciéndonos el valor exacto del Campo Magnético (vector $\vec{B}$, en Teslas) en cualquier coordenada 3D del espacio que rodea al imán central de la base (Estator).</p>
+<p><strong>La Regla de la Mano Derecha:</strong> El simulador segmenta virtualmente cada espira de cobre del rotor en diminutos microvectores espaciales. En cada punto, cruza la corriente eléctrica inyectada por el panel solar ($I$) con el campo magnético del imán ($\vec{B}$) calculado por Magpylib para hallar la <strong>Fuerza de Lorentz</strong>. Esta interacción geométrica es dictada universalmente por la <em>Regla de la Mano Derecha</em>: si alineas el dedo índice en la dirección en la que viaja la corriente eléctrica y el dedo medio en la dirección de las líneas del campo magnético (saliendo del Polo Norte del imán), el pulgar extendido te apuntará la dirección exacta de la fuerza de repulsión resultante.</p>
+<p><strong>Descomposición Vectorial y Espiras Inclinadas:</strong> Un desafío fundamental en este motor es que no todas las bobinas están en la misma posición geométrica ni a la misma distancia. A medida que el rotor gira, las espiras adoptan distintas inclinaciones espaciales. Dado que la fuerza resultante es vectorial, su empuje rara vez es 100% "útil" para el giro. Magpylib asume el inmenso cálculo de computar el vector de fuerza bruto y <strong>descomponerlo trigonométricamente en sus componentes cartesianas (ejes X, Y, Z)</strong>. Con precisión microscópica, el sistema discrimina las fuerzas radiales inútiles (que empujan al eje tratando de doblarlo) y suma exclusivamente la componente tangencial que contribuye al <strong>Par Motriz (Torque)</strong> total de la máquina.</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <mover><mi>F</mi><mo>&rarr;</mo></mover>
@@ -492,7 +506,80 @@ function inyectarMemoriaTecnica() {
     <li><strong>Hilo Conductor</strong>: Diámetro d = ${diametroHilo.toFixed(3)} mm.</li>
 </ul>
 
-<h3>3.2. Geometría Hexagonal (Cálculo Espacial)</h3>
+<h3>3.2. Análisis Fotovoltaico (Factor de Forma y Eficiencia)</h3>
+<p>La capacidad mecánica del motor para arrancar depende fundamentalmente de la calidad de sus células solares. En base al ensayo experimental, caracterizamos matemáticamente el panel:</p>
+<ul>
+    <li><strong>Tensión de Vacío (V<sub>oc</sub>):</strong> ${pVoc.toFixed(2)} V</li>
+    <li><strong>Corriente de Corto (I<sub>sc</sub>):</strong> ${pIsc.toFixed(1)} mA</li>
+    <li><strong>Punto Máx. Potencia (P<sub>max</sub>):</strong> ${pPmax.toFixed(2)} mW (a ${pVmp.toFixed(2)} V y ${pImp.toFixed(1)} mA)</li>
+</ul>
+<p><strong>Factor de Forma (Fill Factor, FF):</strong> Es el indicador maestro de la calidad eléctrica de la celda. Mide la "cuadratura" de la curva I-V. Cuanto más cerca de 1, menor es la resistencia interna parásita de la celda, permitiendo extraer casi toda su potencia teórica.</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>F</mi><mi>F</mi>
+  <mo>=</mo>
+  <mfrac>
+    <msub><mi>P</mi><mi>max</mi></msub>
+    <mrow><msub><mi>V</mi><mi>oc</mi></msub><mo>&sdot;</mo><msub><mi>I</mi><mi>sc</mi></msub></mrow>
+  </mfrac>
+  <mo>=</mo>
+  <mfrac>
+    <mn>${pPmax.toFixed(2)}</mn>
+    <mrow><mn>${pVoc.toFixed(2)}</mn><mo>&sdot;</mo><mn>${pIsc.toFixed(1)}</mn></mrow>
+  </mfrac>
+  <mo>=</mo>
+  <mn>${FF.toFixed(3)}</mn>
+</math>
+</div>
+<p><strong>Eficiencia (&eta;):</strong> Comparando la potencia eléctrica extraída contra la potencia lumínica teórica incidente (asumiendo irradiancia estándar AM1.5 de 1000 W/m², lo que supone $\approx 10 \text{ mW/cm}^2$ sobre el área de ${(area_cm2).toFixed(2)} \text{ cm}^2$ del panel), deducimos el rendimiento neto de conversión:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>&eta;</mi>
+  <mo>=</mo>
+  <mrow><mo>(</mo><mfrac>
+    <msub><mi>P</mi><mi>max</mi></msub>
+    <msub><mi>P</mi><mi>luminica</mi></msub>
+  </mfrac><mo>)</mo></mrow>
+  <mo>&sdot;</mo>
+  <mn>100</mn>
+  <mo>=</mo>
+  <mrow><mo>(</mo><mfrac>
+    <mn>${pPmax.toFixed(2)}</mn>
+    <mn>${irrad_mW.toFixed(1)}</mn>
+  </mfrac><mo>)</mo></mrow>
+  <mo>&sdot;</mo>
+  <mn>100</mn>
+  <mo>=</mo>
+  <mn>${eficiencia.toFixed(2)}</mn>
+  <mo>%</mo>
+</math>
+</div>
+
+<h3>3.3. Interacción Lumínica según Inclinación (Ley del Coseno)</h3>
+<p>La posición del rotor respecto a la fuente de luz es crucial, ya que un panel solar no produce su máxima energía a menos que los rayos incidan totalmente perpendiculares a su superficie. Cuando el motor gira, el ángulo de incidencia ($\theta$) cambia constantemente. La reducción de la corriente ($I$) inducida por este desalineamiento obedece numéricamente a la Ley del Coseno (Lambert). Para un ángulo ilustrativo de $\theta = 45^\circ$:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>I</mi><mi>activa</mi></msub>
+  <mo>=</mo>
+  <msub><mi>I</mi><mi>mp</mi></msub>
+  <mo>&sdot;</mo>
+  <mi>cos</mi><mo>(</mo><mi>&theta;</mi><mo>)</mo>
+  <mo>=</mo>
+  <mn>${pImp.toFixed(1)}</mn>
+  <mo>&sdot;</mo>
+  <mi>cos</mi><mo>(</mo><mn>45</mn><mo>&deg;</mo><mo>)</mo>
+  <mo>=</mo>
+  <mn>${pImp.toFixed(1)}</mn>
+  <mo>&sdot;</mo>
+  <mn>0.707</mn>
+  <mo>&approx;</mo>
+  <mn>${(pImp * Math.cos(Math.PI/4)).toFixed(1)}</mn>
+  <mtext>&nbsp;mA</mtext>
+</math>
+</div>
+<p>Este fenómeno matemático demuestra por qué los paneles laterales, que reciben la luz rasante, inyectan muchísima menos corriente que el panel superior orientado hacia el cénit, provocando el desequilibrio de fuerzas que da vida al motor Mendocino.</p>
+
+<h3>3.4. Geometría Hexagonal (Cálculo Espacial)</h3>
 <p>Para un polígono de ${N} caras, el ángulo central subtendido por cada lado es 360º / ${N} = ${(360/N).toFixed(1)}º.</p>
 <p>El circunradio (distancia del centro a los vértices) se calcula con la fórmula:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 20px 0;">
@@ -545,7 +632,7 @@ function inyectarMemoriaTecnica() {
 </div>
 <p>Si el eje de acero tiene 6 mm de diámetro (radio 3 mm), la <strong>profundidad de la ventana de bobinado</strong> disponible por cara es ${Apotema.toFixed(2)} - 3 = ${(Apotema-3).toFixed(2)} mm.</p>
 
-<h3>3.3. Análisis Volumétrico (Encaje del Hilo en la Ranura)</h3>
+<h3>3.5. Análisis Volumétrico (Encaje del Hilo en la Ranura)</h3>
 <p>Una vez resuelta la geometría poligonal y determinada la resistencia objetivo que demanda el panel solar, es imperativo comprobar si la cantidad resultante de hilo de cobre cabe físicamente dentro del armazón estructural.</p>
 <p><strong>Superficie Útil de la Ranura (A<sub>ranura</sub>):</strong> Es el espacio geométrico transversal disponible bajo los paneles para alojar el bobinado. Matemáticamente, se determina evaluando el área del segmento interno del polígono y restando el volumen ocupado por el eje central pasante.</p>
 <p><strong>Sección Total de Cobre (A<sub>cobre</sub>):</strong> Es la suma del área transversal de todas las espiras necesarias. Depende directamente del diámetro del hilo ($d = ${diametroHilo.toFixed(3)} \text{ mm}$) y del número total de vueltas ($N_{vueltas}$) requeridas para alcanzar el equilibrio eléctrico:</p>
@@ -560,9 +647,9 @@ function inyectarMemoriaTecnica() {
 </div>
 <p><strong>Porcentaje de Ocupación:</strong> La viabilidad constructiva depende de este indicador crítico. Si el ratio entre el área total del cobre a introducir y el área libre de la ranura supera el límite de empaquetamiento práctico (alrededor del 70% o 80%, debido al espacio muerto entre hilos cilíndricos), la bobina desbordará su compartimento y resultará físicamente imposible cerrar y pegar los paneles solares sobre el chasis de resina.</p>
 
-<h3>3.4. Electromagnetismo (Devanados y Resistencia)</h3>
+<h3>3.6. Electromagnetismo (Devanados, Resistencia y Densidad)</h3>
 <ul>
-    <li><strong>Sección Transversal (<i>S</i>)</strong>: 
+    <li><strong>Sección Transversal del Hilo (<i>S</i>)</strong>: 
         <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <mi>S</mi>
@@ -581,13 +668,35 @@ function inyectarMemoriaTecnica() {
   <mi>&pi;</mi>
   <mo>&sdot;</mo>
   <msup>
-    <mrow><mo>(</mo><mfrac><mn>0.315</mn><mn>2</mn></mfrac><mo>)</mo></mrow>
+    <mrow><mo>(</mo><mfrac><mn>${diametroHilo.toFixed(3)}</mn><mn>2</mn></mfrac><mo>)</mo></mrow>
     <mn>2</mn>
   </msup>
   <mo>&approx;</mo>
-  <mn>0.0779</mn>
+  <mn>${(Math.PI * Math.pow(diametroHilo/2, 2)).toFixed(4)}</mn>
   <mtext>&nbsp;</mtext>
   <msup><mi>mm</mi><mn>2</mn></msup>
+</math>
+        </div>
+    </li>
+    <li><strong>Densidad de Corriente (<i>J</i>)</strong>:
+        <p style="margin-top: 5px; margin-bottom: 10px; color: #475569; line-height: 1.5;">Este parámetro evalúa la viabilidad térmica calculando cuánta corriente atraviesa la sección del conductor. Constituye un factor de seguridad frente al Efecto Joule para evitar que el esmalte se derrita. Se deduce dividiendo la corriente de trabajo óptima del panel ($I_{mp}$) entre la sección. Para motores Mendocino refrigerados por aire en rotación libre, se admiten densidades nominales de entre 4 y 6 A/mm².</p>
+        <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>J</mi>
+  <mo>=</mo>
+  <mfrac><msub><mi>I</mi><mi>mp</mi></msub><mi>S</mi></mfrac>
+</math>
+<br>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>J</mi>
+  <mo>=</mo>
+  <mfrac>
+    <mrow><mn>${(pImp / 1000).toFixed(3)}</mn><mtext>&nbsp;A</mtext></mrow>
+    <mrow><mn>${(Math.PI * Math.pow(diametroHilo/2, 2)).toFixed(4)}</mn><mtext>&nbsp;</mtext><msup><mi>mm</mi><mn>2</mn></msup></mrow>
+  </mfrac>
+  <mo>&approx;</mo>
+  <mn>${((pImp / 1000) / (Math.PI * Math.pow(diametroHilo/2, 2))).toFixed(2)}</mn>
+  <mtext>&nbsp;A/</mtext><msup><mi>mm</mi><mn>2</mn></msup>
 </math>
         </div>
     </li>
@@ -602,9 +711,9 @@ function inyectarMemoriaTecnica() {
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>R</mi><mi>L</mi></msub>
   <mo>=</mo>
-  <mfrac><mn>0.0171</mn><mn>0.0779</mn></mfrac>
+  <mfrac><mn>0.0171</mn><mn>${(Math.PI * Math.pow(diametroHilo/2, 2)).toFixed(4)}</mn></mfrac>
   <mo>&approx;</mo>
-  <mn>0.219</mn>
+  <mn>${(0.0171 / (Math.PI * Math.pow(diametroHilo/2, 2))).toFixed(3)}</mn>
   <mtext>&nbsp;&Omega;/m</mtext>
 </math>
         </div>
