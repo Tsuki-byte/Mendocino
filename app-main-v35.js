@@ -4261,6 +4261,13 @@ function cambiarPaso(numPaso) {
         if (typeof dibujarLevitacionSVG === 'function') {
             setTimeout(dibujarLevitacionSVG, 100);
         }
+        // Al entrar en Magpylib Levitación, renderizar si no está
+        setTimeout(() => {
+            const contLev = document.getElementById('res-magpylib-levitacion');
+            if (contLev && contLev.innerHTML.includes('Haz clic')) {
+                ejecutarMagpylibLevitacion();
+            }
+        }, 300);
     }
     if (numPaso === 5) {
         precargarPasoMagnetico();
@@ -4273,10 +4280,20 @@ function cambiarPaso(numPaso) {
         calcularPasoFCEM();
     }
     if (numPaso === 8) {
-        // Al entrar en Magpylib, renderizar si no está
+        // Al entrar en Magpylib Fuerzas, renderizar si no está
         setTimeout(() => {
-            if (document.getElementById('magpylib-resultados').innerHTML.includes('Haz clic')) {
+            const contFuerzas = document.getElementById('magpylib-resultados');
+            if (contFuerzas && contFuerzas.innerHTML.includes('Haz clic')) {
                 renderizarPasoMagpylib();
+            }
+        }, 300);
+    }
+    if (numPaso === 9) {
+        // Al entrar en Magpylib Global, renderizar si no está
+        setTimeout(() => {
+            const contGlobal = document.getElementById('magpylib-resultados-global');
+            if (contGlobal && contGlobal.innerHTML.includes('Haz clic')) {
+                renderizarPasoMagpylibGlobal();
             }
         }, 300);
     }
