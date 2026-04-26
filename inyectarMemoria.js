@@ -28,9 +28,9 @@ function inyectarMemoriaTecnica() {
         font-family: 'Segoe UI', Arial, sans-serif;
         line-height: 1.6;
         color: #333;
-        max-width: 800px;
-        margin: 40px auto;
-        padding: 0 20px;
+        width: 100%;
+        margin: 0;
+        padding: 0 10px;
     }
     #informe-automatico-html h1 {
         color: #2c3e50;
