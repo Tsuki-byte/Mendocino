@@ -106,9 +106,15 @@ def calculate_forces():
             
             # Apply color distinction based on current magnitude
             color = 'blue' if abs(amp_turns) > 1e-5 else 'gray'
-            
-            coil = magpy.current.Polyline(current=amp_turns, vertices=vertices, position=pos, style_color=color)
+            coil = magpy.current.Polyline(current=amp_turns, vertices=vertices, position=pos)
             coil.style.arrow.show = False
+            
+            if abs(amp_turns) > 1e-5:
+                coil.style.color = '#ff6600'
+                coil.style.line.width = 5
+            else:
+                coil.style.color = 'gray'
+                coil.style.line.width = 2
             if angle_x != 0:
                 coil.rotate_from_angax(angle_x, 'x', anchor=(0,0,0))
                 
@@ -999,6 +1005,13 @@ def calculate_global_forces():
             anchor_pt = np.array(clean_pos_bobina) * 1e-3
             if angle_x != 0:
                 poly.rotate_from_angax(angle_x, 'x', anchor=anchor_pt)
+                
+            if abs(total_current) > 1e-5:
+                poly.style.color = '#ff6600'
+                poly.style.line.width = 5
+            else:
+                poly.style.color = 'gray'
+                poly.style.line.width = 2
                 
             bobinas_vis.append(poly)
             
