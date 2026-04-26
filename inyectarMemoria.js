@@ -137,7 +137,7 @@ function inyectarMemoriaTecnica() {
 
 <h2>2. Desglose Teórico y Operativo de las Fases del Simulador</h2>
 
-<p>A continuación, se describe con exhaustividad cada una de las fases de la herramienta, detallando la base teórica y diferenciando exactamente qué información requiere la aplicación (<strong>Entradas</strong>) y qué información resuelve (<strong>Salidas</strong>). Cabe destacar que, de forma complementaria a este informe final, la propia interfaz de la calculadora incluye un pequeño panel de resumen técnico en cada uno de sus pasos para guiar el proceso de diseño en tiempo real.</p>
+<p>A continuación, se describe cada una de las fases de la herramienta, detallando la base teórica y diferenciando exactamente qué información requiere la aplicación (<strong>Entradas</strong>) y qué información resuelve (<strong>Salidas</strong>). Cabe destacar que, de forma complementaria a este informe final, la propia interfaz de la calculadora incluye un pequeño panel de resumen técnico en cada uno de sus pasos para guiar el proceso de diseño en tiempo real.</p>
 
 <h3>Fase 1: Ensayo de Placas Solares (Fuente de Energía)</h3>
 <p>El motor no se conecta a una red; su única fuente de energía son las células fotovoltaicas. Las células solares no son fuentes de tensión ni de corriente ideales, sino que operan bajo una <strong>curva característica I-V</strong> no lineal.</p>
