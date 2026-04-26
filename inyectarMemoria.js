@@ -316,8 +316,10 @@ function inyectarMemoriaTecnica() {
 </div>
 
 <h3>Fase 6: Interacción Lumínica (Conmutación Óptica)</h3>
-<p>El sol y la geometría de la carcasa actúan como un sensor de efecto Hall pasivo.</p>
-<p><strong>Concepto Teórico:</strong> La energía interceptada obedece a la Ley del Coseno de Lambert, mitigada por las sombras proyectadas por las aristas del polígono al rotar el motor:</p>
+<p>El sol (o la fuente de luz artificial) y la geometría poliédrica de la carcasa actúan como un sistema de conmutación óptica pasiva, haciendo el trabajo que en otros motores realizarían unas escobillas mecánicas.</p>
+<p><strong>Dinámica Interactiva del Simulador:</strong> En esta fase, la calculadora permite interactuar dinámicamente tanto con el <strong>ángulo de rotación del motor</strong> como con la <strong>posición cenital de la fuente de luz</strong>. Al arrastrar los controles y hacer girar manualmente el rotor virtual en pantalla, se puede observar en tiempo real cómo fluye la corriente eléctrica a través de los distintos devanados. El diagrama reacciona de forma visual: las bobinas dibujadas adoptan un <strong>color rojo más intenso</strong> conforme la corriente inyectada por su panel solar asociado se hace más fuerte (alcanzando su máximo cuando la placa se alinea de forma perpendicular a la luz).</p>
+<p>Esta simulación paso a paso resulta reveladora para comprender el rendimiento del motor, ya que permite detectar a simple vista qué bobina tiene los "efectos más directos". Quedará patente que el par motriz óptimo ocurre cuando la bobina que recibe la corriente más intensa coincide exactamente con su paso por la parte inferior de la estructura, es decir, cuando transita a milímetros del imán central de la base (Estator) cortando sus líneas de campo magnético perpendicularmente.</p>
+<p><strong>Concepto Teórico:</strong> Matemáticamente, la energía lumínica interceptada obedece a la <strong>Ley de Lambert</strong> (Ley del Coseno), la cual modela cómo decae la radiación absorbida cuando los rayos de luz no caen rectos. Este valor también se ve fuertemente mitigado por el fenómeno geométrico del "auto-sombreado": al girar, las propias aristas del rotor proyectan sombras variables sobre los paneles vecinos, recortando dinámicamente el área iluminada efectiva:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>E</mi><mi>incidente</mi></msub>
