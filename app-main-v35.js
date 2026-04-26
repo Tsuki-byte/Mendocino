@@ -8253,6 +8253,30 @@ async function renderizarPasoMagpylibGlobal() {
              </div>`;
         }
         
+        if (dataGlobal.streamplot_base64_xy_base) {
+             html += `
+             <div style="margin-top: 15px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                 <div style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                     <h4 style="margin: 0; color: #334155; font-size: 13px; font-weight: 600;">VISOR 2D ESTATOR (Vista Superior X-Y a la altura del eje)</h4>
+                 </div>
+                 <div style="padding: 20px; width: 100%; display: flex; justify-content: center; align-items: center; background-color: ${document.getElementById('magpylib-style-global')?.value === 'scifi' ? '#0f172a' : '#ffffff'};">
+                     <img src="data:image/png;base64,${dataGlobal.streamplot_base64_xy_base}" style="max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                 </div>
+             </div>`;
+        }
+
+        if (dataGlobal.streamplot_base64_xy_rotor) {
+             html += `
+             <div style="margin-top: 15px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                 <div style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                     <h4 style="margin: 0; color: #334155; font-size: 13px; font-weight: 600;">VISOR 2D ROTOR (Vista Superior X-Y a la altura del eje)</h4>
+                 </div>
+                 <div style="padding: 20px; width: 100%; display: flex; justify-content: center; align-items: center; background-color: ${document.getElementById('magpylib-style-global')?.value === 'scifi' ? '#0f172a' : '#ffffff'};">
+                     <img src="data:image/png;base64,${dataGlobal.streamplot_base64_xy_rotor}" style="max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                 </div>
+             </div>`;
+        }
+        
         html += '</div>';
         contenedor.innerHTML = html;
         

@@ -1108,75 +1108,116 @@ def calculate_global_forces():
             plotly_html = f_p.to_html(full_html=False, include_plotlyjs='cdn')
         except Exception as e: print("Plotly error:", e)
 
-        # --- GENERATE 2D STREAMLINE PLOT ---
-        strm_base64 = ""
+        # --- GENERATE 2D PLOTS ---
+        strm_base64_xz = ""
+        strm_base64_xy_base = ""
+        strm_base64_xy_rotor = ""
         try:
             import matplotlib.pyplot as plt
             import io
             import base64
             
+            # Separar colecciones para las vistas
+            col_estator = magpy.Collection()
+            col_rotor_only = magpy.Collection()
+            
+            # Repopular para separar
+            for i in range(len(imanes_base) + len(imanes_sustentacion)):
+                col_estator.add(all_magnets[i].copy())
+                
+            for i in range(len(imanes_base) + len(imanes_sustentacion), len(all_magnets)):
+                col_rotor_only.add(all_magnets[i].copy())
+                
+            for b in bobinas_vis:
+                col_rotor_only.add(b.copy())
+            
             x_min, x_max = -120, 120
+            y_min_top, y_max_top = -60, 60
             z_min, z_max = -30, 50
             
             ts_x_mm = np.linspace(x_min, x_max, 100)
             ts_z_mm = np.linspace(z_min, z_max, 60)
+            ts_y_mm = np.linspace(y_min_top, y_max_top, 60)
             
-            grid_m = np.array([[(x/1000.0, 0, z/1000.0) for x in ts_x_mm] for z in ts_z_mm])
-            B_grid = col_imanes.getB(grid_m)
-            X_grid_mm, Z_grid_mm = np.meshgrid(ts_x_mm, ts_z_mm)
-            Bx = B_grid[:,:,0]
-            Bz = B_grid[:,:,2]
-            # Usar X y Z para calcular la magnitud en este plano
-            B_mag_2d = np.linalg.norm(B_grid[:,:,(0,2)], axis=2)
-            B_mag_2d[B_mag_2d == 0] = 1e-10
+            # 1. Vista Lateral X-Z (Global)
+            grid_xz = np.array([[(x/1000.0, 0, z/1000.0) for x in ts_x_mm] for z in ts_z_mm])
+            B_grid_xz = col_imanes.getB(grid_xz)
+            X_grid_xz, Z_grid_xz = np.meshgrid(ts_x_mm, ts_z_mm)
+            Bx_xz = B_grid_xz[:,:,0]
+            Bz_xz = B_grid_xz[:,:,2]
+            B_mag_xz = np.linalg.norm(B_grid_xz[:,:,(0,2)], axis=2)
+            B_mag_xz[B_mag_xz == 0] = 1e-10
             
-            if style_2d == 'scifi':
-                fig2, ax2 = plt.subplots(figsize=(9, 5))
-                fig2.patch.set_facecolor('#0f172a')
-                ax2.set_facecolor('#0f172a')
-                ax2.set_title('Vista Lateral: Intensidad y Líneas de Campo (Plano X-Z)', color='white', pad=15)
+            def generar_streamplot(X, Y, B1, B2, B_mag, title, xlabel, ylabel, cmap_colors):
+                fig, ax = plt.subplots(figsize=(9, 5))
+                if style_2d == 'scifi':
+                    fig.patch.set_facecolor('#0f172a')
+                    ax.set_facecolor('#0f172a')
+                    ax.set_title(title, color='white', pad=15)
+                    contour = ax.contourf(X, Y, np.log10(B_mag), levels=100, cmap='magma', alpha=0.9)
+                    cbar = plt.colorbar(contour, ax=ax, fraction=0.046, pad=0.04)
+                    cbar.set_label('Log10(B) [mT]', color='#cbd5e1')
+                    cbar.ax.yaxis.set_tick_params(color='#cbd5e1')
+                    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='#cbd5e1')
+                    
+                    lw = 0.5 + 1.5 * (np.log10(B_mag) - np.log10(B_mag).min()) / (np.log10(B_mag).max() - np.log10(B_mag).min() + 1e-10)
+                    ax.streamplot(X, Y, B1, B2, color='#ffffff88', density=1.4, linewidth=lw, arrowsize=1.2)
+                    
+                    ax.set_xlabel(xlabel, color='#cbd5e1')
+                    ax.set_ylabel(ylabel, color='#cbd5e1')
+                    ax.tick_params(colors='#cbd5e1')
+                    for spine in ax.spines.values():
+                        spine.set_color('#334155')
+                    transparent = False
+                elif style_2d == 'quiver':
+                    ax.set_title(title, pad=15)
+                    B1_norm = B1 / B_mag
+                    B2_norm = B2 / B_mag
+                    skip = (slice(None, None, 2), slice(None, None, 2))
+                    q = ax.quiver(X[skip], Y[skip], B1_norm[skip], B2_norm[skip], np.log10(B_mag)[skip], 
+                                   cmap='turbo', pivot='mid', scale=30, alpha=0.8, width=0.004)
+                    cbar = plt.colorbar(q, ax=ax, fraction=0.046, pad=0.04)
+                    cbar.set_label('Log10(B) [mT]')
+                    ax.set_xlabel(xlabel)
+                    ax.set_ylabel(ylabel)
+                    transparent = True
+                else:
+                    ax.set_title(title, pad=15)
+                    ax.streamplot(X, Y, B1, B2, color=np.log10(B_mag), density=1.5, cmap='plasma')
+                    ax.set_xlabel(xlabel)
+                    ax.set_ylabel(ylabel)
+                    transparent = True
+                    
+                ax.set_aspect('equal')
+                buf = io.BytesIO()
+                plt.savefig(buf, format='png', bbox_inches='tight', transparent=transparent)
+                plt.close(fig)
+                buf.seek(0)
+                return base64.b64encode(buf.read()).decode('utf-8')
                 
-                contour = ax2.contourf(X_grid_mm, Z_grid_mm, np.log10(B_mag_2d), levels=100, cmap='magma', alpha=0.9)
-                cbar = plt.colorbar(contour, ax=ax2, fraction=0.046, pad=0.04)
-                cbar.set_label('Log10(B) [mT]', color='#cbd5e1')
-                cbar.ax.yaxis.set_tick_params(color='#cbd5e1')
-                plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='#cbd5e1')
-                
-                lw = 0.5 + 1.5 * (np.log10(B_mag_2d) - np.log10(B_mag_2d).min()) / (np.log10(B_mag_2d).max() - np.log10(B_mag_2d).min() + 1e-10)
-                strm = ax2.streamplot(X_grid_mm, Z_grid_mm, Bx, Bz, color='#ffffff88', density=1.4, linewidth=lw, arrowsize=1.2)
-                
-                ax2.set_xlabel('X (Longitud mm)', color='#cbd5e1')
-                ax2.set_ylabel('Z (Altura mm)', color='#cbd5e1')
-                ax2.tick_params(colors='#cbd5e1')
-                for spine in ax2.spines.values():
-                    spine.set_color('#334155')
-            elif style_2d == 'quiver':
-                fig2, ax2 = plt.subplots(figsize=(9, 5))
-                ax2.set_title('Vista Lateral: Vectores de Campo (Plano X-Z)', pad=15)
-                Bx_norm = Bx / B_mag_2d
-                Bz_norm = Bz / B_mag_2d
-                skip = (slice(None, None, 2), slice(None, None, 2))
-                q = ax2.quiver(X_grid_mm[skip], Z_grid_mm[skip], Bx_norm[skip], Bz_norm[skip], np.log10(B_mag_2d)[skip], 
-                               cmap='turbo', pivot='mid', scale=30, alpha=0.8, width=0.004)
-                cbar = plt.colorbar(q, ax=ax2, fraction=0.046, pad=0.04)
-                cbar.set_label('Log10(B) [mT]')
-                ax2.set_xlabel('X (Longitud mm)')
-                ax2.set_ylabel('Z (Altura mm)')
-            else:
-                fig2, ax2 = plt.subplots(figsize=(9, 5))
-                ax2.set_title('Vista Lateral: Líneas de Campo Magnético', pad=15)
-                strm = ax2.streamplot(X_grid_mm, Z_grid_mm, Bx, Bz, color=np.log10(B_mag_2d), density=1.5, cmap='plasma')
-                ax2.set_xlabel('X (Longitud mm)')
-                ax2.set_ylabel('Z (Altura mm)')
-                
-            ax2.set_aspect('equal')
+            strm_base64_xz = generar_streamplot(X_grid_xz, Z_grid_xz, Bx_xz, Bz_xz, B_mag_xz, 'Vista Lateral Global (Plano X-Z)', 'X (Longitud mm)', 'Z (Altura mm)', 'magma')
             
-            buf2 = io.BytesIO()
-            is_transparent = False if style_2d == 'scifi' else True
-            plt.savefig(buf2, format='png', bbox_inches='tight', transparent=is_transparent)
-            plt.close(fig2)
-            buf2.seek(0)
-            strm_base64 = base64.b64encode(buf2.read()).decode('utf-8')
+            # 2. Vista Superior X-Y (Estator) a la altura del rotor (z=20)
+            rotor_z = data.get('rotor_body', {}).get('z_pos', 20)
+            grid_xy_est = np.array([[(x/1000.0, y/1000.0, rotor_z/1000.0) for x in ts_x_mm] for y in ts_y_mm])
+            B_grid_xy_est = col_estator.getB(grid_xy_est)
+            X_grid_xy, Y_grid_xy = np.meshgrid(ts_x_mm, ts_y_mm)
+            Bx_xy_est = B_grid_xy_est[:,:,0]
+            By_xy_est = B_grid_xy_est[:,:,1]
+            B_mag_xy_est = np.linalg.norm(B_grid_xy_est[:,:,(0,1)], axis=2)
+            B_mag_xy_est[B_mag_xy_est == 0] = 1e-10
+            
+            strm_base64_xy_base = generar_streamplot(X_grid_xy, Y_grid_xy, Bx_xy_est, By_xy_est, B_mag_xy_est, 'Vista Superior: Imán Base y Levitación (Plano X-Y)', 'X (Longitud mm)', 'Y (Ancho mm)', 'magma')
+            
+            # 3. Vista Superior X-Y (Solo Rotor) a la altura del rotor (z=20)
+            B_grid_xy_rot = col_rotor_only.getB(grid_xy_est)
+            Bx_xy_rot = B_grid_xy_rot[:,:,0]
+            By_xy_rot = B_grid_xy_rot[:,:,1]
+            B_mag_xy_rot = np.linalg.norm(B_grid_xy_rot[:,:,(0,1)], axis=2)
+            B_mag_xy_rot[B_mag_xy_rot == 0] = 1e-10
+            
+            strm_base64_xy_rotor = generar_streamplot(X_grid_xy, Y_grid_xy, Bx_xy_rot, By_xy_rot, B_mag_xy_rot, 'Vista Superior: Solo Rotor y Bobinas (Plano X-Y)', 'X (Longitud mm)', 'Y (Ancho mm)', 'magma')
+
         except Exception as e:
             print("Matplotlib error:", e)
 
@@ -1185,7 +1226,9 @@ def calculate_global_forces():
             'torque_x': float(total_torque_x),
             'force_vector': [float(total_f_x), float(total_f_y), float(total_f_z)],
             'plotly_html': plotly_html,
-            'streamplot_base64': strm_base64
+            'streamplot_base64': strm_base64_xz,
+            'streamplot_base64_xy_base': strm_base64_xy_base,
+            'streamplot_base64_xy_rotor': strm_base64_xy_rotor
         })
         
     except Exception as e:
