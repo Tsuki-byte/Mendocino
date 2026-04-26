@@ -2046,7 +2046,7 @@ window.actualizarMagpylibFondo = function() {
             };
             console.log("Magpylib Payload:", JSON.stringify(payload));
 
-            const response = await fetch('http://127.0.0.1:5000/api/magpylib-forces', {
+            const response = await fetch('https://magpylib-api-mendocino.onrender.com/api/magpylib-forces', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -5176,7 +5176,7 @@ async function renderizarPasoMagpylib() {
         
         window._lastMagpylibPayload = payload;
 
-        const response = await fetch('http://127.0.0.1:5000/api/magpylib-forces', {
+        const response = await fetch('https://magpylib-api-mendocino.onrender.com/api/magpylib-forces', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -7951,7 +7951,7 @@ async function ejecutarMagpylibLevitacion() {
                 z_pos: -2.5 // Base plate at Z=0, con grosor de 5mm, su centro es -2.5
             }
         };
-        const response = await fetch('http://127.0.0.1:5000/api/magpylib-levitation', {
+        const response = await fetch('https://magpylib-api-mendocino.onrender.com/api/magpylib-levitation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -8180,7 +8180,7 @@ async function renderizarPasoMagpylibGlobal() {
             }
         };
 
-        const response = await fetch('http://127.0.0.1:5000/api/magpylib-global', {
+        const response = await fetch('https://magpylib-api-mendocino.onrender.com/api/magpylib-global', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payloadGlobal)
