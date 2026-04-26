@@ -3569,8 +3569,13 @@ function calcularOcupacionRanura() {
                 if (error) throw error;
                 if (!proyectos || proyectos.length === 0) {
                     contenedor.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#64748b;">No hay proyectos disponibles en este momento.</div>';
+                    window.proyectosCargados = [];
+                    if(window.poblarSelectProyectosInforme) window.poblarSelectProyectosInforme();
                     return;
                 }
+
+                window.proyectosCargados = proyectos;
+                if(window.poblarSelectProyectosInforme) window.poblarSelectProyectosInforme();
 
                 contenedor.innerHTML = proyectos.map((proyecto) => {
                     const autor = proyecto.autor_nombre ? `<span class="proyecto-autor">👤 Por: ${proyecto.autor_nombre}</span>` : '';
@@ -8730,3 +8735,40 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     setTimeout(actualizarVistasLevitacion, 1000);
 });
+
+// --- FUNCIONES PARA MEMORIA TÉCNICA (INFORME) ---
+window.poblarSelectProyectosInforme = function() {
+    const select = document.getElementById('select-proyecto-informe');
+    if(!select) return;
+    
+    // vaciar salvo la primera
+    select.innerHTML = '<option value="">(Diseño actual de la calculadora en curso...)</option>';
+    
+    if (window.proyectosCargados && window.proyectosCargados.length > 0) {
+        window.proyectosCargados.forEach((p, index) => {
+            select.innerHTML += `<option value="${index}">${p.titulo || 'Proyecto sin título'}</option>`;
+        });
+    }
+};
+
+window.cargarProyectoEnInforme = function() {
+    const select = document.getElementById('select-proyecto-informe');
+    if(select && select.value !== "") {
+        const p = window.proyectosCargados[select.value];
+        // Utilizamos la función cargarMotor global
+        window.cargarMotor(p.config, p.id_unico, p.titulo);
+        // Esperamos a que los cálculos de la calculadora se actualicen (Fase 1..10)
+        setTimeout(() => {
+            if (typeof window.inyectarMemoriaTecnica === 'function') {
+                window.inyectarMemoriaTecnica();
+                if (typeof window.renderizarMatematicas === 'function') window.renderizarMatematicas();
+            }
+        }, 500);
+    } else {
+        // Generar informe con lo actual
+        if (typeof window.inyectarMemoriaTecnica === 'function') {
+            window.inyectarMemoriaTecnica();
+            if (typeof window.renderizarMatematicas === 'function') window.renderizarMatematicas();
+        }
+    }
+};
