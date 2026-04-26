@@ -131,7 +131,7 @@ function inyectarMemoriaTecnica() {
 
 <p>Para minimizar la fricción y permitir que potencias tan diminutas (del orden de milivatios) logren hacer girar el sistema, el rotor levita gracias a la repulsión de imanes permanentes de Neodimio situados en sus extremos. Sin embargo, por el <strong>Teorema de Earnshaw</strong>, la levitación magnética pasiva estática es inestable en al menos un eje, por lo que el motor requiere un levísimo punto de apoyo mecánico en uno de sus extremos (normalmente un cristal o espejo) para estabilizar el eje longitudinal.</p>
 
-<p>El <strong>Simulador de Motores Mendocino</strong> virtualiza todos estos fenómenos mediante cálculo matricial y simulación por elementos finitos (a través de la librería científica Magpylib), permitiendo iterar diseños sin gastar material real.</p>
+<p>El <strong>Simulador de Motores Mendocino</strong> virtualiza todos estos fenómenos mediante cálculo matricial y simulación por elementos finitos (a través de la librería científica Magpylib).</p>
 
 <hr>
 
