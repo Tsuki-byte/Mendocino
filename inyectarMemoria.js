@@ -261,7 +261,7 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_3.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 3">
 </div>
 
-<h3>Fase 4 y 5: Levitación e Interacción Magnética (Estática)</h3>
+<h3>Fase 4: Levitación Magnética (Eje Z)</h3>
 <p>Para un giro ultra-eficiente se suprime el rozamiento convencional usando campos magnéticos estacionarios.</p>
 <p><strong>Concepto Físico:</strong> En lugar de apoyarse sobre rodamientos mecánicos que generan fricción, el motor "flota" en el aire gracias a la repulsión de imanes de Neodimio enfrentados por polos iguales. Funciona como una balanza invisible: el rotor cae empujado por la gravedad hasta acercarse a los imanes de la base. Cuanto más se acerca, más fuerte es el "colchón magnético" que lo rechaza. Cuando este empuje hacia arriba iguala exactamente al peso total del bloque, el sistema se detiene y levita de forma estable a una altura <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mi>Z</mi></math>:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -273,7 +273,7 @@ function inyectarMemoriaTecnica() {
 </div>
 
 <div class="io-box">
-    <div class="io-title">Variables de la Fase 4 y 5</div>
+    <div class="io-title">Variables de la Fase 4</div>
     <div class="io-entry io-in"><strong>Entrada:</strong> Elección del imán insertado en el rotor (Diámetro, largo, Grado/Potencia coercitiva).</div>
     <div class="io-entry io-in"><strong>Entrada:</strong> Elección del imán colocado en la bancada/base.</div>
     <div class="io-entry io-in"><strong>Entrada:</strong> Distancia de separación (Base X) entre ambos pilares de la base magnética.</div>
@@ -282,8 +282,36 @@ function inyectarMemoriaTecnica() {
     <div class="io-entry io-out"><strong>Salida:</strong> Altura de Levitación (Punto Z donde Repulsión Magnética = Gravedad). Alerta si el rotor no levita.</div>
 </div>
 
-<div style="text-align:center; margin: 30px 0; display: flex; flex-direction: column; gap: 20px; align-items: center;">
+<div style="text-align:center; margin: 30px 0;">
     <img src="Imagenes_informe/Fase_4.png" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 4">
+</div>
+
+<h3>Fase 5: Campo Estator y Fuerza de Lorentz (Dinámica Motriz)</h3>
+<p>Una vez que el motor está levitando sin fricción, necesita un impulso constante para comenzar a rotar y mantener la inercia. Este empuje rotacional nace puramente de la interacción electromagnética central.</p>
+<p><strong>Concepto Físico:</strong> En el centro de la base del motor se sitúa un imán adicional, comúnmente llamado "estator", cuya única misión es irradiar un campo magnético permanente hacia arriba (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mi>B</mi></math>), atravesando el espacio por donde giran las bobinas. Cuando la fuente de luz incide en un panel solar superior (Fase 1), se inyecta una corriente eléctrica intensa (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mi>I</mi></math>) a través del hilo de cobre enrollado en la parte inferior del rotor (Fase 3). Al cruzarse esta corriente eléctrica perpendicularmente con el flujo magnético del estator, la física fundamental interviene generando una fuerza perpendicular a ambas variables, conocida como la <strong>Fuerza de Lorentz</strong>. Esta fuerza "fantasmal" empuja los cables de cobre de forma lateral. Como los cables están fuertemente solidarios a la estructura, este empuje lineal se convierte de inmediato en un par de torsión (torque) que fuerza a todo el motor Mendocino a girar de forma limpia e inagotable mientras reciba energía lumínica.</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mover><mi>F</mi><mo>&rarr;</mo></mover>
+  <mo>=</mo>
+  <mi>I</mi>
+  <mo>&sdot;</mo>
+  <mo>(</mo>
+  <mover><mi>L</mi><mo>&rarr;</mo></mover>
+  <mo>&times;</mo>
+  <mover><mi>B</mi><mo>&rarr;</mo></mover>
+  <mo>)</mo>
+</math>
+</div>
+
+<div class="io-box">
+    <div class="io-title">Variables de la Fase 5</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Características físicas del imán central motriz (Estator).</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Posición vertical (gap) y proximidad del imán central respecto al barrido de las bobinas.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Intensidad del Campo Magnético radiado en la zona de rotación (Tesla).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Magnitud y vector transversal de la Fuerza de Lorentz.</div>
+</div>
+
+<div style="text-align:center; margin: 30px 0;">
     <img src="Imagenes_informe/Fase_5.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 5">
 </div>
 
