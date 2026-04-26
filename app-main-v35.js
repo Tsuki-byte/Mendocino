@@ -3731,7 +3731,45 @@ function calcularOcupacionRanura() {
         // --- INICIALIZACIÓN BASE ---
         function inicializarAplicacionBase() {
             inicializarNavegacionProfesional();
+            configurarBotonesNavegacionSmarter();
             // Ya no llamamos aquí a renderizarProyectos, se hará tras inicializar Auth
+        }
+
+        function configurarBotonesNavegacionSmarter() {
+            document.querySelectorAll('.btn-next').forEach(btn => {
+                btn.removeAttribute('onclick');
+                btn.addEventListener('click', () => {
+                    const actual = obtenerPasoActual();
+                    const config = obtenerConfigNivel();
+                    let siguiente = actual + 1;
+                    while(siguiente <= 13 && !config.pasosPermitidos.includes(siguiente)) {
+                        siguiente++;
+                    }
+                    if (siguiente <= 13) {
+                        if (siguiente === 13 && typeof generarInformeAutomatico === 'function') generarInformeAutomatico();
+                        cambiarPaso(siguiente);
+                    } else {
+                        mostrarToast('Has llegado al final de los pasos permitidos.', 'info');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-prev').forEach(btn => {
+                btn.removeAttribute('onclick');
+                btn.addEventListener('click', () => {
+                    const actual = obtenerPasoActual();
+                    const config = obtenerConfigNivel();
+                    let anterior = actual - 1;
+                    while(anterior >= 1 && !config.pasosPermitidos.includes(anterior)) {
+                        anterior--;
+                    }
+                    if (anterior >= 1) {
+                        cambiarPaso(anterior);
+                    } else {
+                        mostrarToast('Ya estás en el primer paso permitido.', 'info');
+                    }
+                });
+            });
         }
 
 
