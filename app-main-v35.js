@@ -8755,6 +8755,14 @@ window.cargarProyectoEnInforme = function() {
     const select = document.getElementById('select-proyecto-informe');
     const container = document.getElementById('informe-automatico-html');
     
+    // Validar si intentan generar la memoria del diseño actual sin haber calculado nada
+    if (select && select.value === "") {
+        if (!window.EstadoDiseno || window.EstadoDiseno.par_Nm === 0) {
+            alert("⚠️ AVISO: El diseño actual en curso aún no ha sido simulado.\n\nPara que la Memoria Técnica contenga datos físicos reales, debes recorrer las fases de la calculadora y pulsar en 'Evaluar Motor' (Paso 10). Opcionalmente, también puedes seleccionar un proyecto guardado del desplegable.");
+            return;
+        }
+    }
+
     // Feedback visual inmediato
     if (container) {
         container.innerHTML = '<div style="text-align:center; padding: 60px; font-family: sans-serif; color: #3b82f6; font-size: 20px; font-weight: bold;">⚙️ Recalculando físicas y generando Memoria Técnica...<br><span style="font-size:14px; color:#64748b; font-weight:normal; display:block; margin-top:10px;">Por favor espera unos instantes</span></div>';
