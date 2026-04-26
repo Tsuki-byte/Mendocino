@@ -1442,13 +1442,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
                     <div class="informe-layout">
                         <div class="informe-panel-principal" style="flex:1;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                <label class="informe-label" for="informe-automatico-html" style="margin-bottom: 0;">Memoria Técnica del Proyecto</label>
-                                <div style="display: flex; gap: 10px;">
-                                    <button class="btn-action" style="padding: 8px 15px; font-size: 14px;" onclick="finalizarConfiguracion()">💾 Guardar diseño</button>
-                                    <button class="btn-download" style="padding: 8px 15px; font-size: 14px;" onclick="descargarInformePDF()">⬇️ Descargar PDF</button>
-                                </div>
-                            </div>
+                            <label class="informe-label" for="informe-automatico-html">Memoria Técnica del Proyecto</label>
                             <textarea id="informe-automatico" style="display:none;"></textarea>
                             <div id="informe-automatico-html" class="informe-textarea" style="background: white; padding: 40px; overflow-y: auto; height: 60vh; font-family: 'Segoe UI', sans-serif; cursor: text; text-align: left; border: 1px solid #cbd5e1; border-radius: 8px;">
                                 <!-- Se inyectará dinámicamente -->
@@ -1456,8 +1450,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         </div>
                     </div>
 
-                    <div class="nav-buttons nav-buttons-informe">
+                    <div class="nav-buttons nav-buttons-informe" style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
                         <button class="btn-nav btn-prev btn-prev-informe" onclick="cambiarPaso(12)">⮜ Anterior</button>
+                        <div style="display: flex; gap: 15px;">
+                            <button class="btn-nav" style="background-color: #27ae60; color: white;" onclick="finalizarConfiguracion()">💾 Guardar diseño</button>
+                            <button class="btn-nav" style="background-color: #e67e22; color: white;" onclick="descargarInformePDF()">⬇️ Descargar PDF</button>
+                        </div>
                     </div>
 
                 </div>
