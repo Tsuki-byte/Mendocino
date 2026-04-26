@@ -245,6 +245,8 @@ function inyectarMemoriaTecnica() {
 </math>
 </div>
 
+<p>Adicionalmente, se ejecuta un <strong>análisis volumétrico de ocupación</strong>. La calculadora evalúa la <strong>superficie útil de la ranura</strong> (el espacio libre real bajo el panel, restando marcos y ejes) y la compara con la sección total de cobre que estamos intentando introducir. Este indicador visual advertirá en color <strong>rojo</strong> si el porcentaje de ocupación supera el 100%, alertando de que las espiras físicamente desbordarían el espacio disponible y chocarían con el panel solar.</p>
+
 <div class="io-box">
     <div class="io-title">Variables de la Fase 3</div>
     <div class="io-entry io-in"><strong>Entrada:</strong> Diámetro estandarizado del conductor (mm).</div>
