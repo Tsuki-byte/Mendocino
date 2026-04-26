@@ -200,7 +200,7 @@ function inyectarMemoriaTecnica() {
 
 <h3>Fase 2: Geometría del Motor (Mecánica Estructural)</h3>
 <p>El rotor de un motor Mendocino tiene forma de prisma poligonal regular, dictado por el número de paneles solares (N).</p>
-<p><strong>Concepto Teórico:</strong> Un diseño de 4 caras (cuadrado) es común, pero configuraciones de 6 caras (hexágono) u 8 caras ofrecen un par motriz más suave a expensas de mayor peso. El simulador recurre a trigonometría de polígonos regulares para calcular el encaje del rotor:</p>
+<p><strong>Concepto Teórico:</strong> Un diseño de 4 caras (cuadrado) es común, pero configuraciones de 6 caras (hexágono) u 8 caras ofrecen un par motriz más suave a expensas de mayor peso. Adicionalmente, al modelar la geometría de cada panel, el simulador distingue rigurosamente entre su <strong>área total física</strong> y su <strong>área efectiva de silicio</strong> (representada visualmente en los esquemas con un patrón rayado). El borde exterior del panel constituye un margen estructural de resina o plástico, el cual es una zona muerta no sensible a la luz, pero que resulta fundamental para calcular el encaje mecánico real de las piezas. Con todas estas dimensiones, el simulador recurre a la trigonometría de polígonos regulares para resolver el radio del rotor:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>R</mi><mi>circ</mi></msub>
