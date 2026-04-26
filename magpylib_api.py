@@ -525,7 +525,7 @@ def calculate_forces():
                     margin=dict(l=0, r=0, b=0, t=0),
                     showlegend=False
                 )
-                plotly_html = fig_plotly.to_html(full_html=False, include_plotlyjs='cdn')
+                plotly_html = fig_plotly.to_html(full_html=False, include_plotlyjs=False)
             except Exception as e:
                 print(f"Plotly error: {e}")
 
@@ -701,7 +701,7 @@ def calculate_levitation():
                     margin=dict(l=0,r=0,b=0,t=0), 
                     showlegend=False
                 )
-                plotly_h = f_p.to_html(full_html=False, include_plotlyjs='cdn')
+                plotly_h = f_p.to_html(full_html=False, include_plotlyjs=False)
             except Exception as e: print("Plotly error:", e)
 
             fig = plt.figure(figsize=(8, 6))
@@ -1094,7 +1094,7 @@ def calculate_global_forces():
                 margin=dict(l=0,r=0,b=0,t=0), 
                 showlegend=False
             )
-            plotly_html = f_p.to_html(full_html=False, include_plotlyjs='cdn')
+            plotly_html = f_p.to_html(full_html=False, include_plotlyjs=False)
         except Exception as e: print("Plotly error:", e)
 
         return jsonify({

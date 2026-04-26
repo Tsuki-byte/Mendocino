@@ -787,6 +787,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <button class="btn-animacion" onclick="ejecutarMagpylibLevitacion()" style="width:100%; height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius:5px; background:#e67e22; color:white; border:none; cursor:pointer; font-weight: bold; line-height: 1.2; padding: 0;">
                 ▶️ Simular Levitación 3D
             </button>
+            <div style="font-size: 11px; color: #64748b; text-align: center; margin-top: 8px;">
+                <span style="display:inline-block; margin-right:4px;">⏱️</span> El cálculo se procesa en un servidor remoto mediante Magpylib y puede tardar unos segundos en renderizar.
+            </div>
         </div>
         
         <div class="nav-buttons" style="margin-top: 30px;">
@@ -1073,7 +1076,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; padding:15px; border-radius:8px;">
                 <label style="font-weight:bold; color:#1e40af;">Conexión con Servidor Magpylib:</label>
-                <button onclick="renderizarPasoMagpylib()" class="btn-primary" style="padding:10px 20px;">🚀 Calcular Fuerzas Magpylib</button>
+                <div style="text-align: right;">
+                    <button onclick="renderizarPasoMagpylib()" class="btn-primary" style="padding:10px 20px;">🚀 Calcular Fuerzas Magpylib</button>
+                    <div style="font-size: 11px; color: #64748b; margin-top: 6px;">⏱️ Cálculo FEM remoto. Puede tardar unos segundos.</div>
+                </div>
             </div>
             
             <div id="magpylib-resultados" style="margin-top: 20px; padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); min-height: 400px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
@@ -1115,7 +1121,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; padding:15px; border-radius:8px;">
                 <label style="font-weight:bold; color:#1e40af;">Motor de Alta Precisión (Circuito Completo):</label>
-                <button onclick="renderizarPasoMagpylibGlobal()" class="btn-primary" style="padding:10px 20px; background:#9b59b6; border-color:#8e44ad;">🪐 Calcular Simulación Global</button>
+                <div style="text-align: right;">
+                    <button onclick="renderizarPasoMagpylibGlobal()" class="btn-primary" style="padding:10px 20px; background:#9b59b6; border-color:#8e44ad;">🪐 Calcular Simulación Global</button>
+                    <div style="font-size: 11px; color: #64748b; margin-top: 6px;">⏱️ Cálculo FEM remoto. Puede tardar unos segundos.</div>
+                </div>
             </div>
             
             <div id="magpylib-resultados-global" style="margin-top: 20px; padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); min-height: 400px; display:flex; flex-direction:column; align-items:stretch; justify-content:center;">
