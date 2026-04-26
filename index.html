@@ -1465,9 +1465,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
 
                     <div class="informe-layout">
-                        <div class="informe-panel-principal">
-                            <label class="informe-label" for="informe-automatico">Contenido del informe</label>
-                            <textarea id="informe-automatico" class="informe-textarea" rows="22" readonly></textarea>
+                        <div class="informe-panel-principal" style="flex:2;">
+                            <label class="informe-label" for="informe-automatico-html">Memoria Técnica del Proyecto</label>
+                            <textarea id="informe-automatico" style="display:none;"></textarea>
+                            <div id="informe-automatico-html" class="informe-textarea" style="background: white; padding: 40px; overflow-y: auto; height: 60vh; font-family: 'Segoe UI', sans-serif; cursor: text; text-align: left;">
+                                <!-- Se inyectará dinámicamente -->
+                            </div>
                         </div>
 
                         <aside class="informe-panel-lateral">
@@ -1698,5 +1701,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             }
         };
     </script>
+    <!-- Script para la Memoria Técnica -->
+    <script src="inyectarMemoria.js"></script>
 </body>
 </html>

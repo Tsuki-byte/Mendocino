@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+    h1 {
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+        font-size: 28px;
+    }
+    h2 {
+        color: #2980b9;
+        margin-top: 40px;
+        font-size: 22px;
+    }
+    h3 {
+        color: #16a085;
+        margin-top: 30px;
+        font-size: 18px;
+    }
+    p {
+        margin-bottom: 15px;
+        text-align: justify;
+    }
+    ul {
+        margin-bottom: 20px;
+        padding-left: 20px;
+    }
+    li {
+        margin-bottom: 8px;
+    }
+    .imagen-placeholder {
+        background-color: #f1f5f9;
+        border: 2px dashed #94a3b8;
+        padding: 20px;
+        text-align: center;
+        color: #64748b;
+        font-weight: bold;
+        margin: 20px 0;
+        border-radius: 8px;
+    }
+    .math {
+        background-color: #f8f9fa;
+        padding: 15px 20px;
+        border-left: 4px solid #2c3e50;
+        font-family: 'Cambria Math', 'Times New Roman', serif;
+        font-size: 18px;
+        margin: 20px 0;
+        color: #1a202c;
+    }
+    .math-line {
+        margin-bottom: 6px;
+    }
+        margin: 15px 0;
+    }
+    hr {
+        border: 0;
+        border-top: 1px solid #eee;
+        margin: 40px 0;
+    }
+    .nota {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin: 20px 0;
+    }
+    .io-box {
+        background-color: #eef2f5;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 15px;
+        margin-top: 15px;
+        margin-bottom: 25px;
+    }
+    .io-title {
+        font-weight: bold;
+        color: #374151;
+        margin-bottom: 8px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .io-entry {
+        margin-bottom: 6px;
+        font-size: 15px;
+    }
+    .io-in::before { content: '➡️ '; }
+    .io-out::before { content: '✔️ '; }
+</style>
+</head>
+<body>
+
+<h1>Manual de Usuario Avanzado y Fundamentos Teóricos: Simulador de Motores Mendocino</h1>
+
+<p>Este manual constituye la guía definitiva para comprender no solo el manejo del <strong>Simulador de Motores Mendocino</strong>, sino también los profundos principios físicos y matemáticos que rigen cada uno de sus cálculos. Está diseñado para estudiantes, ingenieros y entusiastas que deseen profundizar en la electrodinámica, la mecánica y la geometría aplicada a este fascinante motor solar levitado.</p>
+
+<hr>
+
+<h2>1. Introducción Teórica al Motor Mendocino</h2>
+
+<p>El motor Mendocino es una máquina eléctrica que destaca por dos características singulares: <strong>levitación magnética pasiva</strong> y <strong>conmutación óptica pasiva</strong>.</p>
+<p>A diferencia de los motores convencionales que utilizan escobillas mecánicas o conmutadores electrónicos (controladores brushless), el motor Mendocino utiliza paneles solares montados en el propio rotor. La luz incidente (por ejemplo, el sol) activa únicamente el panel que se encuentra iluminado en ese instante. Este panel inyecta corriente en la bobina diametralmente opuesta, generando un campo electromagnético que interactúa con un imán permanente situado en la base, produciendo el par motriz. Al girar, un nuevo panel entra en la zona de luz, conmutando la corriente de forma continua y natural.</p>
+
+<p>Para minimizar la fricción y permitir que potencias tan diminutas (del orden de milivatios) logren hacer girar el sistema, el rotor levita gracias a la repulsión de imanes permanentes de Neodimio situados en sus extremos. Sin embargo, por el <strong>Teorema de Earnshaw</strong>, la levitación magnética pasiva estática es inestable en al menos un eje, por lo que el motor requiere un levísimo punto de apoyo mecánico en uno de sus extremos (normalmente un cristal o espejo) para estabilizar el eje longitudinal.</p>
+
+<p>El <strong>Simulador de Motores Mendocino</strong> virtualiza todos estos fenómenos mediante cálculo matricial y simulación por elementos finitos (a través de la librería científica Magpylib), permitiendo iterar diseños sin gastar material real.</p>
+
+<hr>
+
+<h2>2. Desglose Teórico y Operativo de las Fases del Simulador</h2>
+
+<p>A continuación, se describe con exhaustividad cada una de las fases de la herramienta, detallando la base teórica y diferenciando exactamente qué información requiere la aplicación (<strong>Entradas</strong>) y qué información resuelve (<strong>Salidas</strong>).</p>
+
+<h3>Fase 1: Ensayo de Placas Solares (Fuente de Energía)</h3>
+<p>El motor no se conecta a una red; su única fuente de energía son las células fotovoltaicas. Las células solares no son fuentes de tensión ni de corriente ideales, sino que operan bajo una <strong>curva característica I-V</strong> no lineal.</p>
+<p><strong>Concepto Físico:</strong> En esta fase, se procesan datos empíricos obtenidos iluminando la placa y variando su resistencia de carga (desde circuito abierto a cortocircuito). La potencia máxima extraíble sigue la ley de Watt:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>P</mi><mi>max</mi></msub>
+  <mo>=</mo>
+  <msub><mi>V</mi><mi>mpp</mi></msub>
+  <mo>&sdot;</mo>
+  <msub><mi>I</mi><mi>mpp</mi></msub>
+</math>
+</div>
+
+<div class="io-box">
+    <div class="io-title">Variables de la Fase 1</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Parejas de valores tabulados de Tensión (Voltios) e Intensidad (Miliamperios).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Curva característica trazada por interpolación (Spline).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Gráfica de Potencia Eléctrica en milivatios (mW).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Punto de Máxima Potencia (MPP), que define la Tensión e Intensidad óptimas que usará el motor.</div>
+</div>
+
+<div class="imagen-placeholder">[IMAGEN: Captura de pantalla de la gráfica de ensayo de placas solares]</div>
+
+<h3>Fase 2: Geometría del Motor (Mecánica Estructural)</h3>
+<p>El rotor de un motor Mendocino tiene forma de prisma poligonal regular, dictado por el número de paneles solares (N).</p>
+<p><strong>Concepto Teórico:</strong> Un diseño de 4 caras (cuadrado) es común, pero configuraciones de 6 caras (hexágono) u 8 caras ofrecen un par motriz más suave a expensas de mayor peso. El simulador recurre a trigonometría de polígonos regulares para calcular el encaje del rotor:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>R</mi><mi>circ</mi></msub>
+  <mo>=</mo>
+  <mfrac>
+    <mi>W</mi>
+    <mrow>
+      <mn>2</mn><mo>&sdot;</mo><mi>sin</mi><mo>(</mo><mfrac><mi>&pi;</mi><mi>N</mi></mfrac><mo>)</mo>
+    </mrow>
+  </mfrac>
+</math>
+</div>
+
+<div class="io-box">
+    <div class="io-title">Variables de la Fase 2</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Número de caras o paneles solares (N).</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Dimensiones de una placa: Longitud (L), Anchura (W), Grosor (T).</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Geometría del eje central (longitud y diámetro) y tamaño de la estructura/marco plástico.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Circunradio (radio exterior para que las placas encajen en el polígono sin solaparse).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Diámetro exterior total de la carcasa generada.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Volumen individual y sumado de los paneles de silicio.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Modelo transversal en vista SVG 2D.</div>
+</div>
+
+<div class="imagen-placeholder">[IMAGEN: Captura de la geometría del rotor generada (Ej. polígono de 6 caras)]</div>
+
+<h3>Fase 3: Devanados (Electromagnetismo Circuital)</h3>
+<p>El motor basa su empuje en la Fuerza de Lorentz, la cual requiere corriente eléctrica viajando por espiras conductoras.</p>
+<p><strong>Concepto Teórico:</strong> El espacio físico delimita la "ventana de bobinado". El compromiso entre el diámetro del hilo y el número de espiras viene regido por la Ley de Pouillet para la resistencia eléctrica del cobre:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>R</mi>
+  <mo>=</mo>
+  <mi>&rho;</mi>
+  <mo>&sdot;</mo>
+  <mfrac>
+    <mi>L</mi>
+    <mi>S</mi>
+  </mfrac>
+</math>
+</div>
+
+<div class="io-box">
+    <div class="io-title">Variables de la Fase 3</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Diámetro estandarizado del conductor (mm).</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Material (Cobre puro con resistividad ρ=0.0171 o Aluminio).</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Margen de holgura y aislamientos.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Sección transversal (Área en mm²) del hilo.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Resistencia lineal eléctrica (Ohmios por metro).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Número máximo exacto de espiras (N_esp) que caben físicamente bajo la placa solar en una sola ranura.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Resistencia total de cada bobina (Ω) y Peso del metal añadido (gramos).</div>
+</div>
+
+<h3>Fase 4 y 5: Levitación e Interacción Magnética (Estática)</h3>
+<p>Para un giro ultra-eficiente se suprime el rozamiento convencional usando campos magnéticos estacionarios.</p>
+<p><strong>Concepto Teórico:</strong> Se emplea la ley de repulsión dipolar magnética. El simulador asimila los imanes a dipolos de Neodimio. La altura Z de levitación estable se alcanza cuando la fuerza de repulsión iguala al peso gravitatorio:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>F</mi><mi>z</mi></msub>
+  <mo>=</mo>
+  <mo>&int;</mo>
+  <mo>(</mo><mi>m</mi><mo>&sdot;</mo><mo>&nabla;</mo><mo>)</mo><mi>B</mi>
+  <mo>=</mo>
+  <mi>M</mi><mo>&sdot;</mo><mi>g</mi>
+</math>
+</div>
+
+<div class="io-box">
+    <div class="io-title">Variables de la Fase 4 y 5</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Elección del imán insertado en el rotor (Diámetro, largo, Grado/Potencia coercitiva).</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Elección del imán colocado en la bancada/base.</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Distancia de separación (Base X) entre ambos pilares de la base magnética.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Peso gravitatorio estructural completo a levantar.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Fuerza repulsiva vectorial en el eje Z de los imanes según su curva.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Altura de Levitación (Punto Z donde Repulsión Magnética = Gravedad). Alerta si el rotor no levita.</div>
+</div>
+
+<div class="imagen-placeholder">[IMAGEN: Visor de Levitación Magnética mostrando los vectores de fuerza ascendente]</div>
+
+<h3>Fase 6: Interacción Lumínica (Conmutación Óptica)</h3>
+<p>El sol y la geometría de la carcasa actúan como un sensor de efecto Hall pasivo.</p>
+<p><strong>Concepto Teórico:</strong> La energía interceptada obedece a la Ley del Coseno de Lambert, mitigada por las sombras proyectadas por las aristas del polígono al rotar el motor:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>E</mi><mi>incidente</mi></msub>
+  <mo>&prop;</mo>
+  <mi>cos</mi><mo>(</mo><mi>&theta;</mi><mo>)</mo>
+  <mo>&sdot;</mo>
+  <msub><mi>A</mi><mi>iluminada</mi></msub>
+</math>
+</div>
+
+<div class="io-box">
+    <div class="io-title">Variables de la Fase 6</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Ángulo actual (theta) de la rotación del motor.</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Posición angular teórica de la fuente de luz.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Área real iluminada de cada placa solar tras sustraer la sombra.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Intensidad de corriente inyectada en cada mili-segundo a los devanados.</div>
+</div>
+
+<h3>Fase 7: FCEM y Velocidad</h3>
+<p>Todo motor eléctrico genera su propio voltaje "freno" al rodar. Sin él, aceleraría hasta desintegrarse.</p>
+<p><strong>Concepto Teórico:</strong> Al pasar por el campo magnético del imán central, la Ley de Faraday-Lenz induce una <em>Fuerza Contraelectromotriz</em> opuesta que actúa como freno asintótico de velocidad:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>&epsilon;</mi>
+  <mo>=</mo>
+  <mo>-</mo><mi>N</mi>
+  <mo>&sdot;</mo>
+  <mfrac>
+    <mrow><mi>d</mi><mi>&Phi;</mi></mrow>
+    <mrow><mi>d</mi><mi>t</mi></mrow>
+  </mfrac>
+</math>
+</div>
+
+<div class="io-box">
+    <div class="io-title">Variables de la Fase 7</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Tensión máxima del circuito (Fase 1).</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Flujo magnético interceptado y constante geométrica del estator.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Tensión de FCEM.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Límite termodinámico teórico de Velocidad en vacío (R.P.M.).</div>
+</div>
+
+<h3>Fase 8 y 9: Par Motriz y Simulación Global (Motor Físico Magpylib en 3D)</h3>
+<p>El centro de gravedad computacional de esta herramienta: cálculos exhaustivos de elementos finitos para derivar la verdadera fuerza mecánica.</p>
+<p><strong>Concepto Teórico:</strong> El simulador segmenta cada espira en microvectores, aplicando la Ley de Lorentz (Fase 8). En la <strong>Fase 9 (Global)</strong> se calcula la superposición tensorial de todos los imanes, incluyendo el frenado magnético de los imanes de levitación.</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mover><mi>F</mi><mo>&rarr;</mo></mover>
+  <mo>=</mo>
+  <mo>&int;</mo>
+  <mi>I</mi>
+  <mo>(</mo>
+  <mi>d</mi><mover><mi>l</mi><mo>&rarr;</mo></mover>
+  <mo>&times;</mo>
+  <mover><mi>B</mi><mo>&rarr;</mo></mover>
+  <mo>)</mo>
+</math>
+</div>
+
+<div class="io-box">
+    <div class="io-title">Variables de las Fases 8 y 9</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Posicionamiento tridimensional absoluto del imán inductor base (y de los apoyos en F9).</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Posición de la matriz de espiras respecto al rotor en ese instante.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Tensor de Campo Magnético en 3D (B_x, B_y, B_z).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Vector fuerza final F de Lorentz (newtons).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Par Motriz o Momento de Torsión (Torque en miliNewton·metro), que dicta cuán fuerte es el giro.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Renderizado 3D Interactivo para la inspección visual (Plotly).</div>
+</div>
+
+<div class="imagen-placeholder">[IMAGEN: Visor 3D Interactivo de la Simulación Global mostrando las espiras]</div>
+
+<h3>Fase 10: Conexionado Eléctrico</h3>
+<p>Determina la dirección de los flujos de corriente y polos electromagnéticos en base a cómo se sueldan las placas solares.</p>
+<div class="io-box">
+    <div class="io-title">Variables de la Fase 10</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Tipo de cableado (En estrella/cruz, o en bucle/polígono continuo).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Sentido de la corriente inyectada (+/-).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Polaridad geométrica generada en el rotor (Cara Norte / Cara Sur magnética).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Determinación de si el motor rotará en sentido horario (CW) o antihorario (CCW).</div>
+</div>
+
+<h3>Fase 11 y 12: Equilibrado de Masas y Simulación Dinámica</h3>
+<p>Un rotor asimétrico girará de forma excéntrica, se desequilibrará buscando su centro de gravedad y se detendrá oscilando como un péndulo físico amortiguado:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>&tau;</mi>
+  <mo>=</mo>
+  <mi>I</mi>
+  <mo>&sdot;</mo>
+  <mi>&alpha;</mi>
+  <mo>=</mo>
+  <mo>-</mo><mi>M</mi><mi>g</mi><mi>L</mi><mo>&sdot;</mo><mi>sin</mi><mo>(</mo><mi>&theta;</mi><mo>)</mo>
+</math>
+</div>
+<div class="io-box">
+    <div class="io-title">Variables de las Fases 11 y 12</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Desviaciones de tolerancia en masa de los hilos de cobre.</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Clic en 'Start / Stop' de animación.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Coordenadas (X, Y) del Centro de Gravedad desfasado.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Momento de Inercia del conjunto.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Simulación dinámica visual: efecto pendular bajo gravedad si la masa no está equilibrada perfectamente.</div>
+</div>
+
+<div class="imagen-placeholder">[IMAGEN: Diagrama SVG transversal del Equilibrado de Masas]</div>
+
+<hr>
+
+<h2>3. ESTUDIO ANALÍTICO DESARROLLADO: "6 Caras - Placas 53x18x2 - Hilo 0,315"</h2>
+
+<p>A petición del usuario, desarrollaremos paso a paso los números detrás de un diseño característico alojado en la base de datos pública del simulador.</p>
+
+<h3>3.1. Especificaciones del Modelo Físico</h3>
+<ul>
+    <li><strong>Rotor (N)</strong>: 6 caras (Hexagonal).</li>
+    <li><strong>Paneles Solares</strong>: Longitud L = 53 mm, Anchura W = 18 mm, Grosor T = 2 mm.</li>
+    <li><strong>Hilo Conductor</strong>: Diámetro d = 0.315 mm.</li>
+</ul>
+
+<h3>3.2. Geometría Hexagonal (Cálculo Espacial)</h3>
+<p>Para un polígono de 6 caras, el ángulo central subtendido por cada lado es 360º / 6 = 60º.</p>
+<p>El circunradio (distancia del centro a los vértices) se calcula con la fórmula:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 20px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>R</mi><mi>circ</mi></msub>
+  <mo>=</mo>
+  <mfrac>
+    <mi>W</mi>
+    <mrow>
+      <mn>2</mn><mo>&sdot;</mo><mi>sin</mi><mo>(</mo><mfrac><mrow><mn>180</mn><mo>&deg;</mo></mrow><mi>N</mi></mfrac><mo>)</mo>
+    </mrow>
+  </mfrac>
+</math>
+<br>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>R</mi><mi>circ</mi></msub>
+  <mo>=</mo>
+  <mfrac>
+    <mn>18</mn>
+    <mrow>
+      <mn>2</mn><mo>&sdot;</mo><mi>sin</mi><mo>(</mo><mn>30</mn><mo>&deg;</mo><mo>)</mo>
+    </mrow>
+  </mfrac>
+  <mo>=</mo>
+  <mfrac>
+    <mn>18</mn>
+    <mn>1</mn>
+  </mfrac>
+  <mo>=</mo>
+  <mn>18</mn>
+  <mtext>&nbsp;mm</mtext>
+</math>
+</div>
+<p>Por tanto, el <strong>diámetro exterior máximo de las placas será de 36 mm</strong>.</p>
+<p>La apotema (distancia del centro a la placa) se calcula con la fórmula:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 20px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>Apotema</mi>
+  <mo>=</mo>
+  <msub><mi>R</mi><mi>circ</mi></msub>
+  <mo>&sdot;</mo>
+  <mi>cos</mi><mo>(</mo><mfrac><mrow><mn>180</mn><mo>&deg;</mo></mrow><mi>N</mi></mfrac><mo>)</mo>
+</math>
+<br>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>Apotema</mi>
+  <mo>=</mo>
+  <mn>18</mn>
+  <mo>&sdot;</mo>
+  <mi>cos</mi><mo>(</mo><mn>30</mn><mo>&deg;</mo><mo>)</mo>
+  <mo>&approx;</mo>
+  <mn>15.58</mn>
+  <mtext>&nbsp;mm</mtext>
+</math>
+</div>
+<p>Si el eje de acero tiene 6 mm de diámetro (radio 3 mm), la <strong>profundidad de la ventana de bobinado</strong> disponible por cara es 15.58 - 3 = 12.58 mm.</p>
+
+<h3>3.3. Estudio de Masas (Gravitatorio)</h3>
+<p><strong>Volumen geométrico de una placa:</strong></p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>V</mi><mi>placa</mi></msub>
+  <mo>=</mo>
+  <mi>L</mi><mo>&sdot;</mo><mi>W</mi><mo>&sdot;</mo><mi>T</mi>
+</math>
+<br>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>V</mi><mi>placa</mi></msub>
+  <mo>=</mo>
+  <mn>53</mn><mo>&sdot;</mo><mn>18</mn><mo>&sdot;</mo><mn>2</mn>
+  <mo>=</mo>
+  <mn>1908</mn>
+  <mtext>&nbsp;</mtext><msup><mi>mm</mi><mn>3</mn></msup>
+</math>
+</div>
+
+<p><strong>Masa de los paneles solares</strong> (asumiendo densidad del silicio y cristal &rho; &approx; 0.0025 g/mm³):</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>M</mi><mi>paneles</mi></msub>
+  <mo>=</mo>
+  <mi>N</mi><mo>&sdot;</mo><mo>(</mo><msub><mi>V</mi><mi>placa</mi></msub><mo>&sdot;</mo><msub><mi>&rho;</mi><mi>silicio</mi></msub><mo>)</mo>
+</math>
+<br>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>M</mi><mi>paneles</mi></msub>
+  <mo>=</mo>
+  <mn>6</mn><mo>&sdot;</mo><mo>(</mo><mn>1908</mn><mo>&sdot;</mo><mn>0.0025</mn><mo>)</mo>
+  <mo>&approx;</mo>
+  <mn>28.6</mn>
+  <mtext>&nbsp;g</mtext>
+</math>
+</div>
+
+<p><strong>Masa Estructural Base</strong> (sumando la masa de un eje de acero y las tapas plásticas impresas):</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>M</mi><mi>base</mi></msub>
+  <mo>=</mo>
+  <msub><mi>M</mi><mi>paneles</mi></msub>
+  <mo>+</mo>
+  <msub><mi>M</mi><mi>eje</mi></msub>
+  <mo>+</mo>
+  <msub><mi>M</mi><mi>carcasa</mi></msub>
+</math>
+<br>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>M</mi><mi>base</mi></msub>
+  <mo>=</mo>
+  <mn>28.6</mn>
+  <mo>+</mo>
+  <mn>11.0</mn>
+  <mo>+</mo>
+  <mn>10.0</mn>
+  <mo>&approx;</mo>
+  <mn>49.6</mn>
+  <mtext>&nbsp;g</mtext>
+</math>
+</div>
+
+<h3>3.4. Electromagnetismo (Devanados y Resistencia)</h3>
+<ul>
+    <li><strong>Sección Transversal (<i>S</i>)</strong>: 
+        <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>S</mi>
+  <mo>=</mo>
+  <mi>&pi;</mi>
+  <mo>&sdot;</mo>
+  <msup>
+    <mrow><mo>(</mo><mfrac><mi>d</mi><mn>2</mn></mfrac><mo>)</mo></mrow>
+    <mn>2</mn>
+  </msup>
+</math>
+<br>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>S</mi>
+  <mo>=</mo>
+  <mi>&pi;</mi>
+  <mo>&sdot;</mo>
+  <msup>
+    <mrow><mo>(</mo><mfrac><mn>0.315</mn><mn>2</mn></mfrac><mo>)</mo></mrow>
+    <mn>2</mn>
+  </msup>
+  <mo>&approx;</mo>
+  <mn>0.0779</mn>
+  <mtext>&nbsp;</mtext>
+  <msup><mi>mm</mi><mn>2</mn></msup>
+</math>
+        </div>
+    </li>
+    <li><strong>Resistencia por Metro Lineal (<i>R<sub>L</sub></i>)</strong> (Resistividad Cobre = 0.0171 Ω·mm²/m):
+        <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>R</mi><mi>L</mi></msub>
+  <mo>=</mo>
+  <mfrac><mi>&rho;</mi><mi>S</mi></mfrac>
+</math>
+<br>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>R</mi><mi>L</mi></msub>
+  <mo>=</mo>
+  <mfrac><mn>0.0171</mn><mn>0.0779</mn></mfrac>
+  <mo>&approx;</mo>
+  <mn>0.219</mn>
+  <mtext>&nbsp;&Omega;/m</mtext>
+</math>
+        </div>
+    </li>
+    <li><strong>Longitud Media de Espira (<i>L<sub>m</sub></i>)</strong>:
+        <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>L</mi><mi>m</mi></msub>
+  <mo>=</mo>
+  <mn>2</mn><mi>L</mi>
+  <mo>+</mo>
+  <mn>2</mn><msub><mi>D</mi><mi>ext</mi></msub>
+</math>
+<br>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>L</mi><mi>m</mi></msub>
+  <mo>=</mo>
+  <mn>2</mn><mo>(</mo><mn>53</mn><mo>)</mo>
+  <mo>+</mo>
+  <mn>2</mn><mo>(</mo><mn>36</mn><mo>)</mo>
+  <mo>=</mo>
+  <mn>178</mn>
+  <mtext>&nbsp;mm</mtext>
+</math>
+        </div>
+    </li>
+    <li>Si el espacio volumétrico de la Fase 2 admite <strong>100 espiras</strong> encajadas por bobina diametral:
+        <ul>
+            <li>Longitud total = 100 × 0.178 = 17.8 metros de hilo.</li>
+            <li><strong>Resistencia de la Bobina</strong> = 17.8 m × 0.219 Ω/m = 3.9 Ω.</li>
+        </ul>
+    </li>
+</ul>
+
+<h3>3.5. Generación de Par Motriz Teórico (Fuerza de Lorentz)</h3>
+<p>Asumimos que el ensayo de la Fase 1 demostró que el panel bajo luz inyecta <strong>200 mA (0.2 A)</strong> a la bobina debido a los 3.9 Ω. Si el imán inductor genera un campo intenso perpendicular de <strong>0.15 Teslas</strong> frente a la cara activa (50 mm):</p>
+<ul>
+    <li>Corriente total del paquete: 100 espiras × 0.2 A = 20 Amperios·vuelta.</li>
+</ul>
+<p>Fuerza de Lorentz empujando tangencialmente:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 20px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>F</mi><mi>L</mi></msub>
+  <mo>=</mo>
+  <msub><mi>I</mi><mi>total</mi></msub>
+  <mo>&sdot;</mo>
+  <msub><mi>L</mi><mi>activa</mi></msub>
+  <mo>&sdot;</mo>
+  <mi>B</mi>
+</math>
+<br>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>F</mi><mi>L</mi></msub>
+  <mo>=</mo>
+  <mn>20</mn><mtext>&nbsp;A</mtext>
+  <mo>&sdot;</mo>
+  <mn>0.05</mn><mtext>&nbsp;m</mtext>
+  <mo>&sdot;</mo>
+  <mn>0.15</mn><mtext>&nbsp;T</mtext>
+  <mo>=</mo>
+  <mn>0.15</mn>
+  <mtext>&nbsp;N</mtext>
+</math>
+</div>
+<p>El Par Motriz (Torque) a un radio exterior de 18 mm (0.018 m) será:</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 20px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>&tau;</mi>
+  <mo>=</mo>
+  <msub><mi>F</mi><mi>L</mi></msub>
+  <mo>&sdot;</mo>
+  <msub><mi>R</mi><mi>ext</mi></msub>
+</math>
+<br>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi>&tau;</mi>
+  <mo>=</mo>
+  <mn>0.15</mn><mtext>&nbsp;N</mtext>
+  <mo>&sdot;</mo>
+  <mn>0.018</mn><mtext>&nbsp;m</mtext>
+  <mo>=</mo>
+  <mn>0.0027</mn>
+  <mtext>&nbsp;N&middot;m</mtext>
+</math>
+</div>
+<p>Este par motriz inicial de 2.7 mN·m acelerará el motor desde el reposo hasta que la fuerza contraelectromotriz (Fase 7) y la fricción aerodinámica equilibren el sistema termodinámico.</p>
+
+<div class="nota">
+    <strong>Nota Final de Uso en MS Word:</strong> Para migrar este documento manteniendo la estética intacta (tablas, negritas, subrayados), simplemente haz clic en la página, presiona <code>Ctrl+A</code> (o <code>Cmd+A</code> en Mac) para seleccionar todo, luego "Copiar" (<code>Ctrl+C</code>) y finalmente pégalo directamente en un documento en blanco de <strong>Microsoft Word</strong>. Luego inserta tus capturas donde corresponda.
+</div>
+
+</body>
+</html>

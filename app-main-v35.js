@@ -4009,6 +4009,11 @@ function generarInformeAutomatico() {
     }
 
     if (nivel) nivel.textContent = nivelTecnico;
+    
+    // Inyectar el informe HTML rico basado en la plantilla y los datos
+    if (typeof inyectarMemoriaTecnica === 'function') {
+        inyectarMemoriaTecnica();
+    }
 }
 
 
@@ -4343,64 +4348,23 @@ function cambiarPaso(numPaso) {
 
 
 function descargarInformePDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    const informeOriginal = document.getElementById("informe-automatico")?.value || "";
-    const informe = limpiarTextoParaPDF(informeOriginal);
-
-    const tipo = limpiarTextoParaPDF(document.getElementById("res-tipo-rotor")?.textContent || "");
-    const comp = limpiarTextoParaPDF(document.getElementById("res-comportamiento")?.textContent || "");
-    const nivel = limpiarTextoParaPDF(document.getElementById("res-nivel")?.textContent || "");
-
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 18;
-    let y = 20;
-
-    // Título
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("INFORME TECNICO", pageWidth / 2, y, { align: "center" });
-    y += 8;
-
-    doc.setFontSize(13);
-    doc.text("Motor Mendocino", pageWidth / 2, y, { align: "center" });
-    y += 12;
-
-    // Caja resumen
-    doc.setDrawColor(180);
-    doc.rect(margin, y, pageWidth - margin * 2, 24);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    y += 7;
-    doc.text(`Tipo de rotor: ${tipo}`, margin + 4, y);
-    y += 6;
-    doc.text(`Comportamiento: ${comp}`, margin + 4, y);
-    y += 6;
-    doc.text(`Nivel tecnico: ${nivel}`, margin + 4, y);
-
-    y += 10;
-
-    // Línea
-    doc.line(margin, y, pageWidth - margin, y);
-    y += 8;
-
-    // Texto del informe con salto de página
-    doc.setFontSize(10.5);
-    const lineas = doc.splitTextToSize(informe, pageWidth - margin * 2);
-
-    lineas.forEach((linea) => {
-        if (y > pageHeight - 15) {
-            doc.addPage();
-            y = 20;
-        }
-        doc.text(linea, margin, y);
-        y += 5.5;
-    });
-
-    doc.save("informe_motor_mendocino.pdf");
+    // Al usar MathML y CSS avanzado, la mejor manera y de mayor fidelidad
+    // de generar el PDF es a través del sistema nativo del navegador.
+    alert("Se va a abrir el diálogo de impresión. Por favor, selecciona 'Guardar como PDF' como destino.");
+    
+    // Guardamos el estado original
+    const oldTitle = document.title;
+    document.title = "Memoria_Tecnica_Motor_Mendocino";
+    
+    // Añadimos una clase al body temporalmente para ocultar todo menos el informe
+    document.body.classList.add('imprimiendo-informe');
+    
+    // Ejecutar impresión
+    window.print();
+    
+    // Restaurar
+    document.body.classList.remove('imprimiendo-informe');
+    document.title = oldTitle;
 }
 
 

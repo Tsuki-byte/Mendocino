@@ -1371,3 +1371,24 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus {
   font-weight: 500;
   font-size: 16px;
 }
+
+/* Estilos para impresión de la Memoria Técnica */
+@media print {
+    body.imprimiendo-informe * {
+        visibility: hidden;
+    }
+    body.imprimiendo-informe #informe-automatico-html, 
+    body.imprimiendo-informe #informe-automatico-html * {
+        visibility: visible;
+    }
+    body.imprimiendo-informe #informe-automatico-html {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: auto !important;
+        overflow: visible !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+}
