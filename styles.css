@@ -352,6 +352,34 @@
         }
 
 
+        .btn-simulacion-3d {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 4px 10px rgba(109, 40, 217, 0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-simulacion-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(109, 40, 217, 0.35);
+            filter: brightness(1.05);
+        }
+        
+        .btn-simulacion-3d:active {
+            transform: translateY(0);
+        }
+
 
     
 
