@@ -438,8 +438,25 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_10.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 10">
 </div>
 
-<h3>Fase 11 y 12: Equilibrado de Masas y Simulación Dinámica</h3>
-<p>Un rotor asimétrico girará de forma excéntrica, se desequilibrará buscando su centro de gravedad y se detendrá oscilando como un péndulo físico amortiguado:</p>
+<h3>Fase 11: Equilibrado de Masas (Tolerancias de Bobinado)</h3>
+<p>A diferencia de las fases anteriores, el propósito aquí no es realizar un cálculo electromagnético riguroso, sino proporcionar una demostración visual e interactiva de un problema constructivo clásico. En el entorno teórico, el rotor es perfectamente simétrico; sin embargo, en el mundo real, cualquier mínima asimetría en el peso desplazará el centro de gravedad.</p>
+<p><strong>El Problema de la "Media Espira":</strong> Para simular esta imperfección, la calculadora ofrece como referencia añadir el peso de "media espira" de hilo de cobre en una de las caras. La justificación técnica es clave: si añadiéramos una espira entera, el hilo rodearía de nuevo todo el polígono y el rotor se mantendría equilibrado. Sin embargo, en el montaje físico, al soldar y enrutar los terminales positivo y negativo desde la placa solar hasta el inicio de su bobina correspondiente, queda inevitablemente un sobrante de cable asimétrico acumulado en un solo flanco. Esta disposición (equivalente en peso a media espira) rompe la simetría perfecta del rotor.</p>
+<p><strong>Bamboleo e Interacción:</strong> A través de la interfaz podemos accionar manualmente el rotor y girarlo. Al soltarlo, el simulador nos permite ver de forma clara cómo esta inercia desequilibrada influye en el comportamiento. Si el Par Motriz electromagnético (que empuja el motor) es débil y no consigue superar el par gravitatorio en contra que genera esa cara más pesada al intentar "subir", el rotor será incapaz de dar la vuelta completa. Presa de la gravedad, caerá hacia atrás y exhibirá un característico efecto de "bamboleo", oscilando como un péndulo de un lado a otro hasta detenerse por completo con el flanco pesado apuntando hacia el suelo.</p>
+
+<div class="io-box">
+    <div class="io-title">Variables de la Fase 11</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Adición de una tolerancia de masa asimétrica (ej. Media espira).</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Interacción de arrastre del usuario para inspeccionar la gravedad.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Desplazamiento real de las coordenadas (X, Y) del Centro de Gravedad.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Representación interactiva de la inercia y el "bamboleo" gravitatorio.</div>
+</div>
+
+<div style="text-align:center; margin: 30px 0;">
+    <img src="Imagenes_informe/Fase_11.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 11">
+</div>
+
+<h3>Fase 12: Simulación Dinámica y Animación Global</h3>
+<p>Esta es la prueba del algodón final. Integra todos los modelos (ópticos, eléctricos, magnéticos y mecánicos) en una simulación unificada en tiempo real, resolviendo la ecuación de movimiento oscilatorio y rotacional amortiguado:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <mi>&tau;</mi>
@@ -451,17 +468,14 @@ function inyectarMemoriaTecnica() {
   <mo>-</mo><mi>M</mi><mi>g</mi><mi>L</mi><mo>&sdot;</mo><mi>sin</mi><mo>(</mo><mi>&theta;</mi><mo>)</mo>
 </math>
 </div>
+
 <div class="io-box">
-    <div class="io-title">Variables de las Fases 11 y 12</div>
-    <div class="io-entry io-in"><strong>Entrada:</strong> Desviaciones de tolerancia en masa de los hilos de cobre.</div>
-    <div class="io-entry io-in"><strong>Entrada:</strong> Clic en 'Start / Stop' de animación.</div>
-    <div class="io-entry io-out"><strong>Salida:</strong> Coordenadas (X, Y) del Centro de Gravedad desfasado.</div>
-    <div class="io-entry io-out"><strong>Salida:</strong> Momento de Inercia del conjunto.</div>
-    <div class="io-entry io-out"><strong>Salida:</strong> Simulación dinámica visual: efecto pendular bajo gravedad si la masa no está equilibrada perfectamente.</div>
+    <div class="io-title">Variables de la Fase 12</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Activación del ciclo de reloj mediante el botón 'Start/Stop'.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Renderizado final verificando si el diseño logra un giro estable o sucumbe al desequilibrio.</div>
 </div>
 
-<div style="text-align:center; margin: 30px 0; display: flex; flex-direction: column; gap: 20px; align-items: center;">
-    <img src="Imagenes_informe/Fase_11.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 11">
+<div style="text-align:center; margin: 30px 0;">
     <img src="Imagenes_informe/Fase_12.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 12">
 </div>
 
