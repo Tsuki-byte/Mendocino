@@ -635,9 +635,6 @@ function inyectarMemoriaTecnica() {
     </li>
 </ul>
 
-<div class="nota">
-    <strong>Nota Final de Uso en MS Word:</strong> Para migrar este documento manteniendo la estética intacta, simplemente selecciona todo (<code>Ctrl+A</code>), cópialo (<code>Ctrl+C</code>) y pégalo directamente en un documento de <strong>Microsoft Word</strong> o en un PDF. Las imágenes insertadas se mantendrán automáticamente.
-</div>
 
 
 `;
