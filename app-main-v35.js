@@ -5118,11 +5118,10 @@ async function renderizarPasoMagpylib() {
     
     // UI enhancements
     contenedorResultados.innerHTML = `
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px;">
-            <div style="border: 4px solid #e2e8f0; border-left-color: #3b82f6; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-bottom: 15px;"></div>
-            <span style="color: #475569; font-weight: 500;">Calculando física avanzada en el servidor...</span>
+        <div class="loading-container">
+            <div class="spinner-simulacion"></div>
+            <span>Calculando física avanzada en el servidor...</span>
         </div>
-        <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
     `;
 
     try {
@@ -7885,7 +7884,12 @@ async function ejecutarMagpylibLevitacion() {
         return;
     }
 
-    contenedor.innerHTML = '<div style="padding: 20px; text-align: center; color: #3b82f6;"><div class="spinner"></div> Calculando punto de equilibrio exacto (Búsqueda Binaria de Fuerzas)...</div>';
+    contenedor.innerHTML = `
+        <div class="loading-container">
+            <div class="spinner-simulacion"></div>
+            <span>Calculando punto de equilibrio exacto en el servidor...</span>
+        </div>
+    `;
     
     try {
         // Recoger variables geométricas
@@ -8113,7 +8117,12 @@ async function renderizarPasoMagpylibGlobal() {
         return;
     }
     
-    contenedor.innerHTML = '<div style="padding: 20px; text-align: center; color: #8e44ad;"><div class="spinner"></div> Calculando interacción magnética global en 3D...</div>';
+    contenedor.innerHTML = `
+        <div class="loading-container">
+            <div class="spinner-simulacion"></div>
+            <span>Calculando interacción magnética global en el servidor...</span>
+        </div>
+    `;
     
     try {
         // 1. Recoger Imán Base (Inducción) y Bobinas (igual que Paso 8)
