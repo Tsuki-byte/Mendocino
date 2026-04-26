@@ -376,9 +376,9 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_7.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 7">
 </div>
 
-<h3>Fase 8 y 9: Par Motriz y Simulación Global (Motor Físico Magpylib en 3D)</h3>
-<p>El centro de gravedad computacional de esta herramienta: cálculos exhaustivos de elementos finitos para derivar la verdadera fuerza mecánica.</p>
-<p><strong>Concepto Teórico:</strong> El simulador segmenta cada espira en microvectores, aplicando la Ley de Lorentz (Fase 8). En la <strong>Fase 9 (Global)</strong> se calcula la superposición tensorial de todos los imanes, incluyendo el frenado magnético de los imanes de levitación.</p>
+<h3>Fase 8: Par Motriz y Fuerza de Lorentz (Imán Central)</h3>
+<p>El centro de gravedad computacional para entender qué hace girar al motor: el cálculo exhaustivo de elementos finitos aplicado exclusivamente a la interacción motriz.</p>
+<p><strong>Concepto Teórico:</strong> El simulador segmenta cada espira de la bobina en microvectores espaciales. Utilizando la posición 3D exacta del imán central de la base (Estator) y la intensidad de corriente inyectada por el panel solar iluminado, se aplica la Ley de Lorentz tridimensional a lo largo de todo el devanado. Esto genera un vector de fuerza neta que, multiplicado por el brazo de palanca (distancia al eje de giro), se traduce en el <strong>Par Motriz (Torque)</strong>, que es la magnitud mecánica real que dicta con cuánta fuerza gira el motor Mendocino.</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <mover><mi>F</mi><mo>&rarr;</mo></mover>
@@ -392,19 +392,34 @@ function inyectarMemoriaTecnica() {
   <mo>)</mo>
 </math>
 </div>
-
 <div class="io-box">
-    <div class="io-title">Variables de las Fases 8 y 9</div>
-    <div class="io-entry io-in"><strong>Entrada:</strong> Posicionamiento tridimensional absoluto del imán inductor base (y de los apoyos en F9).</div>
-    <div class="io-entry io-in"><strong>Entrada:</strong> Posición de la matriz de espiras respecto al rotor en ese instante.</div>
-    <div class="io-entry io-out"><strong>Salida:</strong> Tensor de Campo Magnético en 3D (B_x, B_y, B_z).</div>
-    <div class="io-entry io-out"><strong>Salida:</strong> Vector fuerza final F de Lorentz (newtons).</div>
-    <div class="io-entry io-out"><strong>Salida:</strong> Par Motriz o Momento de Torsión (Torque en miliNewton·metro), que dicta cuán fuerte es el giro.</div>
-    <div class="io-entry io-out"><strong>Salida:</strong> Renderizado 3D Interactivo para la inspección visual (Plotly).</div>
+    <div class="io-title">Variables de la Fase 8</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Posicionamiento tridimensional absoluto del imán estator central.</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Posición de la matriz de espiras respecto al rotor en ese instante temporal.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Vector fuerza final F de Lorentz (newtons) inducida sobre el devanado.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Par Motriz o Momento de Torsión (Torque en miliNewton·metro).</div>
+</div>
+<div style="text-align:center; margin: 30px 0;">
+    <img src="Imagenes_informe/Fase_8.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 8">
 </div>
 
-<div style="text-align:center; margin: 30px 0; display: flex; flex-direction: column; gap: 20px; align-items: center;">
-    <img src="Imagenes_informe/Fase_8.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 8">
+<h3>Fase 9: Simulación Global Magnética (Estator + Levitación)</h3>
+<p>La culminación del modelado físico avanzado. Es un error común y simplista asumir que la Fuerza de Lorentz (la fuerza que induce el giro) proviene <em>únicamente</em> del imán central estator. En la realidad física, los <strong>imanes de levitación</strong> situados en los extremos de la base irradian campos magnéticos igualmente potentes que, por proximidad, también alcanzan y atraviesan los devanados de cobre de las bobinas.</p>
+<p><strong>Concepto Físico y Superposición:</strong> En esta Fase 9, el simulador integra <strong>todo el sistema electromagnético en conjunto</strong> (Imán central + Imanes de sustentación de la base + Imanes cilíndricos del rotor). Se ejecuta un cálculo matricial para determinar la superposición tensorial completa de todos los campos magnéticos interactuando de forma simultánea. Este análisis riguroso revela cómo las líneas de campo "parásitas" o residuales de los pilares de levitación interactúan con las bobinas energizadas, induciendo vectores de Lorentz adicionales que frecuentemente actúan como un <strong>frenado magnético transversal</strong>, penalizando y mermando la eficiencia del par motriz "puro" previamente aislado en la Fase 8.</p>
+<p><strong>Análisis Multi-Vista (Plotly):</strong> Para desentrañar esta compleja y densa topología de campos cruzados, la interfaz renderiza la interacción global utilizando una matriz de <strong>cuatro vistas analíticas interactivas</strong>:</p>
+<ul style="margin-bottom: 15px;">
+    <li><strong>Geometría Magnética 3D:</strong> Una perspectiva isométrica espacial renderizada en Plotly que evidencia la disposición de todo el conjunto y la nube magnética circundante.</li>
+    <li><strong>Corte Lateral (YZ):</strong> Fundamental para observar cómo el campo del imán central y el de los imanes de levitación chocan o se repelen desde el perfil longitudinal.</li>
+    <li><strong>Vista desde Arriba (XY):</strong> Documenta el patrón de dispersión horizontal de las líneas de flujo a vista de pájaro.</li>
+    <li><strong>Corte del Rotor Transversal (XZ):</strong> Analiza en detalle el grado de penetración de los flujos magnéticos atravesando directamente la sección transversal del núcleo y del devanado de cobre.</li>
+</ul>
+<div class="io-box">
+    <div class="io-title">Variables de la Fase 9</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Integración topológica completa y absoluta de todos los elementos físicos (Fase 4 + Fase 8).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Tensor de Campo Magnético Global superpuesto (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>B</mi><mi>x</mi></msub><mo>,</mo><msub><mi>B</mi><mi>y</mi></msub><mo>,</mo><msub><mi>B</mi><mi>z</mi></msub></math>).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Panel interactivo de 4 visualizaciones paramétricas para el análisis topológico del magnetismo total.</div>
+</div>
+<div style="text-align:center; margin: 30px 0;">
     <img src="Imagenes_informe/Fase_9.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 9">
 </div>
 
