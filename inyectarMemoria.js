@@ -160,7 +160,9 @@ function inyectarMemoriaTecnica() {
     <div class="io-entry io-out"><strong>Salida:</strong> Punto de Máxima Potencia (MPP), que define la Tensión e Intensidad óptimas que usará el motor.</div>
 </div>
 
-<div class="imagen-placeholder">[IMAGEN: Captura de pantalla de la gráfica de ensayo de placas solares]</div>
+<div style="text-align:center; margin: 30px 0;">
+    <img src="Imagenes_informe/Fase_1.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 1">
+</div>
 
 <h3>Fase 2: Geometría del Motor (Mecánica Estructural)</h3>
 <p>El rotor de un motor Mendocino tiene forma de prisma poligonal regular, dictado por el número de paneles solares (N).</p>
@@ -189,7 +191,9 @@ function inyectarMemoriaTecnica() {
     <div class="io-entry io-out"><strong>Salida:</strong> Modelo transversal en vista SVG 2D.</div>
 </div>
 
-<div class="imagen-placeholder">[IMAGEN: Captura de la geometría del rotor generada (Ej. polígono de ${N} caras)]</div>
+<div style="text-align:center; margin: 30px 0;">
+    <img src="Imagenes_informe/Fase_2.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 2">
+</div>
 
 <h3>Fase 3: Devanados (Electromagnetismo Circuital)</h3>
 <p>El motor basa su empuje en la Fuerza de Lorentz, la cual requiere corriente eléctrica viajando por espiras conductoras.</p>
@@ -217,6 +221,9 @@ function inyectarMemoriaTecnica() {
     <div class="io-entry io-out"><strong>Salida:</strong> Número máximo exacto de espiras (N_esp) que caben físicamente bajo la placa solar en una sola ranura.</div>
     <div class="io-entry io-out"><strong>Salida:</strong> Resistencia total de cada bobina (Ω) y Peso del metal añadido (gramos).</div>
 </div>
+<div style="text-align:center; margin: 30px 0;">
+    <img src="Imagenes_informe/Fase_3.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 3">
+</div>
 
 <h3>Fase 4 y 5: Levitación e Interacción Magnética (Estática)</h3>
 <p>Para un giro ultra-eficiente se suprime el rozamiento convencional usando campos magnéticos estacionarios.</p>
@@ -242,7 +249,10 @@ function inyectarMemoriaTecnica() {
     <div class="io-entry io-out"><strong>Salida:</strong> Altura de Levitación (Punto Z donde Repulsión Magnética = Gravedad). Alerta si el rotor no levita.</div>
 </div>
 
-<div class="imagen-placeholder">[IMAGEN: Visor de Levitación Magnética mostrando los vectores de fuerza ascendente]</div>
+<div style="text-align:center; margin: 30px 0; display: flex; flex-direction: column; gap: 20px; align-items: center;">
+    <img src="Imagenes_informe/Fase_4.png" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 4">
+    <img src="Imagenes_informe/Fase_5.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 5">
+</div>
 
 <h3>Fase 6: Interacción Lumínica (Conmutación Óptica)</h3>
 <p>El sol y la geometría de la carcasa actúan como un sensor de efecto Hall pasivo.</p>
@@ -263,6 +273,9 @@ function inyectarMemoriaTecnica() {
     <div class="io-entry io-in"><strong>Entrada:</strong> Posición angular teórica de la fuente de luz.</div>
     <div class="io-entry io-out"><strong>Salida:</strong> Área real iluminada de cada placa solar tras sustraer la sombra.</div>
     <div class="io-entry io-out"><strong>Salida:</strong> Intensidad de corriente inyectada en cada mili-segundo a los devanados.</div>
+</div>
+<div style="text-align:center; margin: 30px 0;">
+    <img src="Imagenes_informe/Fase_6.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 6">
 </div>
 
 <h3>Fase 7: FCEM y Velocidad</h3>
@@ -287,6 +300,9 @@ function inyectarMemoriaTecnica() {
     <div class="io-entry io-in"><strong>Entrada:</strong> Flujo magnético interceptado y constante geométrica del estator.</div>
     <div class="io-entry io-out"><strong>Salida:</strong> Tensión de FCEM.</div>
     <div class="io-entry io-out"><strong>Salida:</strong> Límite termodinámico teórico de Velocidad en vacío (R.P.M.).</div>
+</div>
+<div style="text-align:center; margin: 30px 0;">
+    <img src="Imagenes_informe/Fase_7.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 7">
 </div>
 
 <h3>Fase 8 y 9: Par Motriz y Simulación Global (Motor Físico Magpylib en 3D)</h3>
@@ -316,7 +332,10 @@ function inyectarMemoriaTecnica() {
     <div class="io-entry io-out"><strong>Salida:</strong> Renderizado 3D Interactivo para la inspección visual (Plotly).</div>
 </div>
 
-<div class="imagen-placeholder">[IMAGEN: Visor 3D Interactivo de la Simulación Global mostrando las espiras]</div>
+<div style="text-align:center; margin: 30px 0; display: flex; flex-direction: column; gap: 20px; align-items: center;">
+    <img src="Imagenes_informe/Fase_8.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 8">
+    <img src="Imagenes_informe/Fase_9.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 9">
+</div>
 
 <h3>Fase 10: Conexionado Eléctrico</h3>
 <p>Determina la dirección de los flujos de corriente y polos electromagnéticos en base a cómo se sueldan las placas solares.</p>
@@ -326,6 +345,9 @@ function inyectarMemoriaTecnica() {
     <div class="io-entry io-out"><strong>Salida:</strong> Sentido de la corriente inyectada (+/-).</div>
     <div class="io-entry io-out"><strong>Salida:</strong> Polaridad geométrica generada en el rotor (Cara Norte / Cara Sur magnética).</div>
     <div class="io-entry io-out"><strong>Salida:</strong> Determinación de si el motor rotará en sentido horario (CW) o antihorario (CCW).</div>
+</div>
+<div style="text-align:center; margin: 30px 0;">
+    <img src="Imagenes_informe/Fase_10.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 10">
 </div>
 
 <h3>Fase 11 y 12: Equilibrado de Masas y Simulación Dinámica</h3>
@@ -350,7 +372,10 @@ function inyectarMemoriaTecnica() {
     <div class="io-entry io-out"><strong>Salida:</strong> Simulación dinámica visual: efecto pendular bajo gravedad si la masa no está equilibrada perfectamente.</div>
 </div>
 
-<div class="imagen-placeholder">[IMAGEN: Diagrama SVG transversal del Equilibrado de Masas]</div>
+<div style="text-align:center; margin: 30px 0; display: flex; flex-direction: column; gap: 20px; align-items: center;">
+    <img src="Imagenes_informe/Fase_11.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 11">
+    <img src="Imagenes_informe/Fase_12.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 12">
+</div>
 
 <hr>
 
@@ -613,8 +638,12 @@ function inyectarMemoriaTecnica() {
 </div>
 <p>Este par motriz inicial de 2.7 mN·m acelerará el motor desde el reposo hasta que la fuerza contraelectromotriz (Fase 7) y la fricción aerodinámica equilibren el sistema termodinámico.</p>
 
+<div style="text-align:center; margin: 40px 0;">
+    <img src="Imagenes_informe/Fase_13.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 13">
+</div>
+
 <div class="nota">
-    <strong>Nota Final de Uso en MS Word:</strong> Para migrar este documento manteniendo la estética intacta (tablas, negritas, subrayados), simplemente haz clic en la página, presiona <code>Ctrl+A</code> (o <code>Cmd+A</code> en Mac) para seleccionar todo, luego "Copiar" (<code>Ctrl+C</code>) y finalmente pégalo directamente en un documento en blanco de <strong>Microsoft Word</strong>. Luego inserta tus capturas donde corresponda.
+    <strong>Nota Final de Uso en MS Word:</strong> Para migrar este documento manteniendo la estética intacta, simplemente selecciona todo (<code>Ctrl+A</code>), cópialo (<code>Ctrl+C</code>) y pégalo directamente en un documento de <strong>Microsoft Word</strong> o en un PDF. Las imágenes insertadas se mantendrán automáticamente.
 </div>
 
 
