@@ -137,7 +137,7 @@ function inyectarMemoriaTecnica() {
 
 <h2>2. Desglose Teórico y Operativo de las Fases del Simulador</h2>
 
-<p>A continuación, se describe con exhaustividad cada una de las fases de la herramienta, detallando la base teórica y diferenciando exactamente qué información requiere la aplicación (<strong>Entradas</strong>) y qué información resuelve (<strong>Salidas</strong>).</p>
+<p>A continuación, se describe con exhaustividad cada una de las fases de la herramienta, detallando la base teórica y diferenciando exactamente qué información requiere la aplicación (<strong>Entradas</strong>) y qué información resuelve (<strong>Salidas</strong>). Cabe destacar que, de forma complementaria a este informe final, la propia interfaz de la calculadora incluye un pequeño panel de resumen técnico en cada uno de sus pasos para guiar el proceso de diseño en tiempo real.</p>
 
 <h3>Fase 1: Ensayo de Placas Solares (Fuente de Energía)</h3>
 <p>El motor no se conecta a una red; su única fuente de energía son las células fotovoltaicas. Las células solares no son fuentes de tensión ni de corriente ideales, sino que operan bajo una <strong>curva característica I-V</strong> no lineal.</p>
@@ -173,6 +173,29 @@ function inyectarMemoriaTecnica() {
 
 <div style="text-align:center; margin: 30px 0;">
     <img src="Imagenes_informe/Fase_1.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 1">
+</div>
+
+<div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-top: 20px; margin-bottom: 30px;">
+    <h4 style="margin-top: 0; color: #0f172a; font-size: 16px;">Protocolo de Montaje del Ensayo Eléctrico</h4>
+    <p style="font-size: 14px; margin-bottom: 10px;">Para obtener la curva empírica de una placa real y alimentar la herramienta con datos propios, se requiere el siguiente procedimiento en banco de pruebas:</p>
+    <ol style="font-size: 14px; padding-left: 20px; margin-bottom: 15px;">
+        <li style="margin-bottom: 6px;">Colocar la placa alineada perpendicularmente a la fuente de luz que se usará.</li>
+        <li style="margin-bottom: 6px;">Conectar el cable <strong style="color: #dc2626;">rojo</strong> al terminal positivo <strong>(+)</strong> de la placa y el cable <strong style="color: #0f172a;">negro</strong> al terminal negativo <strong>(-)</strong>.</li>
+        <li style="margin-bottom: 6px;">Conectar el <strong>Voltímetro (V)</strong> en paralelo a la placa para medir la caída de Tensión.</li>
+        <li style="margin-bottom: 6px;">Conectar el <strong>Amperímetro (A)</strong> en serie con el circuito para medir la Corriente.</li>
+        <li style="margin-bottom: 6px;">Cerrar el circuito con un <strong>Potenciómetro variable</strong> e ir disminuyendo la resistencia paso a paso para trazar los puntos de la curva.</li>
+    </ol>
+    <div style="padding: 15px; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px;">
+        <strong style="color: #b45309; display: flex; align-items: center; gap: 5px; font-size: 15px;">⚠️ Advertencia de Seguridad: Riesgo Térmico</strong>
+        <p style="margin-top: 8px; margin-bottom: 10px; font-size: 14px; line-height: 1.5;">
+            Debe utilizarse un potenciómetro bobinado o cerámico de al menos <strong>2W (Vatios)</strong>. Un potenciómetro de carbón estándar (0.25W) se quemará irremediablemente al acercarse a 0&Omega; (zona de cortocircuito).
+        </p>
+        <div style="font-size: 13px; color: #78350f; background: rgba(253, 230, 138, 0.4); padding: 12px; border-radius: 4px;">
+            <strong>Justificación Técnica:</strong><br>
+            El límite de corriente de un potenciómetro común de 100&Omega; y 0.25W es de apenas <strong>50 mA</strong> <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mo>(</mo><mi>I</mi><mo>=</mo><msqrt><mfrac><mn>0.25</mn><mn>100</mn></mfrac></msqrt><mo>)</mo></math>. Si ajustamos la resistencia casi a cero (ej. 0.5&Omega;), el panel solar se liberará y entregará toda su corriente de cortocircuito (que suele rondar los 130-150 mA).<br><br>
+            Aunque la potencia total disipada por la Ley de Joule sea ínfima <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mo>(</mo><mi>P</mi><mo>=</mo><msup><mi>I</mi><mn>2</mn></msup><mo>&sdot;</mo><mi>R</mi><mo>=</mo><msup><mn>0.133</mn><mn>2</mn></msup><mo>&sdot;</mo><mn>0.5</mn><mo>=</mo><mn>0.008</mn><mtext>&nbsp;W</mtext><mo>)</mo></math>, esa intensidad <strong>supera drásticamente el límite de densidad de carga</strong> de la finísima pista de carbón por la que atraviesa, fundiéndola de inmediato (como el filamento de una bombilla). Un potenciómetro de 2W cuenta con hilo grueso que soporta corrientes elevadas en cualquier punto de su pista.
+        </div>
+    </div>
 </div>
 
 <h3>Fase 2: Geometría del Motor (Mecánica Estructural)</h3>
