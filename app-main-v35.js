@@ -424,8 +424,8 @@ function cargarMotor(config, id_unico = null, titulo = null) {
 
     if (fcemRpmIn && config.fcemRpmSim !== undefined) {
         fcemRpmIn.value = config.fcemRpmSim;
-        const valDisp = document.getElementById('fcem-rpm-val');
-        if (valDisp) valDisp.textContent = config.fcemRpmSim;
+        const fcemRpmNum = document.getElementById('fcem-rpm-num');
+        if (fcemRpmNum) fcemRpmNum.value = config.fcemRpmSim;
     }
     if (fcemPerdIn && config.fcemPerdidas !== undefined) {
         fcemPerdIn.value = config.fcemPerdidas;
@@ -516,7 +516,7 @@ function cargarMotor(config, id_unico = null, titulo = null) {
         if (typeof calcularPasoLuminico === 'function') calcularPasoLuminico();
         if (typeof actualizarGraficoRotor === 'function') actualizarGraficoRotor();
         if (typeof actualizarVistasLevitacion === 'function') actualizarVistasLevitacion();
-        if (typeof calcularFcemYPerdidas === 'function') calcularFcemYPerdidas();
+        if (typeof calcularPasoFCEM === 'function') calcularPasoFCEM();
         if (typeof generarInformeAutomatico === 'function') generarInformeAutomatico();
     }, 100);
 }
