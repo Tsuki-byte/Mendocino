@@ -141,7 +141,13 @@ function inyectarMemoriaTecnica() {
 
 <h3>Fase 1: Ensayo de Placas Solares (Fuente de Energía)</h3>
 <p>El motor no se conecta a una red; su única fuente de energía son las células fotovoltaicas. Las células solares no son fuentes de tensión ni de corriente ideales, sino que operan bajo una <strong>curva característica I-V</strong> no lineal.</p>
-<p><strong>Concepto Físico:</strong> En esta fase, se procesan datos empíricos obtenidos iluminando la placa y variando su resistencia de carga (desde circuito abierto a cortocircuito). La potencia máxima extraíble sigue la ley de Watt:</p>
+<p><strong>Concepto Físico:</strong> En esta fase, se procesan datos empíricos obtenidos iluminando la placa y variando su resistencia de carga (desde circuito abierto a cortocircuito). Del análisis de la curva se extraen los siguientes parámetros fundamentales:</p>
+<ul>
+    <li><strong>Tensión de Vacío (Voc):</strong> Voltaje máximo de la placa cuando no hay carga conectada.</li>
+    <li><strong>Corriente de Cortocircuito (Isc):</strong> Intensidad máxima que fluye cuando se unen los terminales sin resistencia.</li>
+    <li><strong>Tensión e Intensidad P. Máx. (Vmp, Imp):</strong> Valores óptimos de operación donde la placa entrega la mayor cantidad de energía.</li>
+    <li><strong>Potencia Máxima (Pmax):</strong> La energía máxima extraíble, calculada por la ley de Watt:</li>
+</ul>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>P</mi><mi>max</mi></msub>
@@ -151,6 +157,11 @@ function inyectarMemoriaTecnica() {
   <msub><mi>I</mi><mi>mpp</mi></msub>
 </math>
 </div>
+<ul>
+    <li><strong>Factor de Forma (FF):</strong> Indicador de calidad de la célula solar que relaciona la potencia máxima real con el máximo teórico (Voc &times; Isc).</li>
+    <li><strong>Resistencia Óptima:</strong> El valor de la bobina (&Omega;) que permitirá al motor extraer la máxima potencia de la placa solar.</li>
+    <li><strong>Eficiencia STC (Neta):</strong> Rendimiento global de conversión de energía lumínica a potencia eléctrica.</li>
+</ul>
 
 <div class="io-box">
     <div class="io-title">Variables de la Fase 1</div>
