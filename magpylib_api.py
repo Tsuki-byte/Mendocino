@@ -1108,11 +1108,83 @@ def calculate_global_forces():
             plotly_html = f_p.to_html(full_html=False, include_plotlyjs='cdn')
         except Exception as e: print("Plotly error:", e)
 
+        # --- GENERATE 2D STREAMLINE PLOT ---
+        strm_base64 = ""
+        try:
+            import matplotlib.pyplot as plt
+            import io
+            import base64
+            
+            y_min, y_max = -80, 80
+            z_min, z_max = -40, 80
+            
+            ts_y_mm = np.linspace(y_min, y_max, 80)
+            ts_z_mm = np.linspace(z_min, z_max, 80)
+            
+            grid_m = np.array([[(0, y/1000.0, z/1000.0) for y in ts_y_mm] for z in ts_z_mm])
+            B_grid = col_imanes.getB(grid_m)
+            Y_grid_mm, Z_grid_mm = np.meshgrid(ts_y_mm, ts_z_mm)
+            By = B_grid[:,:,1]
+            Bz = B_grid[:,:,2]
+            B_mag_2d = np.linalg.norm(B_grid[:,:,1:], axis=2)
+            B_mag_2d[B_mag_2d == 0] = 1e-10
+            
+            if style_2d == 'scifi':
+                fig2, ax2 = plt.subplots(figsize=(7, 6))
+                fig2.patch.set_facecolor('#0f172a')
+                ax2.set_facecolor('#0f172a')
+                ax2.set_title('Intensidad de Campo y Líneas (Corte Central)', color='white', pad=15)
+                
+                contour = ax2.contourf(Y_grid_mm, Z_grid_mm, np.log10(B_mag_2d), levels=100, cmap='magma', alpha=0.9)
+                cbar = plt.colorbar(contour, ax=ax2, fraction=0.046, pad=0.04)
+                cbar.set_label('Log10(B) [mT]', color='#cbd5e1')
+                cbar.ax.yaxis.set_tick_params(color='#cbd5e1')
+                plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='#cbd5e1')
+                
+                lw = 0.5 + 1.5 * (np.log10(B_mag_2d) - np.log10(B_mag_2d).min()) / (np.log10(B_mag_2d).max() - np.log10(B_mag_2d).min() + 1e-10)
+                strm = ax2.streamplot(Y_grid_mm, Z_grid_mm, By, Bz, color='#ffffff88', density=1.4, linewidth=lw, arrowsize=1.2)
+                
+                ax2.set_xlabel('Y (Ancho mm)', color='#cbd5e1')
+                ax2.set_ylabel('Z (Altura mm)', color='#cbd5e1')
+                ax2.tick_params(colors='#cbd5e1')
+                for spine in ax2.spines.values():
+                    spine.set_color('#334155')
+            elif style_2d == 'quiver':
+                fig2, ax2 = plt.subplots(figsize=(7, 6))
+                ax2.set_title('Vectores de Campo (Corte Central)', pad=15)
+                By_norm = By / B_mag_2d
+                Bz_norm = Bz / B_mag_2d
+                skip = (slice(None, None, 2), slice(None, None, 2))
+                q = ax2.quiver(Y_grid_mm[skip], Z_grid_mm[skip], By_norm[skip], Bz_norm[skip], np.log10(B_mag_2d)[skip], 
+                               cmap='turbo', pivot='mid', scale=30, alpha=0.8, width=0.004)
+                cbar = plt.colorbar(q, ax=ax2, fraction=0.046, pad=0.04)
+                cbar.set_label('Log10(B) [mT]')
+                ax2.set_xlabel('Y (Ancho mm)')
+                ax2.set_ylabel('Z (Altura mm)')
+            else:
+                fig2, ax2 = plt.subplots(figsize=(7, 6))
+                ax2.set_title('Líneas de Campo Magnético', pad=15)
+                strm = ax2.streamplot(Y_grid_mm, Z_grid_mm, By, Bz, color=np.log10(B_mag_2d), density=1.5, cmap='plasma')
+                ax2.set_xlabel('Y (Ancho mm)')
+                ax2.set_ylabel('Z (Altura mm)')
+                
+            ax2.set_aspect('equal')
+            
+            buf2 = io.BytesIO()
+            is_transparent = False if style_2d == 'scifi' else True
+            plt.savefig(buf2, format='png', bbox_inches='tight', transparent=is_transparent)
+            plt.close(fig2)
+            buf2.seek(0)
+            strm_base64 = base64.b64encode(buf2.read()).decode('utf-8')
+        except Exception as e:
+            print("Matplotlib error:", e)
+
         return jsonify({
             'status': 'success',
             'torque_x': float(total_torque_x),
             'force_vector': [float(total_f_x), float(total_f_y), float(total_f_z)],
-            'plotly_html': plotly_html
+            'plotly_html': plotly_html,
+            'streamplot_base64': strm_base64
         })
         
     except Exception as e:
