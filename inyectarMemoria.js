@@ -261,9 +261,16 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_3.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 3">
 </div>
 
-<h3>Fase 4: Levitación Magnética (Eje Z)</h3>
-<p>Para un giro ultra-eficiente se suprime el rozamiento convencional usando campos magnéticos estacionarios.</p>
-<p><strong>Concepto Físico:</strong> En lugar de apoyarse sobre rodamientos mecánicos que generan fricción, el motor "flota" en el aire gracias a la repulsión de imanes de Neodimio enfrentados por polos iguales. Funciona como una balanza invisible: el rotor cae empujado por la gravedad hasta acercarse a los imanes de la base. Cuanto más se acerca, más fuerte es el "colchón magnético" que lo rechaza. Cuando este empuje hacia arriba iguala exactamente al peso total del bloque, el sistema se detiene y levita de forma estable a una altura <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mi>Z</mi></math>:</p>
+<h3>Fase 4: Levitación Magnética y Modelado de Elementos Finitos (Eje Z)</h3>
+<p>Para lograr un giro ultra-eficiente, el motor suprime el rozamiento convencional "flotando" en el aire. Sin embargo, para simular este fenómeno, esta fase constituye el núcleo geométrico del simulador, donde se define por completo la topología magnética del sistema.</p>
+<p><strong>Definición Espacial y Geométrica:</strong> En esta etapa se introducen meticulosamente todas las dimensiones físicas (diámetro, longitud), formas, grados de potencia coercitiva (ej. N42, N52) y la polaridad exacta tanto de los imanes de la bancada base como de los imanes insertados en los extremos del rotor. Además, se establece la colocación espacial milimétrica (como la distancia entre los pilares de la base) para recrear digitalmente la estructura física idéntica al modelo real. Toda esta configuración espacial es crítica, ya que servirá como bloque de cimientos para los cálculos de las fases posteriores.</p>
+<p><strong>Simulación Computacional (Magpylib):</strong> Una vez definida la geometría, la calculadora procesa esta matriz de datos mediante un potente motor de cálculo de campos magnéticos. Este programa evalúa la interacción tridimensional y calcula el punto de equilibrio. Conceptualmente, funciona como una balanza invisible: el rotor cae empujado por la gravedad hasta acercarse a los imanes de la base. Cuanto más se acerca, más se comprime el "colchón magnético" repulsivo. Cuando el empuje hacia arriba iguala exactamente al peso total del bloque, el sistema se detiene y levita de forma estable a una altura <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mi>Z</mi></math>:</p>
+<p><strong>Representación Visual Multi-Modo:</strong> Para facilitar la comprensión visual de estos campos invisibles y verificar la correcta alineación de los polos, la librería de cálculo permite renderizar cortes 2D del sistema magnético en varios estilos analíticos:</p>
+<ul style="margin-bottom: 15px;">
+    <li><strong>Sci-Fi (Modo Oscuro, Mapa de Calor):</strong> Ideal para resaltar las zonas de alta intensidad de flujo en un entorno visual de alto contraste tecnológico.</li>
+    <li><strong>Clásico (Fondo Blanco, Líneas Plasma):</strong> Una representación tradicional y académica que dibuja las líneas de isoflujo con gran claridad de lectura.</li>
+    <li><strong>Vectores (Campo Quiver con Flechas):</strong> Herramienta analítica perfecta para visualizar físicamente la dirección, sentido y magnitud del vector magnético en cada coordenada espacial.</li>
+</ul>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <mtext>Fuerza Magnética Repulsiva (&#8593;)</mtext>
