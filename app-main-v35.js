@@ -149,19 +149,19 @@ window.ejecutarAuth = async function() {
 
 const CONFIG_NIVELES = {
     basico: {
-        pasosPermitidos: [1, 2],
+        pasosPermitidos: [1, 2, 3, 4],
         puedeVerPasoMagnetico: false,
         puedeVerPasoFCEM: false,
         puedeVerInforme: false
     },
     avanzado: {
-        pasosPermitidos: [1, 2, 3, 4],
+        pasosPermitidos: [1, 2, 3, 4, 5, 6, 7],
         puedeVerPasoMagnetico: true,
         puedeVerPasoFCEM: false,
         puedeVerInforme: false
     },
     experto: {
-        pasosPermitidos: [1, 2, 3, 4, 5, 6],
+        pasosPermitidos: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
         puedeVerPasoMagnetico: true,
         puedeVerPasoFCEM: true,
         puedeVerInforme: true
@@ -183,9 +183,9 @@ function obtenerConfigNivel() {
             if (pasos.length > 0) {
                 return {
                     pasosPermitidos: pasos,
-                    puedeVerPasoMagnetico: pasos.includes(3),
-                    puedeVerPasoFCEM: pasos.includes(5),
-                    puedeVerInforme: pasos.includes(6)
+                    puedeVerPasoMagnetico: pasos.includes(4),
+                    puedeVerPasoFCEM: pasos.includes(6),
+                    puedeVerInforme: pasos.includes(12)
                 };
             }
         } catch (e) {
@@ -317,6 +317,8 @@ function cargarMotor(config, id_unico = null, titulo = null) {
     if (ranuraAncho) ranuraAncho.value = config.ranuraAncho ?? 10;
     if (ranuraAlto) ranuraAlto.value = config.ranuraAlto ?? 15;
     if (ranuraTipo) ranuraTipo.value = config.ranuraTipo ?? 'rect';
+    const diametroEje = document.getElementById('diametro-eje');
+    if (diametroEje) diametroEje.value = config.diametroEje ?? 8;
     if (materialHilo) materialHilo.value = config.material ?? 'cobre';
     if (diaHilo) {
         // Buscamos el valor exacto del hilo en el select
@@ -346,17 +348,27 @@ function cargarMotor(config, id_unico = null, titulo = null) {
     const imanOrient = document.getElementById('iman-orientacion');
     const imanDist = document.getElementById('iman-distancia');
 
-    if (config.imanMotorNombre && dbImanes.length > 0) {
-        const idxIm = dbImanes.findIndex(im => im.nombre === config.imanMotorNombre);
-        if (idxIm >= 0 && imanSelect) {
-            imanSelect.value = String(idxIm);
+    if (imanSelect && config.imanMotorNombre) {
+        for(let i=0; i<imanSelect.options.length; i++) {
+            const optText = imanSelect.options[i].text;
+            if(optText === config.imanMotorNombre || optText.includes(config.imanMotorNombre) || config.imanMotorNombre.includes(optText)) {
+                imanSelect.selectedIndex = i; break;
+            }
         }
     }
+    
     if (imanOrient && config.imanMotorOrientacion) {
         imanOrient.value = config.imanMotorOrientacion;
+        imanOrient.dispatchEvent(new Event('change'));
+    }
+    const imanPolaridad = document.getElementById('iman-polaridad');
+    if (imanPolaridad && config.imanMotorPolaridad) {
+        imanPolaridad.value = config.imanMotorPolaridad;
+        imanPolaridad.dispatchEvent(new Event('change'));
     }
     if (imanDist && config.imanMotorDistancia !== undefined) {
         imanDist.value = config.imanMotorDistancia;
+        imanDist.dispatchEvent(new Event('change'));
     }
 
     if (typeof poblarInfoImanMotor === 'function') poblarInfoImanMotor();
@@ -399,6 +411,61 @@ function cargarMotor(config, id_unico = null, titulo = null) {
         fcemPerdIn.value = config.fcemPerdidas;
     }
     
+    // --- Lógica Paso 8 (Equilibrado) ---
+    const equilMasaAd = document.getElementById('equil-masa-adicional');
+    const equilRadio = document.getElementById('equil-radio-masa');
+    const equilAngulo = document.getElementById('equil-angulo-masa');
+    if (equilMasaAd && config.equilMasaAdicional !== undefined) equilMasaAd.value = config.equilMasaAdicional;
+    if (equilRadio && config.equilRadioMasa !== undefined) equilRadio.value = config.equilRadioMasa;
+    if (equilAngulo && config.equilAnguloMasa !== undefined) equilAngulo.value = config.equilAnguloMasa;
+
+    // --- Lógica Paso 9 (Levitación) ---
+    const levBaseXIn = document.getElementById('lev-base-x');
+    const levBaseYIn = document.getElementById('lev-base-y');
+    const levSustSepXIn = document.getElementById('lev-sust-sep-x');
+    const levSustSepYIn = document.getElementById('lev-sust-sep-y');
+    const levSustPolIzq = document.getElementById('lev-sust-pol-izq');
+    const levSustPolDer = document.getElementById('lev-sust-pol-der');
+    const levRotorPolIzq = document.getElementById('lev-rotor-pol-izq');
+    const levRotorPolDer = document.getElementById('lev-rotor-pol-der');
+    const levRotorOffsetIzq = document.getElementById('lev-rotor-offset-izq');
+    const levRotorOffsetDer = document.getElementById('lev-rotor-offset-der');
+    const levApoyoDistIn = document.getElementById('lev-apoyo-dist');
+
+    if (levBaseXIn && config.levBaseX !== undefined) levBaseXIn.value = config.levBaseX;
+    if (levBaseYIn && config.levBaseY !== undefined) levBaseYIn.value = config.levBaseY;
+    if (levSustSepXIn && config.levSustSepX !== undefined) levSustSepXIn.value = config.levSustSepX;
+    if (levSustSepYIn && config.levSustSepY !== undefined) levSustSepYIn.value = config.levSustSepY;
+    const levSustIncIn = document.getElementById('lev-sust-inclinacion');
+    if (levSustIncIn && config.levSustInc !== undefined) levSustIncIn.value = config.levSustInc;
+    const levSustZIn = document.getElementById('lev-sust-z');
+    if (levSustZIn && config.levSustZ !== undefined) levSustZIn.value = config.levSustZ;
+    if (levSustPolIzq && config.levSustPolIzq !== undefined) levSustPolIzq.value = config.levSustPolIzq;
+    if (levSustPolDer && config.levSustPolDer !== undefined) levSustPolDer.value = config.levSustPolDer;
+    if (levRotorPolIzq && config.levRotorPolIzq !== undefined) levRotorPolIzq.value = config.levRotorPolIzq;
+    if (levRotorPolDer && config.levRotorPolDer !== undefined) levRotorPolDer.value = config.levRotorPolDer;
+    if (levRotorOffsetIzq && config.levRotorOffsetIzq !== undefined) levRotorOffsetIzq.value = config.levRotorOffsetIzq;
+    if (levRotorOffsetDer && config.levRotorOffsetDer !== undefined) levRotorOffsetDer.value = config.levRotorOffsetDer;
+    if (levApoyoDistIn && config.levApoyoDist !== undefined) levApoyoDistIn.value = config.levApoyoDist;
+
+    // Restaurar selectores de imanes por nombre si existen
+    const levSustIman = document.getElementById('lev-sust-iman');
+    if (levSustIman && config.levSustImanNombre) {
+        for(let i=0; i<levSustIman.options.length; i++) {
+            if(levSustIman.options[i].text === config.levSustImanNombre) {
+                levSustIman.selectedIndex = i; break;
+            }
+        }
+    }
+    const levRotorIman = document.getElementById('lev-rotor-iman');
+    if (levRotorIman && config.levRotorImanNombre) {
+        for(let i=0; i<levRotorIman.options.length; i++) {
+            if(levRotorIman.options[i].text === config.levRotorImanNombre) {
+                levRotorIman.selectedIndex = i; break;
+            }
+        }
+    }
+    
     // Restaurar Peso Real
     const elPesoReal = document.getElementById('peso-total-real');
     if (elPesoReal) elPesoReal.value = config.resumen?.pesoReal || '0';
@@ -423,14 +490,52 @@ function cargarMotor(config, id_unico = null, titulo = null) {
     actualizarResumenPaso1();
     setTimeout(() => {
         // Encadenamos cálculos para que las gráficas se actualicen con los nuevos parámetros
-        if (typeof calcularPaso2 === 'function') calcularPaso2();
-        if (typeof calcularPasoMagnetico === 'function') calcularPasoMagnetico();
+        if (typeof calcularDimensionesRotor === 'function') calcularDimensionesRotor();
+        if (typeof calcularDevanado === 'function') calcularDevanado();
+        if (typeof calcularFuerzasPaso4 === 'function') calcularFuerzasPaso4();
         if (typeof calcularPasoLuminico === 'function') calcularPasoLuminico();
-        if (typeof calcularPasoFCEM === 'function') calcularPasoFCEM();
+        if (typeof actualizarGraficoRotor === 'function') actualizarGraficoRotor();
+        if (typeof actualizarVistasLevitacion === 'function') actualizarVistasLevitacion();
+        if (typeof calcularFcemYPerdidas === 'function') calcularFcemYPerdidas();
         if (typeof generarInformeAutomatico === 'function') generarInformeAutomatico();
     }, 100);
 }
 
+window.actualizarMasaTotalRotor = function() {
+    const elPesoReal = document.getElementById('peso-total-real');
+    let manualPeso = elPesoReal ? parseFloat(elPesoReal.value) : 0;
+    
+    // Base estimation for rotor components: shaft, structure, magnets
+    const baseEje = 10; 
+    const baseEstructura = 20;
+    const baseImanes = 10;
+    const paneles = 5; // approx
+    const baseConstante = baseEje + baseEstructura + baseImanes + paneles;
+    
+    const masaCobre = EstadoDiseno.masaCobre || 0;
+    const calculada = baseConstante + masaCobre;
+    
+    if (elPesoReal) {
+        elPesoReal.placeholder = calculada.toFixed(1);
+    }
+    
+    if (manualPeso > 0) {
+        EstadoDiseno.masaTotal = manualPeso;
+    } else {
+        EstadoDiseno.masaTotal = calculada;
+    }
+};
+
+window.actualizarResumenPesoManual = function() {
+    actualizarMasaTotalRotor();
+    if (typeof ejecutarMagpylibLevitacion === 'function') {
+        // Si ya han usado el paso 9, recalcular al cambiar el peso
+        const cont = document.getElementById('res-magpylib-levitacion');
+        if (cont && cont.innerHTML.includes('Resultado')) {
+            ejecutarMagpylibLevitacion();
+        }
+    }
+};
 
 
         // --- BASE DE DATOS PREDETERMINADA ---
@@ -487,10 +592,20 @@ function cargarMotor(config, id_unico = null, titulo = null) {
                 if (window.dbMendocinoClient && sessionActiva) {
                     const uid = sessionActiva.user.id;
                     
-                    // 1. Cargar datos del usuario
-                    const { data: paneles, error: errP } = await dbMendocinoClient.from('paneles').select('*').eq('usuario_id', uid);
-                    const { data: hilos, error: errH } = await dbMendocinoClient.from('hilos').select('*').eq('usuario_id', uid);
-                    const { data: imanes, error: errI } = await dbMendocinoClient.from('imanes').select('*').eq('usuario_id', uid);
+                    let paneles, hilos, imanes;
+                    if (window.esAdmin) {
+                        // El administrador descarga todos los componentes para poder moderarlos
+                        const resP = await dbMendocinoClient.from('paneles').select('*');
+                        const resH = await dbMendocinoClient.from('hilos').select('*');
+                        const resI = await dbMendocinoClient.from('imanes').select('*');
+                        paneles = resP.data; hilos = resH.data; imanes = resI.data;
+                    } else {
+                        // Usuarios normales solo descargan los suyos
+                        const resP = await dbMendocinoClient.from('paneles').select('*').eq('usuario_id', uid);
+                        const resH = await dbMendocinoClient.from('hilos').select('*').eq('usuario_id', uid);
+                        const resI = await dbMendocinoClient.from('imanes').select('*').eq('usuario_id', uid);
+                        paneles = resP.data; hilos = resH.data; imanes = resI.data;
+                    }
                     
                     // 2. Cargar datos públicos (disponibles para todos)
                     const { data: pPub, error: errPP } = await dbMendocinoClient.from('paneles').select('*').eq('es_publico', true);
@@ -501,16 +616,49 @@ function cargarMotor(config, id_unico = null, titulo = null) {
                     dbHilosPublicos = (hPub || []).map(h => parseFloat(h.diametro));
                     dbImanesPublicos = iPub || [];
 
-                    // Combinar (con prioridad a los del usuario si hay duplicados por nombre, aunque no debería haber conflictos críticos)
-                    // Para los hilos, combinamos y quitamos duplicados
-                    dbPaneles = [...(paneles || []), ...dbPanelesPublicos];
-                    dbHilos = [...new Set([...(hilos || []).map(h => parseFloat(h.diametro)), ...dbHilosPublicos])];
-                    dbImanes = [...(imanes || []), ...dbImanesPublicos];
+                    // Limpieza de datos antiguos cacheados para evitar fantasmas
+                    localStorage.removeItem('dbPaneles');
+                    localStorage.removeItem('dbHilos');
+                    localStorage.removeItem('dbImanes');
+                    localStorage.removeItem('mendocino_historial_ensayos');
 
-                    // Fallback a locales si no hay nada en la nube (primer inicio)
-                    if (dbPaneles.length === 0) dbPaneles = JSON.parse(localStorage.getItem('dbPaneles')) || [...defaultPaneles];
-                    if (dbHilos.length === 0) dbHilos = JSON.parse(localStorage.getItem('dbHilos')) || [...defaultHilos];
-                    if (dbImanes.length === 0) dbImanes = JSON.parse(localStorage.getItem('dbImanes')) || [...defaultImanes];
+                    // Combinar evitando duplicados por ID en paneles e imanes
+                    const mapPaneles = new Map();
+                    [...(paneles || []), ...dbPanelesPublicos].forEach(p => mapPaneles.set(p.id || p.nombre, p));
+                    dbPaneles = Array.from(mapPaneles.values());
+
+                    const mapImanes = new Map();
+                    [...(imanes || []), ...dbImanesPublicos].forEach(im => mapImanes.set(im.id || im.nombre, im));
+                    dbImanes = Array.from(mapImanes.values());
+
+                    // Para los hilos, combinamos y quitamos duplicados de diámetro
+                    dbHilos = [...new Set([...(hilos || []).map(h => parseFloat(h.diametro)), ...dbHilosPublicos])];
+
+                    // Fallback de defecto si todo está vacío
+                    if (dbPaneles.length === 0) {
+                        dbPaneles = [...defaultPaneles];
+                        if (window.esAdmin && window.dbMendocinoClient && sessionActiva) {
+                            const pData = defaultPaneles.map(p => ({...p, usuario_id: sessionActiva.user.id, es_publico: true, config: {}}));
+                            window.dbMendocinoClient.from('paneles').insert(pData).then(() => {
+                                console.log('Paneles por defecto subidos a la nube.');
+                                setTimeout(() => window.location.reload(), 1500);
+                            });
+                        }
+                    }
+                    if (dbHilos.length === 0) {
+                        dbHilos = [...defaultHilos];
+                        if (window.esAdmin && window.dbMendocinoClient && sessionActiva) {
+                            const hData = defaultHilos.map(h => ({diametro: h, usuario_id: sessionActiva.user.id, es_publico: true}));
+                            window.dbMendocinoClient.from('hilos').insert(hData).then(() => console.log('Hilos por defecto subidos a la nube.'));
+                        }
+                    }
+                    if (dbImanes.length === 0) {
+                        dbImanes = [...defaultImanes];
+                        if (window.esAdmin && window.dbMendocinoClient && sessionActiva) {
+                            const iData = defaultImanes.map(im => ({...im, usuario_id: sessionActiva.user.id, es_publico: true}));
+                            window.dbMendocinoClient.from('imanes').insert(iData).then(() => console.log('Imanes por defecto subidos a la nube.'));
+                        }
+                    }
 
                 } else {
                     throw new Error("Supabase no definido o sin sesión");
@@ -524,21 +672,9 @@ function cargarMotor(config, id_unico = null, titulo = null) {
         }
 
         function guardarDatos() {
-            localStorage.setItem('dbPaneles', JSON.stringify(dbPaneles));
-            localStorage.setItem('dbHilos', JSON.stringify(dbHilos));
-            localStorage.setItem('dbImanes', JSON.stringify(dbImanes));
             renderizarUI(); 
         }
 
-        async function resetearBaseDatos() {
-            if(await mostrarConfirmacion("Restaurar Datos", "¿Estás seguro de que quieres borrar tus componentes y volver a los de defecto?")) {
-                dbPaneles = [...defaultPaneles];
-                dbHilos = [...defaultHilos];
-                dbImanes = [...defaultImanes];
-                guardarDatos();
-                mostrarToast('Base de datos restaurada correctamente.', 'ok');
-            }
-        }
 
         // --- RENDERIZADO DE INTERFAZ GENERAL ---
         function renderizarUI() {
@@ -598,18 +734,79 @@ function cargarMotor(config, id_unico = null, titulo = null) {
                     poblarInfoImanMotor();
                 }
 
+                // Poblado del selector de imán de sustentación (Paso 9)
+                const selLevSust = document.getElementById('lev-sust-iman');
+                if (selLevSust && Array.isArray(dbImanes)) {
+                    const sustActual = selLevSust.value;
+                    selLevSust.innerHTML = '';
+                    dbImanes.forEach((im, index) => {
+                        const texto = `${im.nombre} (${im.forma}) - ${im.br}T`;
+                        selLevSust.innerHTML += `<option value="${index}">${texto}</option>`;
+                    });
+
+                    if (dbImanes.length === 0) {
+                        selLevSust.innerHTML = '<option value="">Sin imanes</option>';
+                    } else if (sustActual !== '' && Number(sustActual) >= 0 && Number(sustActual) < dbImanes.length) {
+                        selLevSust.value = sustActual;
+                    } else {
+                        const idx = dbImanes.findIndex(im => String(im.forma || '').toLowerCase().includes('bloque'));
+                        selLevSust.value = String(idx >= 0 ? idx : 0);
+                    }
+                }
+
+                // Poblado del selector de imán del rotor (anular)
+                const selLevRotor = document.getElementById('lev-rotor-iman');
+                if (selLevRotor && Array.isArray(dbImanes)) {
+                    const rotActual = selLevRotor.value;
+                    selLevRotor.innerHTML = '';
+                    let tieneAros = false;
+                    dbImanes.forEach((im, index) => {
+                        const forma = String(im.forma || '').toLowerCase();
+                        if (forma.includes('aro') || forma.includes('anillo')) {
+                            const texto = `${im.nombre} (${im.forma}) - ${im.br}T`;
+                            selLevRotor.innerHTML += `<option value="${index}">${texto}</option>`;
+                            tieneAros = true;
+                        }
+                    });
+
+                    if (!tieneAros) {
+                        selLevRotor.innerHTML = '<option value="">Sin imanes anulares en BD</option>';
+                    } else if (rotActual !== '' && Number(rotActual) >= 0 && Number(rotActual) < dbImanes.length) {
+                        selLevRotor.value = rotActual;
+                    } else {
+                        // Selección por defecto del primer imán anular
+                        const idxAro = dbImanes.findIndex(im => String(im.forma || '').toLowerCase().includes('aro') || String(im.forma || '').toLowerCase().includes('anillo'));
+                        if (idxAro >= 0) selLevRotor.value = String(idxAro);
+                    }
+                }
+
                 document.getElementById('lista-paneles').innerHTML = dbPaneles.map((p, i) => {
                     const p_mW = p.v * p.i;
                     const r_ohm = p.i > 0 ? p.v / (p.i / 1000) : 0;
                     const ff = (p.voc * p.isc) > 0 ? (p.v * p.i) / (p.voc * p.isc) : 0;
-                    return `<li style="font-size: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    let btnHtml = '';
+                    const miUid = window.sessionActiva ? window.sessionActiva.user.id : null;
+                    const esMio = p.usuario_id === miUid;
+                    const adminUser = window.esAdmin;
+
+                    if (adminUser) {
+                        btnHtml += `<button onclick="togglePublicoPanel(${i})" style="font-size: 11px; padding: 3px 6px; margin-right: 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.2s; ${p.es_publico ? 'background-color: #10b981; color: white; box-shadow: 0 2px 4px rgba(16,185,129,0.3);' : 'background-color: #cbd5e1; color: #475569;'}">${p.es_publico ? 'PÚBLICO ✓' : 'PRIVADO'}</button>`;
+                    }
+                    if (adminUser || esMio) {
+                        btnHtml += `<button class="btn-action" style="font-size: 11px; padding: 3px 6px; margin-right: 8px; border: none; border-radius: 4px; cursor: pointer; background-color: #3b82f6; color: white;" onclick="editarPanel(${i})">Editar</button>`;
+                        btnHtml += `<button class="btn-delete" onclick="borrarPanel(${i})">X</button>`;
+                    }
+
+                    return `<li style="font-size: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; ${p.es_publico ? 'border-left: 3px solid #10b981; padding-left: 5px; background-color: #f0fdf4;' : ''}">
                         <div style="flex-grow: 1;">
-                            <strong>${p.nombre}</strong> (${p.l}x${p.a}mm) 
+                            <strong>${p.nombre}</strong> (${p.l}x${p.a}mm) ${p.es_publico ? '<span style="font-size: 10px; background: #10b981; color: white; padding: 2px 5px; border-radius: 4px; margin-left: 5px; font-weight: bold;">PÚBLICO</span>' : ''}
                             <br>
                             <small>Voc: ${p.voc}V | Isc: ${p.isc}mA | V: ${p.v}V | I: ${p.i}mA</small><br>
                             <small style="color:var(--primary-color);"><strong>P:</strong> ${p_mW.toFixed(1)}mW | <strong>R ideal:</strong> ${r_ohm.toFixed(1)}Ω | <strong>FF:</strong> ${ff.toFixed(3)}</small>
                         </div>
-                        <button class="btn-delete" onclick="borrarPanel(${i})">X</button>
+                        <div style="display: flex; align-items: center;">
+                            ${btnHtml}
+                        </div>
                     </li>`;
                 }).join('');
 
@@ -633,6 +830,10 @@ function cargarMotor(config, id_unico = null, titulo = null) {
                     renderizarProyectos().catch(e => console.error("DEBUG [UI]: Fallo galería:", e));
                 }, 100);
                 
+                if (typeof actualizarSelectorHistorial === 'function') {
+                    actualizarSelectorHistorial();
+                }
+                
                 console.log("DEBUG [UI]: Renderización de interfaz completada.");
             } catch (e) {
                 console.error("DEBUG [UI]: Error fatal durante la renderización:", e);
@@ -646,7 +847,7 @@ function cargarMotor(config, id_unico = null, titulo = null) {
             if (dbHilos.includes(dia)) { alert("Error: Este diámetro ya existe."); return; }
             
             if (window.dbMendocinoClient && sessionActiva) {
-                await dbMendocinoClient.from('hilos').insert([{ usuario_id: sessionActiva.user.id, diametro: dia }]);
+                await dbMendocinoClient.from('hilos').insert([{ usuario_id: sessionActiva.user.id, diametro: dia, es_publico: false }]);
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -671,7 +872,7 @@ function cargarMotor(config, id_unico = null, titulo = null) {
                 return;
             }
             
-            const nuevoObj = { usuario_id: sessionActiva.user.id, nombre, voc, isc, v, i, l, a };
+            const nuevoObj = { usuario_id: sessionActiva.user.id, nombre, voc, isc, v, i, l, a, es_publico: false };
 
             if (window.dbMendocinoClient) {
                 await dbMendocinoClient.from('paneles').insert([nuevoObj]);
@@ -699,10 +900,16 @@ function cargarMotor(config, id_unico = null, titulo = null) {
                 return;
             }
 
-            const nuevoObj = { usuario_id: sessionActiva.user.id, nombre, forma, l, a, h, br };
+            const uid = (window.sessionActiva && window.sessionActiva.user) ? window.sessionActiva.user.id : 'local';
+            const nuevoObj = { usuario_id: uid, nombre, forma, l, a, h, br, es_publico: false };
             
-            if (typeof supabase !== 'undefined' && supabase) {
-                await dbMendocinoClient.from('imanes').insert([nuevoObj]);
+            if (typeof supabase !== 'undefined' && supabase && uid !== 'local') {
+                const { data, error } = await dbMendocinoClient.from('imanes').insert([nuevoObj]).select();
+                if (error) {
+                    console.error("Error insertando imán:", error);
+                    alert("Error guardando en la nube: " + error.message);
+                    return;
+                }
                 await cargarDatosGlobales();
                 renderizarUI();
             } else {
@@ -713,32 +920,265 @@ function cargarMotor(config, id_unico = null, titulo = null) {
             mostrarToast(`Imán "${nombre}" añadido correctamente.`, 'ok');
         }
 
-        async function borrarPanel(index) { 
-            if (window.dbMendocinoClient && dbPaneles[index] && dbPaneles[index].id) {
-                await dbMendocinoClient.from('paneles').delete().eq('id', dbPaneles[index].id);
-                await cargarDatosGlobales();
+        window.togglePublicoPanel = async function(index) {
+            if (!window.esAdmin) return;
+            try {
+                const p = dbPaneles[index];
+                if (!p.id) {
+                    mostrarToast("Este panel no está sincronizado en la nube.", "error");
+                    return;
+                }
+                const nuevoEstado = !p.es_publico;
+                const { data, error } = await window.dbMendocinoClient
+                    .from('paneles')
+                    .update({ es_publico: nuevoEstado })
+                    .eq('id', p.id)
+                    .select();
+                
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    throw new Error("Supabase ha bloqueado la actualización por seguridad (RLS). Debes añadir una política UPDATE para la tabla 'paneles' en tu dashboard.");
+                }
+                
+                p.es_publico = nuevoEstado;
                 renderizarUI();
-            } else {
-                dbPaneles.splice(index, 1); guardarDatos(); 
+                mostrarToast(nuevoEstado ? "Panel verificado y publicado." : "Panel marcado como privado.", "ok");
+            } catch(err) {
+                alert("Error al cambiar visibilidad: " + err.message);
+            }
+        };
+
+        window.editarPanel = function(index) {
+            const p = dbPaneles[index];
+            if (!p) return;
+            
+            const modal = document.getElementById('modal-dialogo');
+            const t = document.getElementById('modal-dialogo-titulo');
+            const m = document.getElementById('modal-dialogo-mensaje');
+            const btnAceptar = document.getElementById('modal-dialogo-btn-aceptar');
+            const btnCancelar = document.getElementById('modal-dialogo-btn-cancelar');
+            const iCont = document.getElementById('modal-dialogo-input-cont');
+            
+            if (!modal || !t || !m) return;
+
+            t.innerText = "Editar Placa Solar";
+            if (iCont) iCont.style.display = 'none';
+            
+            m.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:12px; text-align:left; font-size: 14px; color: #334155;">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <label style="font-weight:600;">Identificador Panel</label>
+                        <input type="text" id="edit-panel-nombre" value="${p.nombre}" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                    </div>
+                    <div style="display:flex; gap:15px;">
+                        <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                            <label style="font-weight:600;">L Ext. (mm)</label>
+                            <input type="number" id="edit-panel-l" value="${p.l}" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                            <label style="font-weight:600;">A Ext. (mm)</label>
+                            <input type="number" id="edit-panel-a" value="${p.a}" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:15px;">
+                        <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                            <label style="font-weight:600;">Tensión Voc (V)</label>
+                            <input type="number" step="0.01" id="edit-panel-voc" value="${p.voc}" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                            <label style="font-weight:600;">Corriente Isc (mA)</label>
+                            <input type="number" step="1" id="edit-panel-isc" value="${p.isc}" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                        </div>
+                    </div>
+                    
+                    <div style="font-weight:700; color:#1e40af; border-bottom:1px solid #cbd5e1; padding-bottom:5px; margin-top:5px;">Metadatos (Opcional)</div>
+                    
+                    <div style="display:flex; gap:15px;">
+                        <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                            <label style="font-weight:600;">L Silicio (mm)</label>
+                            <input type="number" id="edit-panel-l-sil" value="${(p.ensayo_data && p.ensayo_data.l_sil) || ''}" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                            <label style="font-weight:600;">A Silicio (mm)</label>
+                            <input type="number" id="edit-panel-a-sil" value="${(p.ensayo_data && p.ensayo_data.a_sil) || ''}" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; gap:15px;">
+                        <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                            <label style="font-weight:600;">Fuente Luz</label>
+                            <select id="edit-panel-luz" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                                <option value="halogena" ${((p.ensayo_data && p.ensayo_data.luz) || 'halogena') === 'halogena' ? 'selected' : ''}>Halógena</option>
+                                <option value="led" ${((p.ensayo_data && p.ensayo_data.luz) || '') === 'led' ? 'selected' : ''}>LED</option>
+                                <option value="sol" ${((p.ensayo_data && p.ensayo_data.luz) || '') === 'sol' ? 'selected' : ''}>Luz Solar Directa</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                            <label style="font-weight:600;">Distancia (mm)</label>
+                            <input type="number" id="edit-panel-distancia" value="${(p.ensayo_data && p.ensayo_data.distancia) || '156'}" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                            <label style="font-weight:600;">Ilum. (Lux)</label>
+                            <input type="number" id="edit-panel-lux" value="${(p.ensayo_data && p.ensayo_data.lux) || ''}" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:15px;">
+                        <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                            <label style="font-weight:600;">Proveedor</label>
+                            <input type="text" id="edit-panel-proveedor" value="${(p.ensayo_data && p.ensayo_data.proveedor) || ''}" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px; flex:0.7;">
+                            <label style="font-weight:600;">Precio (€)</label>
+                            <input type="number" step="0.01" id="edit-panel-precio" value="${(p.ensayo_data && p.ensayo_data.precio) || ''}" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px; flex:0.7;">
+                            <label style="font-weight:600;">Peso (g)</label>
+                            <input type="number" step="0.1" id="edit-panel-peso" value="${(p.ensayo_data && p.ensayo_data.peso) || ''}" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; width:100%; box-sizing:border-box;">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            btnAceptar.onclick = async function() {
+                const nuevoNombre = document.getElementById('edit-panel-nombre').value.trim();
+                const nuevoL = parseFloat(document.getElementById('edit-panel-l').value);
+                const nuevoA = parseFloat(document.getElementById('edit-panel-a').value);
+                const nuevoVoc = parseFloat(document.getElementById('edit-panel-voc').value);
+                const nuevoIsc = parseFloat(document.getElementById('edit-panel-isc').value);
+                
+                const n_l_sil = document.getElementById('edit-panel-l-sil').value;
+                const n_a_sil = document.getElementById('edit-panel-a-sil').value;
+                const n_luz = document.getElementById('edit-panel-luz').value;
+                const n_distancia = document.getElementById('edit-panel-distancia').value;
+                const n_lux = document.getElementById('edit-panel-lux').value;
+                const n_proveedor = document.getElementById('edit-panel-proveedor').value;
+                const n_precio = document.getElementById('edit-panel-precio').value;
+                const n_peso = document.getElementById('edit-panel-peso').value;
+                
+                if (!nuevoNombre || isNaN(nuevoL) || isNaN(nuevoA) || nuevoL <= 0 || nuevoA <= 0) {
+                    alert("Por favor, rellena nombre, largo y ancho con valores válidos.");
+                    return;
+                }
+                
+                const oldNombre = p.nombre;
+                
+                p.nombre = nuevoNombre;
+                p.l = nuevoL;
+                p.a = nuevoA;
+                p.voc = isNaN(nuevoVoc) ? 0 : nuevoVoc;
+                p.isc = isNaN(nuevoIsc) ? 0 : nuevoIsc;
+                
+                if (!p.ensayo_data) p.ensayo_data = { puntos: [] };
+                p.ensayo_data.l_sil = n_l_sil;
+                p.ensayo_data.a_sil = n_a_sil;
+                p.ensayo_data.luz = n_luz;
+                p.ensayo_data.distancia = n_distancia;
+                p.ensayo_data.lux = n_lux;
+                p.ensayo_data.proveedor = n_proveedor;
+                p.ensayo_data.precio = n_precio;
+                p.ensayo_data.peso = n_peso;
+                
+                try {
+                    btnAceptar.innerText = "Guardando...";
+                    btnAceptar.disabled = true;
+                    
+                    if (p.id && window.dbMendocinoClient) {
+                        const { error } = await dbMendocinoClient.from('paneles').update({
+                            nombre: p.nombre, l: p.l, a: p.a, voc: p.voc, isc: p.isc, ensayo_data: p.ensayo_data
+                        }).eq('id', p.id);
+                        if (error) throw error;
+                    }
+                    
+                    guardarDatos();
+                    
+                    // Si el panel tenía ensayos, actualizar el selector si estaba cargado
+                    if (typeof actualizarSelectorHistorial === 'function') {
+                        actualizarSelectorHistorial();
+                        const sel = document.getElementById('ensayo-historial-select');
+                        // Si estaba seleccionado actualmente, recargamos el nombre en el input principal
+                        if (sel && (sel.value === 'db_' + oldNombre || sel.value === 'placa_' + oldNombre)) {
+                            sel.value = (sel.value.startsWith('db_') ? 'db_' : 'placa_') + nuevoNombre;
+                            const inpNom = document.getElementById('ensayo-nombre-panel');
+                            if (inpNom) inpNom.value = nuevoNombre;
+                        }
+                    }
+                    
+                    renderizarUI();
+                    modal.style.display = 'none';
+                    mostrarToast('Panel actualizado correctamente.', 'ok');
+                } catch (e) {
+                    console.error("Error al editar panel:", e);
+                    alert("Error en la nube: " + e.message);
+                } finally {
+                    btnAceptar.innerText = "Aceptar";
+                    btnAceptar.disabled = false;
+                }
+            };
+            
+            btnCancelar.onclick = () => modal.style.display = 'none';
+            modal.style.display = 'flex';
+        };
+
+        async function borrarPanel(index) { 
+            try {
+                if (window.dbMendocinoClient && dbPaneles[index] && dbPaneles[index].id) {
+                    const { error } = await dbMendocinoClient.from('paneles').delete().eq('id', dbPaneles[index].id);
+                    if (error) throw error;
+                    
+                    dbPaneles.splice(index, 1);
+                    guardarDatos();
+                    
+                    await cargarDatosGlobales();
+                    renderizarUI();
+                } else {
+                    dbPaneles.splice(index, 1); 
+                    guardarDatos(); 
+                }
+            } catch (error) {
+                console.error("Error al borrar panel:", error);
+                alert("Error al borrar panel: " + error.message);
             }
         }
         async function borrarHilo(index) { 
-            if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
-                const uid = sessionActiva.user.id;
-                await dbMendocinoClient.from('hilos').delete().eq('usuario_id', uid).eq('diametro', dbHilos[index]);
-                await cargarDatosGlobales();
-                renderizarUI();
-            } else {
-                dbHilos.splice(index, 1); guardarDatos(); 
+            try {
+                if (typeof supabase !== 'undefined' && supabase && sessionActiva) {
+                    const uid = sessionActiva.user.id;
+                    const { error } = await dbMendocinoClient.from('hilos').delete().eq('usuario_id', uid).eq('diametro', dbHilos[index]);
+                    if (error) throw error;
+                    
+                    dbHilos.splice(index, 1);
+                    guardarDatos();
+
+                    await cargarDatosGlobales();
+                    renderizarUI();
+                } else {
+                    dbHilos.splice(index, 1); 
+                    guardarDatos(); 
+                }
+            } catch (error) {
+                console.error("Error al borrar hilo:", error);
+                alert("Error al borrar hilo: " + error.message);
             }
         }
         async function borrarIman(index) { 
-            if (window.dbMendocinoClient && dbImanes[index] && dbImanes[index].id) {
-                await dbMendocinoClient.from('imanes').delete().eq('id', dbImanes[index].id);
-                await cargarDatosGlobales();
-                renderizarUI();
-            } else {
-                dbImanes.splice(index, 1); guardarDatos(); 
+            try {
+                if (window.dbMendocinoClient && dbImanes[index] && dbImanes[index].id) {
+                    const { error } = await dbMendocinoClient.from('imanes').delete().eq('id', dbImanes[index].id);
+                    if (error) throw error;
+                    
+                    dbImanes.splice(index, 1);
+                    guardarDatos();
+
+                    await cargarDatosGlobales();
+                    renderizarUI();
+                } else {
+                    dbImanes.splice(index, 1); 
+                    guardarDatos(); 
+                }
+            } catch (error) {
+                console.error("Error al borrar imán:", error);
+                alert("Error al borrar imán: " + error.message);
             }
         }
 
@@ -754,7 +1194,7 @@ function cargarMotor(config, id_unico = null, titulo = null) {
         // --- LÓGICA DE CÁLCULO ---
 
         // --- PASO 1: GEOMETRÍA ---
-        function actualizarResumenPaso1() {
+        function actualizarResumenPaso1(fromStep1 = false) {
             if (dbPaneles.length === 0) return;
 
             EstadoDiseno.numeroCaras = parseInt(document.getElementById('caras').value); 
@@ -762,8 +1202,32 @@ function cargarMotor(config, id_unico = null, titulo = null) {
             const panel = dbPaneles[indexPanel];
             if (!panel) return;
 
+            // Sincronizar hacia el Paso 1
+            if (!fromStep1) {
+                const elHist = document.getElementById('ensayo-historial-select');
+                if (elHist) {
+                    for (let i = 0; i < elHist.options.length; i++) {
+                        if (elHist.options[i].value === 'db_' + panel.nombre || elHist.options[i].value === 'placa_' + panel.nombre) {
+                            if (elHist.selectedIndex !== i) {
+                                elHist.selectedIndex = i;
+                                setTimeout(() => {
+                                    if (typeof cargarEnsayoDesdeHistorial === 'function') {
+                                        cargarEnsayoDesdeHistorial(true);
+                                    }
+                                }, 10);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
             EstadoDiseno.longitudPanel = panel.l || 0;
             EstadoDiseno.anchoPanel = panel.a || 0;
+            
+            // Área activa del panel
+            EstadoDiseno.l_sil = panel.ensayo_data ? panel.ensayo_data.l_sil : null;
+            EstadoDiseno.a_sil = panel.ensayo_data ? panel.ensayo_data.a_sil : null;
 
 
             EstadoDiseno.profundidadRanura_mm = parseFloat(document.getElementById('ranura-alto')?.value || 0) || 0;
@@ -772,6 +1236,9 @@ function cargarMotor(config, id_unico = null, titulo = null) {
 
             const inputMargen = document.getElementById('margen-placa');
             EstadoDiseno.margenMarco_mm = inputMargen ? (parseFloat(inputMargen.value) || 0) : 0;
+            
+            const inputEje = document.getElementById('diametro-eje');
+            EstadoDiseno.diametroEje = inputEje ? (parseFloat(inputEje.value) || 8) : 8;
 
             // --- CÁLCULO DE IMÁN DE MOTOR (BASE) ---
             const selIman = document.getElementById('iman-motor');
@@ -804,11 +1271,7 @@ function cargarMotor(config, id_unico = null, titulo = null) {
                     EstadoDiseno.campoB_max = B_max > 0 ? B_max : B_calculado;
                     EstadoDiseno.imanMotorNombre = im.nombre;
                     
-                    // Sincronizamos con el input del Paso 3
-                    const inputPaso3 = document.getElementById('campo-b');
-                    if (inputPaso3) {
-                        inputPaso3.value = B_calculado.toFixed(3);
-                    }
+                    // Input removido, ya no actualizamos la vista de Paso 4 desde aquí
                 }
             }
 
@@ -875,7 +1338,7 @@ function cargarMotor(config, id_unico = null, titulo = null) {
 
             dibujarRotorSVG();
             // Dibujar la vista superior del panel
-            dibujarPanelSVG(EstadoDiseno.longitudPanel, Wp, EstadoDiseno.margenMarco_mm);
+            dibujarPanelSVG(EstadoDiseno.longitudPanel, Wp, EstadoDiseno.margenMarco_mm, EstadoDiseno.l_sil, EstadoDiseno.a_sil);
             // Actualizar cálculos eléctricos y ocupación
             calcularPaso2();
             calcularOcupacionRanura(); 
@@ -885,6 +1348,7 @@ function cargarMotor(config, id_unico = null, titulo = null) {
 
         // --- DIBUJO GEOMÉTRICO (SVG) ---
         function dibujarRotorSVG() {
+            window.dibujarRotorSVG = dibujarRotorSVG; // Exponer globalmente para la Fase 8
             const N = EstadoDiseno.numeroCaras;
             const tipoRanura = document.getElementById('ranura-tipo')?.value || 'rect';
             const Wp = EstadoDiseno.anchoPanel;
@@ -894,7 +1358,7 @@ function cargarMotor(config, id_unico = null, titulo = null) {
             const angP = EstadoDiseno.anguloPanel;
             const angS = EstadoDiseno.anguloRanura;
 
-            const ids = ['rotor-svg', 'rotor-svg-step2'];
+            const ids = ['rotor-svg', 'rotor-svg-step2', 'rotor-equilibrado-svg'];
             
             ids.forEach(id => {
                 const svg = document.getElementById(id);
@@ -1040,7 +1504,10 @@ function cargarMotor(config, id_unico = null, titulo = null) {
                 const eje = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                 eje.setAttribute("cx", centro);
                 eje.setAttribute("cy", centro);
-                eje.setAttribute("r", radioMaxPx * 0.12);
+                
+                const rEjePx = (EstadoDiseno.diametroEje / 2) * escala;
+                eje.setAttribute("r", rEjePx);
+                
                 eje.setAttribute("fill", "#ffffff"); 
                 eje.setAttribute("stroke", strokeColor);
                 eje.setAttribute("stroke-width", "1");
@@ -1078,7 +1545,7 @@ function cargarMotor(config, id_unico = null, titulo = null) {
 
 // --- DIBUJO DE LA VISTA SUPERIOR DEL PANEL ---
         // --- DIBUJO DE LA VISTA SUPERIOR DEL PANEL ---
-        function dibujarPanelSVG(Lp, Wp, margen) {
+        function dibujarPanelSVG(Lp, Wp, margen, L_sil, A_sil) {
             const ids = ['panel-svg', 'panel-svg-step2'];
             
             ids.forEach(id => {
@@ -1093,8 +1560,8 @@ function cargarMotor(config, id_unico = null, titulo = null) {
 
                 // Usamos la dimensión mayor para que el 'padding' sea siempre uniforme y nada se deforme
                 const maxDim = Math.max(L_total, W_total);
-                // Aumentamos el padding significativamente (0.55) para que quepan etiquetas largas
-                const pad = maxDim * 0.55; 
+                // Reducimos el padding (0.3) para que el gráfico se vea mucho más grande
+                const pad = maxDim * 0.3; 
                 
                 const vbWidth = L_total + pad * 2;
                 const vbHeight = W_total + pad * 2;
@@ -1126,6 +1593,45 @@ function cargarMotor(config, id_unico = null, titulo = null) {
                 placa.setAttribute("stroke", "rgba(255,255,255,0.2)");
                 placa.setAttribute("stroke-width", maxDim * 0.003);
                 svg.appendChild(placa);
+                
+                // 2.5 Zona Activa (Interior del silicio)
+                if (L_sil && A_sil && L_sil <= Lp && A_sil <= Wp) {
+                    const actX = pad + margen + (Lp - L_sil) / 2;
+                    const actY = pad + margen + (Wp - A_sil) / 2;
+                    
+                    // Aseguramos que existe el patrón de texturizado
+                    let defs = svg.querySelector("defs");
+                    if (!defs) {
+                        defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+                        svg.appendChild(defs);
+                    }
+                    if (!document.getElementById("patron-activa")) {
+                        const pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+                        pattern.setAttribute("id", "patron-activa");
+                        pattern.setAttribute("width", "6");
+                        pattern.setAttribute("height", "6");
+                        pattern.setAttribute("patternUnits", "userSpaceOnUse");
+                        
+                        const pLine1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        pLine1.setAttribute("x1", "0"); pLine1.setAttribute("y1", "6");
+                        pLine1.setAttribute("x2", "6"); pLine1.setAttribute("y2", "0");
+                        pLine1.setAttribute("stroke", "#3498db");
+                        pLine1.setAttribute("stroke-width", "0.5");
+                        pattern.appendChild(pLine1);
+                        defs.appendChild(pattern);
+                    }
+
+                    const zonaActiva = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                    zonaActiva.setAttribute("x", actX);
+                    zonaActiva.setAttribute("y", actY);
+                    zonaActiva.setAttribute("width", L_sil);
+                    zonaActiva.setAttribute("height", A_sil);
+                    zonaActiva.setAttribute("fill", "url(#patron-activa)");
+                    zonaActiva.setAttribute("stroke", "#3498db");
+                    zonaActiva.setAttribute("stroke-width", "0.5");
+                    zonaActiva.setAttribute("stroke-dasharray", "2,2");
+                    svg.appendChild(zonaActiva);
+                }
 
                 // 3. Textos y Líneas de Cota
                 const fontSize = Math.max(maxDim * 0.07, 3);
@@ -1186,9 +1692,9 @@ function cargarMotor(config, id_unico = null, titulo = null) {
                     svg.appendChild(lineMargen);
 
                     const txtMargen = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    txtMargen.setAttribute("x", pad + (margen / 2));
+                    txtMargen.setAttribute("x", pad);
                     txtMargen.setAttribute("y", yCotaMargen - (fontSize * 0.5));
-                    txtMargen.setAttribute("style", `font-size: ${fontSize * 1.1}px; font-family: sans-serif; fill: #e74c3c; text-anchor: middle; font-weight: bold;`);
+                    txtMargen.setAttribute("style", `font-size: ${fontSize * 1.1}px; font-family: sans-serif; fill: #e74c3c; text-anchor: start; font-weight: bold;`);
                     txtMargen.textContent = "m: " + margen + " mm (Grosor marco)";
                     svg.appendChild(txtMargen);
                 }
@@ -1220,6 +1726,12 @@ function actualizarListaHilos() {
                 selHilo.value = String(valorActual);
             } else if (listaUsar.length > 0) {
                 selHilo.selectedIndex = 0;
+            }
+            
+            const animHilo = document.getElementById('anim-bob-hilo');
+            if (animHilo) {
+                animHilo.innerHTML = selHilo.innerHTML;
+                animHilo.value = selHilo.value;
             }
         }
 
@@ -1330,6 +1842,11 @@ function actualizarListaHilos() {
                 
                 const elResPesoTotal = document.getElementById('res-peso-total-todos');
                 if (elResPesoTotal) elResPesoTotal.textContent = masaTotal_g.toFixed(1) + ' g';
+                
+                EstadoDiseno.masaCobre = masaTotal_g;
+                if (typeof actualizarMasaTotalRotor === 'function') {
+                    actualizarMasaTotalRotor();
+                }
 
                 calcularOcupacionRanura();
             }
@@ -1385,14 +1902,15 @@ function calcularPasoMagnetico() {
     const numDevanados = EstadoDiseno.numDevanados || (EstadoDiseno.numeroCaras / 2) || 0;
     const longitudEspira = EstadoDiseno.longitudEspira_m || 0;
 
-    const inputCampoB = document.getElementById('campo-b');
-    const inputRadioEfectivo = document.getElementById('radio-efectivo-mm');
+    // El campo B principal ahora se calcula y asigna en actualizarCalculosBackendMagnet
+    const campoB = EstadoDiseno.campoB_T || 0.18;
+    
+    // El radio efectivo ahora lo calcula Magpylib vectorialmente,
+    // pero para el cálculo analítico base usamos el radio del rotor.
+    const radioEfectivo_m = (EstadoDiseno.diametroRotor || 0) / 2000; 
 
-    const campoB = parseFloat(inputCampoB?.value || 0) || 0;
-    const radioEfectivo_m = (parseFloat(inputRadioEfectivo?.value || 0) || 0) / 1000;
     const longitudActiva_m = EstadoDiseno.longitudActiva_m || 0;
 
-    EstadoDiseno.campoB_T = campoB;
     EstadoDiseno.radioEfectivo_m = radioEfectivo_m;
 
     const fmm = espiras * corrienteA;
@@ -1404,6 +1922,7 @@ function calcularPasoMagnetico() {
     EstadoDiseno.fmm_Av = fmm;
     EstadoDiseno.fuerzaLorentz_N = fuerzaLorentz;
     EstadoDiseno.par_Nm = par;
+    EstadoDiseno.usandoParMagpylib = false; // Indica que usamos aproximación analítica
 
     const setText = (id, text) => {
         const el = document.getElementById(id);
@@ -1416,12 +1935,17 @@ function calcularPasoMagnetico() {
     setText('mag-devanados', `${numDevanados.toFixed(0)}`);
     setText('mag-diametro-rotor', `${(EstadoDiseno.diametroRotor || 0).toFixed(2)} mm`);
     setText('mag-longitud-activa', `${(longitudActiva_m * 1000).toFixed(1)} mm`);
-    setText('mag-radio-efectivo', `${(radioEfectivo_m * 1000).toFixed(1)} mm`);
     setText('mag-b-preview', `${campoB.toFixed(3)} T`);
 
     setText('res-fmm', `${fmm.toFixed(2)} Av`);
-    setText('res-lorentz', `${fuerzaLorentz.toFixed(4)} N`);
-    setText('res-par', `${par.toFixed(6)} N·m`);
+    
+    // Mostramos temporalmente el teórico mientras esperamos a Magpylib
+    const elLorentz = document.getElementById('res-lorentz');
+    if (elLorentz) elLorentz.innerHTML = `<span style="color:#94a3b8; font-size:12px;">Calculando 3D...</span>`;
+    
+    const elPar = document.getElementById('res-par');
+    if (elPar) elPar.innerHTML = `<span style="color:#94a3b8; font-size:12px;">Calculando 3D...</span>`;
+    
     setText('res-campo-b', `${campoB.toFixed(3)} T`);
 
     let lectura = 'Pendiente';
@@ -1436,7 +1960,186 @@ function calcularPasoMagnetico() {
     setText('res-lectura-magnetica', lectura);
 
     dibujarInteraccionMagneticaSVG();
+
+    // LLL: Llamada asíncrona a Magpylib para "Cálculo Real"
+    if (typeof window.actualizarMagpylibFondo === 'function') {
+        window.actualizarMagpylibFondo();
+    }
 }
+
+window.actualizarMagpylibFondo = function() {
+    if (window.debounceMagpylibTimeout) clearTimeout(window.debounceMagpylibTimeout);
+    window.debounceMagpylibTimeout = setTimeout(async () => {
+        try {
+            const corrienteA = (EstadoDiseno.intensidadPanel_mA || 0) / 1000;
+            const espiras = EstadoDiseno.espirasPorDevanado || 0;
+            
+            const diametro = parseFloat(document.getElementById('diametro')?.value) || EstadoDiseno.diametroRotor || 30;
+            const longitud = parseFloat(document.getElementById('longitud')?.value) || EstadoDiseno.longitudPanel || 30;
+            const orientacion = document.getElementById('iman-orientacion')?.value || 'long';
+            const distancia = parseFloat(document.getElementById('iman-distancia')?.value || 2.0);
+            
+            const selIman = document.getElementById('iman-motor')?.value;
+            const imanData = typeof dbImanes !== 'undefined' ? dbImanes[Number(selIman)] : null;
+            
+            let dimIman = [30, 15, 5]; // Default [Largo, Ancho, Grosor]
+            let magnetizacion = 1.20;
+            
+            if (imanData) {
+                const dims = [Number(imanData.l), Number(imanData.a), Number(imanData.h)];
+                const T = Math.min(...dims); // espesor (Z)
+                const baseDims = dims.filter((_, i) => i !== dims.indexOf(T));
+                dimIman = [Math.max(...baseDims), Math.min(...baseDims), T];
+                magnetizacion = Number(imanData.br) || 1.20;
+            }
+            
+            const polaridad = parseInt(document.getElementById('iman-polaridad')?.value) || 1;
+            
+            let imanesBasePayload = [];
+            const z_pos = - (diametro/2 + distancia + dimIman[2]/2);
+            
+            const magZ = magnetizacion * polaridad;
+
+            if (orientacion === 'long') {
+                imanesBasePayload.push({ dimension: dimIman, magnetizacion: [0, 0, magZ], posicion: [0, 0, z_pos] });
+            } else {
+                imanesBasePayload.push({ dimension: [dimIman[1], dimIman[0], dimIman[2]], magnetizacion: [0, 0, magZ], posicion: [0, 0, z_pos] });
+            }
+
+            const caras = EstadoDiseno?.numeroCaras || 4;
+            const numDevanados = Math.max(1, Math.floor(caras / 2));
+            const bobinasPayload = [];
+            
+            let currents = null;
+            if (window.estadoLuminico && window.estadoLuminico.currents && window.estadoLuminico.currents.length >= caras) {
+                currents = window.estadoLuminico.currents;
+            }
+            
+            for (let i = 0; i < numDevanados; i++) {
+                let bobinaCorriente = 0;
+                if (currents) {
+                    bobinaCorriente = corrienteA * currents[i];
+                } else {
+                    bobinaCorriente = i === 0 ? corrienteA : 0;
+                }
+                if (Math.abs(bobinaCorriente) < 1e-5) bobinaCorriente = 0.000001;
+
+                // Magpylib usa coordenadas donde giro positivo es antihorario.
+                // SVG usa giro positivo como horario. Aplicamos el negativo para sincronizar.
+                const giro_deg = (window.estadoLuminico && window.estadoLuminico.giro !== undefined) ? window.estadoLuminico.giro : parseFloat(document.getElementById('lum-giro')?.value || document.getElementById('giro_motor')?.value || 0);
+                const offset_ranura = 180 / caras;
+                const angulo_final = - (i * (360 / caras) + offset_ranura + giro_deg);
+
+                bobinasPayload.push({
+                    dimension: [longitud, diametro],
+                    vueltas: espiras,
+                    corriente: bobinaCorriente,
+                    angulo_x: angulo_final,
+                    posicion: [0, 0, 0]
+                });
+            }
+
+            const payload = {
+                calc_only: true,
+                imanes_base: imanesBasePayload,
+                bobinas: bobinasPayload
+            };
+            console.log("Magpylib Payload:", JSON.stringify(payload));
+
+            const response = await fetch('http://127.0.0.1:5000/api/magpylib-forces', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.status === 'success') {
+                    const realTorque = data.torque_x;
+                    const realForce = Math.sqrt(data.force_vector[0]**2 + data.force_vector[1]**2 + data.force_vector[2]**2);
+                    
+                    // Extraer y formatear el Campo B
+                    let b_mag = 0;
+                    if (data.b_field) {
+                        b_mag = Math.sqrt(data.b_field[0]**2 + data.b_field[1]**2 + data.b_field[2]**2);
+                    }
+                    EstadoDiseno.campoB_T = b_mag; // Actualizamos el teórico al real
+                    
+                    const elCampoB = document.getElementById('res-campo-b');
+                    if (elCampoB) {
+                        if (b_mag >= 0.01) {
+                            elCampoB.innerHTML = `${(b_mag*1000).toFixed(2)} mT <span style="font-size:10px; color:#666;">(${(b_mag*10000).toFixed(0)} G)</span>`;
+                        } else if (b_mag >= 0.0001) {
+                            elCampoB.innerHTML = `${(b_mag*1000).toFixed(3)} mT <span style="font-size:10px; color:#666;">(${(b_mag*1000000).toFixed(0)} µT)</span>`;
+                        } else {
+                            elCampoB.innerHTML = `${(b_mag*1000000).toFixed(1)} µT`;
+                        }
+                    }
+                    
+                    // REEMPLAZO TOTAL DE VARIABLES DE CÁLCULO
+                    EstadoDiseno.fuerzaLorentz_N = realForce;
+                    EstadoDiseno.fuerzaLorentz_X = data.force_vector ? data.force_vector[0] : 0;
+                    EstadoDiseno.fuerzaLorentz_Y = data.force_vector ? data.force_vector[1] : 0;
+                    EstadoDiseno.fuerzaLorentz_Z = data.force_vector ? data.force_vector[2] : 0;
+                    EstadoDiseno.par_Nm = Math.abs(realTorque); // Magpylib output is natively in Nm
+                    EstadoDiseno.par_Nm_X = realTorque; // Conservamos el signo real
+                    window.parMotrizMagnetico = EstadoDiseno.par_Nm;
+                    EstadoDiseno.usandoParMagpylib = true; // Activa el flag para el Paso 7
+                    
+                    const elTorque = document.getElementById('res-par');
+                    if (elTorque) {
+                        elTorque.innerHTML = `${EstadoDiseno.par_Nm.toExponential(3)} N·m`;
+                    }
+                    
+                    const elForce = document.getElementById('res-lorentz');
+                    if (elForce) {
+                        elForce.innerHTML = `${EstadoDiseno.fuerzaLorentz_N.toExponential(3)} N`;
+                    }
+                    
+                    const elLectura = document.getElementById('res-lectura-magnetica');
+                    if (elLectura) {
+                        let lectura = 'Par minúsculo';
+                        if (EstadoDiseno.par_Nm > 0.001) lectura = 'Par excelente';
+                        else if (EstadoDiseno.par_Nm > 0.0001) lectura = 'Par moderado';
+                        else if (EstadoDiseno.par_Nm > 0.00001) lectura = 'Par débil';
+                        
+                        elLectura.textContent = lectura;
+                        elLectura.style.color = EstadoDiseno.par_Nm > 0.0001 ? '#2ecc71' : '#f39c12';
+                    }
+                    
+                    // Update step 4 UI if open
+                    const resObj3 = document.getElementById('lum-res-par');
+                    if(resObj3 && window.estadoLuminico) {
+                        resObj3.innerHTML = `${(EstadoDiseno.par_Nm * window.estadoLuminico.factor).toFixed(6)} N·m`;
+                    }
+                    
+                    // Redibujar SVG con los vectores físicos exactos
+                    if (typeof dibujarInteraccionMagneticaSVG === 'function') {
+                        dibujarInteraccionMagneticaSVG();
+                    }
+                    
+                    // Propagar a Paso 5 y 6
+                    if (typeof calcularPasoFCEM === 'function') {
+                        calcularPasoFCEM();
+                    }
+                } else {
+                    throw new Error("Magpylib API returned error status");
+                }
+            } else {
+                throw new Error("HTTP " + response.status);
+            }
+        } catch(e) {
+            console.log("Magpylib API off. Usando fórmulas teóricas de respaldo.", e);
+            // Restaurar visualmente los teóricos si falla
+            const fuerzaLorentz = EstadoDiseno.campoB_T * ((EstadoDiseno.intensidadPanel_mA || 0) / 1000) * EstadoDiseno.longitudActiva_m * EstadoDiseno.espirasPorDevanado;
+            const par = fuerzaLorentz * EstadoDiseno.radioEfectivo_m;
+            document.getElementById('res-lorentz').innerHTML = `${fuerzaLorentz.toFixed(4)} N <span style="color:#f59e0b; font-size:10px;">(Aprox)</span>`;
+            document.getElementById('res-par').innerHTML = `${par.toFixed(6)} N·m <span style="color:#f59e0b; font-size:10px;">(Aprox)</span>`;
+            
+            if (typeof calcularPasoFCEM === 'function') calcularPasoFCEM();
+        }
+    }, 400);
+};
 
 function dibujarInteraccionMagneticaSVG() {
     const svg = document.getElementById('magnetismo-svg');
@@ -1446,8 +2149,8 @@ function dibujarInteraccionMagneticaSVG() {
 
     const R = (EstadoDiseno.diametroRotor || 50) / 2;
     const cx = 100;
-    const cy = 80; // Centro elevado para acomodar el imán base
-    const factorEscala = 60 / R; // Ajuste visual de escala
+    const cy = 85; // Centro ajustado
+    const factorEscala = 82 / R; // Escala ampliada para coincidir con el paso 2 y 3
     const radioRotorSVG = R * factorEscala;
 
     // --- LECTURA DE VARIABLES ---
@@ -1479,6 +2182,12 @@ function dibujarInteraccionMagneticaSVG() {
             imanY = cy + radioRotorSVG + (distImanRotor * factorEscala);
         }
     }
+    
+    // Ajustar viewBox dinámicamente para que el imán nunca se corte por abajo
+    const maxBoundY = imanY + imanHeight;
+    const vHeight = Math.max(210, maxBoundY + 15);
+    // Expandimos ligeramente hacia arriba (-5) y ajustamos la altura total
+    svg.setAttribute('viewBox', `0 -5 200 ${vHeight + 5}`);
 
     // --- 2. DIBUJO DE LÍNEAS B (Flujo Magnético Realista) ---
     const numLineas = Math.min(15, Math.max(3, Math.floor(campoB * 30)));
@@ -1499,6 +2208,10 @@ function dibujarInteraccionMagneticaSVG() {
         const cpX = lx1; 
         const cpY = imanY - (imanY - yDest) * 0.4;
         
+        // Leer polaridad para la dirección del campo
+        const polaridad = parseInt(document.getElementById('iman-polaridad')?.value) || 1;
+        const esNorte = (polaridad === 1);
+
         const d = `M ${lx1} ${imanY} Q ${cpX} ${cpY} ${lx2} ${yDest + 2}`;
         pathB.setAttribute('d', d);
         pathB.setAttribute('stroke', '#3498db');
@@ -1508,12 +2221,20 @@ function dibujarInteraccionMagneticaSVG() {
         pathB.setAttribute('opacity', 0.45 - (Math.abs(dx)/imanWidth)*0.3);
         
         // Flecha B
-        const anguloDeg = Math.atan2(yDest - cpY, lx2 - cpX) * 180 / Math.PI;
         const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
         arrow.setAttribute('points', `0,0 -3,7 3,7`);
         arrow.setAttribute('fill', '#3498db'); 
         arrow.setAttribute('opacity', '0.5');
-        arrow.setAttribute('transform', `translate(${lx2}, ${yDest}) rotate(${anguloDeg + 90})`);
+        
+        if (esNorte) {
+            // El campo sale del Norte (apunta hacia arriba al rotor)
+            const anguloDeg = Math.atan2(yDest - cpY, lx2 - cpX) * 180 / Math.PI;
+            arrow.setAttribute('transform', `translate(${lx2}, ${yDest}) rotate(${anguloDeg + 90})`);
+        } else {
+            // El campo entra al Sur (apunta hacia abajo al imán)
+            const anguloDeg = Math.atan2(imanY - cpY, lx1 - cpX) * 180 / Math.PI;
+            arrow.setAttribute('transform', `translate(${lx1}, ${imanY}) rotate(${anguloDeg - 90})`);
+        }
         
         svg.appendChild(pathB); svg.appendChild(arrow);
     }
@@ -1521,35 +2242,45 @@ function dibujarInteraccionMagneticaSVG() {
     // --- 3. IMÁN BASE (Bipolo: Norte Rojo / Sur Azul) a escala ---
     const hMedio = imanHeight / 2;
     
-    // Parte Norte (Superior - Rojo)
-    const rectN = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rectN.setAttribute('x', cx - imanWidth/2); rectN.setAttribute('y', imanY);
-    rectN.setAttribute('width', imanWidth); rectN.setAttribute('height', hMedio);
-    rectN.setAttribute('fill', '#e74c3c'); rectN.setAttribute('stroke', '#c0392b');
-    rectN.setAttribute('stroke-width', '1'); rectN.setAttribute('rx', '1');
-    svg.appendChild(rectN);
+    const polaridad = parseInt(document.getElementById('iman-polaridad')?.value) || 1;
     
-    const txtN = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    txtN.setAttribute('x', cx); txtN.setAttribute('y', imanY + hMedio - 2);
-    txtN.setAttribute('font-size', Math.min(11, hMedio*1.5)); txtN.setAttribute('fill', 'white');
-    txtN.setAttribute('font-weight', 'bold'); txtN.setAttribute('text-anchor', 'middle');
-    txtN.textContent = 'N';
-    if (hMedio > 4) svg.appendChild(txtN);
+    // Parte Superior
+    const colorSup = polaridad === 1 ? '#e74c3c' : '#3498db';
+    const borderSup = polaridad === 1 ? '#c0392b' : '#2980b9';
+    const textSup = polaridad === 1 ? 'N' : 'S';
+    
+    const rectSup = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rectSup.setAttribute('x', cx - imanWidth/2); rectSup.setAttribute('y', imanY);
+    rectSup.setAttribute('width', imanWidth); rectSup.setAttribute('height', hMedio);
+    rectSup.setAttribute('fill', colorSup); rectSup.setAttribute('stroke', borderSup);
+    rectSup.setAttribute('stroke-width', '1'); rectSup.setAttribute('rx', '1');
+    svg.appendChild(rectSup);
+    
+    const txtSup = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txtSup.setAttribute('x', cx); txtSup.setAttribute('y', imanY + hMedio - 2);
+    txtSup.setAttribute('font-size', Math.min(11, hMedio*1.5)); txtSup.setAttribute('fill', 'white');
+    txtSup.setAttribute('font-weight', 'bold'); txtSup.setAttribute('text-anchor', 'middle');
+    txtSup.textContent = textSup;
+    if (hMedio > 4) svg.appendChild(txtSup);
 
-    // Parte Sur (Inferior - Azul)
-    const rectS = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rectS.setAttribute('x', cx - imanWidth/2); rectS.setAttribute('y', imanY + hMedio);
-    rectS.setAttribute('width', imanWidth); rectS.setAttribute('height', hMedio);
-    rectS.setAttribute('fill', '#3498db'); rectS.setAttribute('stroke', '#2980b9');
-    rectS.setAttribute('stroke-width', '1'); rectS.setAttribute('rx', '1');
-    svg.appendChild(rectS);
-
-    const txtS = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    txtS.setAttribute('x', cx); txtS.setAttribute('y', imanY + imanHeight - 2);
-    txtS.setAttribute('font-size', Math.min(11, hMedio*1.5)); txtS.setAttribute('fill', 'white');
-    txtS.setAttribute('font-weight', 'bold'); txtS.setAttribute('text-anchor', 'middle');
-    txtS.textContent = 'S';
-    if (hMedio > 4) svg.appendChild(txtS);
+    // Parte Inferior
+    const colorInf = polaridad === 1 ? '#3498db' : '#e74c3c';
+    const borderInf = polaridad === 1 ? '#2980b9' : '#c0392b';
+    const textInf = polaridad === 1 ? 'S' : 'N';
+    
+    const rectInf = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rectInf.setAttribute('x', cx - imanWidth/2); rectInf.setAttribute('y', imanY + hMedio);
+    rectInf.setAttribute('width', imanWidth); rectInf.setAttribute('height', hMedio);
+    rectInf.setAttribute('fill', colorInf); rectInf.setAttribute('stroke', borderInf);
+    rectInf.setAttribute('stroke-width', '1'); rectInf.setAttribute('rx', '1');
+    svg.appendChild(rectInf);
+    
+    const txtInf = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txtInf.setAttribute('x', cx); txtInf.setAttribute('y', imanY + imanHeight - 2);
+    txtInf.setAttribute('font-size', Math.min(11, hMedio*1.5)); txtInf.setAttribute('fill', 'white');
+    txtInf.setAttribute('font-weight', 'bold'); txtInf.setAttribute('text-anchor', 'middle');
+    txtInf.textContent = textInf;
+    if (hMedio > 4) svg.appendChild(txtInf);
 
     // --- 4. ROTOR POLIGONAL CON EJE ---
     const N = EstadoDiseno.numeroCaras || 4;
@@ -1574,6 +2305,9 @@ function dibujarInteraccionMagneticaSVG() {
 
     // Desfase para asegurar que una ranura apunte exactamente hacia el imán (abajo)
     const rotOffset = -(angP + angS) / 2;
+    
+    const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--svg-stroke-color').trim() || "#333";
+    const colorImpresion3D = getComputedStyle(document.documentElement).getPropertyValue('--svg-panel-color').trim() || "#fdebd0";
 
     for (let i = 0; i < N; i++) {
         const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2) + rotOffset;
@@ -1608,26 +2342,54 @@ function dibujarInteraccionMagneticaSVG() {
     const circuloExt = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     circuloExt.setAttribute("cx", cx); circuloExt.setAttribute("cy", cy);
     circuloExt.setAttribute("r", radioRotorSVG);
-    circuloExt.setAttribute("fill", "none"); circuloExt.setAttribute("stroke", "#ccc");
+    circuloExt.setAttribute("fill", "none"); circuloExt.setAttribute("stroke", "#777");
+    circuloExt.setAttribute("stroke-width", "1");
     circuloExt.setAttribute("stroke-dasharray", "3");
     svg.appendChild(circuloExt);
 
     const pathRotor = document.createElementNS("http://www.w3.org/2000/svg", "path");
     pathRotor.setAttribute("d", dRotor);
-    pathRotor.setAttribute("fill", "#ecf0f1");
-    pathRotor.setAttribute("stroke", "#bdc3c7");
-    pathRotor.setAttribute("stroke-width", "2");
+    pathRotor.setAttribute("fill", colorImpresion3D);
+    pathRotor.setAttribute("stroke", strokeColor);
+    pathRotor.setAttribute("stroke-width", "1");
     svg.appendChild(pathRotor);
+
+    // Dibujar placas solares
+    const WpTotal = Wp + (2 * (EstadoDiseno.margenMarco_mm || 3));
+    const proporcionPlaca = WpTotal > 0 ? (Wp / WpTotal) : 1;
+    const angPlacaReal = angP * proporcionPlaca;
+
+    for (let i = 0; i < N; i++) {
+        const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2) + rotOffset;
+        const theta1 = anguloCentroPanel - (angPlacaReal / 2);
+        const theta2 = anguloCentroPanel + (angPlacaReal / 2);
+
+        const p1x = cx + radioRotorSVG * Math.cos(theta1);
+        const p1y = cy + radioRotorSVG * Math.sin(theta1);
+        const p2x = cx + radioRotorSVG * Math.cos(theta2);
+        const p2y = cy + radioRotorSVG * Math.sin(theta2);
+
+        const placaSol = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        placaSol.setAttribute("x1", p1x);
+        placaSol.setAttribute("y1", p1y);
+        placaSol.setAttribute("x2", p2x);
+        placaSol.setAttribute("y2", p2y);
+        placaSol.setAttribute("stroke", "#2c3e50"); 
+        placaSol.setAttribute("stroke-width", "3");
+        placaSol.setAttribute("stroke-linecap", "round");
+        svg.appendChild(placaSol);
+    }
 
     // Eje central de apoyo visual
     const ejeCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     ejeCircle.setAttribute("cx", cx); ejeCircle.setAttribute("cy", cy);
-    ejeCircle.setAttribute("r", radioRotorSVG * 0.15); // Tamaño dinámico
+    const diametroEje_mm = EstadoDiseno?.diametroEje || 8;
+    const rEjePx = (diametroEje_mm / 2) * factorEscala;
+    ejeCircle.setAttribute("r", rEjePx); 
     ejeCircle.setAttribute("fill", "#fff");
-    ejeCircle.setAttribute("stroke", "#95a5a6");
-    ejeCircle.setAttribute("stroke-width", "2");
+    ejeCircle.setAttribute("stroke", strokeColor);
+    ejeCircle.setAttribute("stroke-width", "1");
     svg.appendChild(ejeCircle);
-
 
     // --- 4. DEVANADOS Y FUERZAS EN TODAS LAS RANURAS ---
     // (angP, angS y RfondoPx ya están calculados arriba)
@@ -1649,18 +2411,43 @@ function dibujarInteraccionMagneticaSVG() {
         devCircle.setAttribute('opacity', sy > cy ? '1' : '0.4'); // Más tenue arriba
         svg.appendChild(devCircle);
 
-        // --- Símbolo Corriente (⊗) ---
+        // --- Símbolo Corriente (⊗ o ⊙) ---
         const csz = Math.max(2, devanadoR * 0.4);
-        const l1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        l1.setAttribute('x1', sx - csz); l1.setAttribute('y1', sy - csz);
-        l1.setAttribute('x2', sx + csz); l1.setAttribute('y2', sy + csz);
-        l1.setAttribute('stroke', '#fff'); l1.setAttribute('stroke-width', '1.2');
-        svg.appendChild(l1);
-        const l2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        l2.setAttribute('x1', sx + csz); l2.setAttribute('y1', sy - csz);
-        l2.setAttribute('x2', sx - csz); l2.setAttribute('y2', sy + csz);
-        l2.setAttribute('stroke', '#fff'); l2.setAttribute('stroke-width', '1.2');
-        svg.appendChild(l2);
+        
+        const conexion = document.getElementById('lum-conexion')?.value || '0';
+        const isInvertido = (conexion === '-1');
+        
+        let esCruz = (sy > cy); // Originalmente cruz abajo
+        if (isInvertido) {
+            esCruz = !esCruz; // Invertido: punto abajo, cruz arriba
+        }
+
+        if (esCruz) {
+            // Corriente ENTRA (x)
+            const l1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            l1.setAttribute('x1', sx - csz); l1.setAttribute('y1', sy - csz);
+            l1.setAttribute('x2', sx + csz); l1.setAttribute('y2', sy + csz);
+            l1.setAttribute('stroke', '#fff'); l1.setAttribute('stroke-width', '1.2');
+            svg.appendChild(l1);
+            const l2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            l2.setAttribute('x1', sx + csz); l2.setAttribute('y1', sy - csz);
+            l2.setAttribute('x2', sx - csz); l2.setAttribute('y2', sy + csz);
+            l2.setAttribute('stroke', '#fff'); l2.setAttribute('stroke-width', '1.2');
+            svg.appendChild(l2);
+        } else {
+            // Corriente SALE (o)
+            const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            dot.setAttribute('cx', sx); dot.setAttribute('cy', sy);
+            dot.setAttribute('r', csz * 0.7);
+            dot.setAttribute('fill', 'none');
+            dot.setAttribute('stroke', '#fff'); dot.setAttribute('stroke-width', '1.2');
+            svg.appendChild(dot);
+            const dotFill = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            dotFill.setAttribute('cx', sx); dotFill.setAttribute('cy', sy);
+            dotFill.setAttribute('r', 1.5);
+            dotFill.setAttribute('fill', '#fff');
+            svg.appendChild(dotFill);
+        }
 
         // --- FUERZA DE LORENTZ LOCAL (Cualitativa) ---
         // Estimamos el campo B en esta posición específica
@@ -1676,49 +2463,77 @@ function dibujarInteraccionMagneticaSVG() {
         // Solo dibujamos la flecha de fuerza en la espira inferior (i=0) para simplificar el diagrama
         if (i === 0 && localRatio > 0.05) {
             const F_len = 5 + (localRatio * 80); 
-            // Apuntar hacia la IZQUIERDA. Separamos el inicio (f_x1) para que no pise el círculo naranja
-            const f_x1 = sx - devanadoR - 8;
-            const f_x2 = f_x1 - F_len;
             
-            const lineF = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            lineF.setAttribute('x1', f_x1); lineF.setAttribute('y1', sy);
-            lineF.setAttribute('x2', f_x2); lineF.setAttribute('y2', sy);
-            lineF.setAttribute('stroke', '#e74c3c'); lineF.setAttribute('stroke-width', '2.5');
-            lineF.setAttribute('opacity', localRatio * 1.5);
-            svg.appendChild(lineF);
-
-            const arrF = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            // Triángulo apuntando a la izquierda
-            arrF.setAttribute('points', `${f_x2},${sy} ${f_x2+6},${sy-3.5} ${f_x2+6},${sy+3.5}`);
-            arrF.setAttribute('fill', '#e74c3c'); arrF.setAttribute('opacity', localRatio * 1.5);
-            svg.appendChild(arrF);
+            // Deducir fuerza unificada desde Magpylib como fuente de verdad
+            const giroDir = window.obtenerDireccionGiro ? window.obtenerDireccionGiro() : 1;
+            const giroEsHorario = (giroDir === 1);
+            
+            const fuerzaHaciaIzquierda = giroEsHorario; // Si gira horario, la base se mueve a la izquierda
+            
+            let f_x1, f_x2;
+            if (fuerzaHaciaIzquierda) {
+                // Apuntar hacia la IZQUIERDA
+                f_x1 = sx - devanadoR - 8;
+                f_x2 = f_x1 - F_len;
+            } else {
+                // Apuntar hacia la DERECHA
+                f_x1 = sx + devanadoR + 8;
+                f_x2 = f_x1 + F_len;
+            }
+            
+            const F_y = sy;
+            
+            const fLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            fLine.setAttribute('x1', f_x1); fLine.setAttribute('y1', F_y);
+            fLine.setAttribute('x2', f_x2); fLine.setAttribute('y2', F_y);
+            fLine.setAttribute('stroke', '#e74c3c'); fLine.setAttribute('stroke-width', '4');
+            svg.appendChild(fLine);
+            
+            const headOffset = fuerzaHaciaIzquierda ? 8 : -8;
+            const fArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            fArrow.setAttribute('points', `${f_x2},${F_y} ${f_x2 + headOffset},${F_y - 6} ${f_x2 + headOffset},${F_y + 6}`);
+            fArrow.setAttribute('fill', '#e74c3c');
+            svg.appendChild(fArrow);
         }
     }
 
     // --- 5. PAR ROTATORIO (CURVA) ---
     // Recalibración de grosor: más sutil (rango 2 a 7)
     const strokeW = Math.min(7, 2 + (parActivo * 120)); 
-    const rx = radioRotorSVG + 25; // Aumentado de 18 a 25 para dar más aire al dibujo
+    const rx = radioRotorSVG + 14; // Reducido de 25 a 14 para que no se salga del canvas 
     
-    // Curva indicadora de giro (sentido horario, el lado izquierdo SUBE)
-    // Coordenadas calculadas para que el arco esté a la izquierda y apunte hacia ARRIBA
-    const startX = cx - rx * 0.7; const startY = cy + rx * 0.7; // Empieza abajo izquierda
-    const endX = cx - rx * 0.7;   const endY = cy - rx * 0.7;   // Termina arriba izquierda
+    const giroDir = window.obtenerDireccionGiro ? window.obtenerDireccionGiro() : 1;
+    const giroHorario = (giroDir === 1);
+    
     const tauPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    // sweep-flag = 1 para que sea un arco convexo hacia fuera en sentido horario
-    tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 1 ${endX} ${endY}`);
     tauPath.setAttribute('stroke', '#2ecc71'); tauPath.setAttribute('stroke-width', strokeW);
     tauPath.setAttribute('fill', 'none');
-    svg.appendChild(tauPath);
     
-    // Punta de flecha de par (proporcional al grosor)
     const headSize = Math.max(10, strokeW * 1.5);
     const tauArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    // Triángulo apuntando hacia la punta (0,0)
-    tauArrow.setAttribute('points', `0,0 ${-headSize/2},${headSize} ${headSize/2},${headSize}`);
     tauArrow.setAttribute('fill', '#2ecc71');
-    // Rotamos 45 grados para que apunte hacia arriba-derecha siguiendo la curva en el tope izquierdo
-    tauArrow.setAttribute('transform', `translate(${endX}, ${endY}) rotate(45)`);
+
+    if (giroHorario) {
+        // Sentido HORARIO
+        const startX = cx - rx * 0.7; const startY = cy + rx * 0.7; // Empieza abajo izquierda
+        const endX = cx - rx * 0.7;   const endY = cy - rx * 0.7;   // Termina arriba izquierda
+        tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 1 ${endX} ${endY}`);
+        
+        // Flecha apuntando hacia arriba nativamente
+        tauArrow.setAttribute('points', `0,0 ${-headSize/2},${headSize} ${headSize/2},${headSize}`);
+        // Rotamos para que apunte hacia arriba-derecha siguiendo la curva horaria
+        tauArrow.setAttribute('transform', `translate(${endX}, ${endY}) rotate(45)`);
+    } else {
+        // Sentido ANTIHORARIO
+        const startX = cx + rx * 0.7; const startY = cy + rx * 0.7; // Empieza abajo derecha
+        const endX = cx + rx * 0.7;   const endY = cy - rx * 0.7;   // Termina arriba derecha
+        tauPath.setAttribute('d', `M ${startX} ${startY} A ${rx} ${rx} 0 0 0 ${endX} ${endY}`);
+        
+        tauArrow.setAttribute('points', `0,0 ${-headSize/2},${headSize} ${headSize/2},${headSize}`);
+        tauArrow.setAttribute('transform', `translate(${endX}, ${endY}) rotate(-45)`);
+    }
+    
+    svg.appendChild(tauPath);
     svg.appendChild(tauArrow);
 }
 
@@ -1805,13 +2620,18 @@ function calcularPasoLuminico() {
         indexBottom: indexBottom 
     };
     
-    if (document.getElementById('step-4').classList.contains('active')) {
+    if (document.getElementById('step-6').classList.contains('active')) {
         dibujarInteraccionLuminicaSVG();
     }
     
     // Renderizar fórmulas matemáticas si existen en el nuevo paso
     if (typeof renderizarMatematicas === 'function') {
         setTimeout(renderizarMatematicas, 100);
+    }
+    
+    // LLL: Desencadenar recálculo asíncrono de Magpylib usando los nuevos parámetros de luz
+    if (typeof window.actualizarMagpylibFondo === 'function') {
+        window.actualizarMagpylibFondo();
     }
 }
 
@@ -1822,13 +2642,13 @@ function dibujarInteraccionLuminicaSVG() {
     
     const { N, giro, luz, effs, currents, caraActiva, indexBottom } = window.estadoLuminico;
     const off = parseInt(document.getElementById('lum-conexion')?.value || '0') || 0; 
-    const cx = 100, cy = 80; // Centro elevado para consistencia visual con Paso 3
-    const radioExterior = 45; // Escala base visual
+    const cx = 100, cy = 105; // Centro ajustado hacia abajo para dar espacio al sol
+    const radioExterior = 72; // Escala base visual ampliada
 
     // 1. SOL EN ÓRBITA
     // El ángulo 'luz' en el slider va de -90 a 90 (0 es arriba)
     const anguloSolRad = (luz - 90) * Math.PI / 180;
-    const radioOrbita = 85;
+    const radioOrbita = radioExterior + 33;
     const solX = cx + radioOrbita * Math.cos(anguloSolRad);
     const solY = cy + radioOrbita * Math.sin(anguloSolRad);
     
@@ -1875,7 +2695,7 @@ function dibujarInteraccionLuminicaSVG() {
     const Ws = EstadoDiseno?.anchoRanura_mm || 5;
     const Ds = EstadoDiseno?.altoRanura_mm || 4;
     const R_mm = (EstadoDiseno?.diametroRotor || 50) / 2;
-    const factorEscala = (R_mm > 0) ? (45 / R_mm) : 1; 
+    const factorEscala = (R_mm > 0) ? (radioExterior / R_mm) : 1; 
     
     const radioRotorSVG = radioExterior;
     const profPx = Ds * factorEscala;
@@ -2037,7 +2857,10 @@ function dibujarInteraccionLuminicaSVG() {
     // Eje central
     const eje = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     eje.setAttribute('cx', cx); eje.setAttribute('cy', cy);
-    eje.setAttribute('r', 5); eje.setAttribute('fill', '#fff');
+    const diametroEje_mm = EstadoDiseno?.diametroEje || 8;
+    const rEjePx = (diametroEje_mm / 2) * factorEscala;
+    eje.setAttribute('r', rEjePx); 
+    eje.setAttribute('fill', '#fff');
     eje.setAttribute('stroke', '#7f8c8d');
     svg.appendChild(eje);
 
@@ -2093,6 +2916,11 @@ function dibujarInteraccionLuminicaSVG() {
     textS4.setAttribute('font-weight', 'bold'); textS4.setAttribute('text-anchor', 'middle');
     textS4.textContent = 'S';
     if (hM > 3) svg.appendChild(textS4);
+
+    // Ajustar viewBox dinámicamente
+    const maxBoundY = magY + magH;
+    const vHeight = Math.max(210, maxBoundY + 15);
+    svg.setAttribute('viewBox', `0 -5 200 ${vHeight + 5}`);
 }
 
 // Hook the variables exported by Magnetic to be used as starting values for Lumínico
@@ -2180,7 +3008,7 @@ function calcularOcupacionRanura() {
         const angS = anguloTotalRadianes * (Ws / sumaAnchuras);
         
         dibujarRotorSVG(caras, tipoRanura, Wp, Ws, Ds, R, angP, angS);
-        dibujarPanelSVG(EstadoDiseno.longitudPanel, Wp, EstadoDiseno.margenMarco_mm);
+        dibujarPanelSVG(EstadoDiseno.longitudPanel, Wp, EstadoDiseno.margenMarco_mm, EstadoDiseno.l_sil, EstadoDiseno.a_sil);
     }
 }
 
@@ -2463,11 +3291,13 @@ function calcularOcupacionRanura() {
                 ranuraAncho: getVal('ranura-ancho') || 10,
                 ranuraAlto: getVal('ranura-alto') || 15,
                 ranuraTipo: getVal('ranura-tipo') || 'rect',
+                diametroEje: getVal('diametro-eje') || 8,
                 material: getVal('material-hilo') || 'cobre',
                 hilo: getVal('dia-hilo-select') || 0.15,
                 calidad: getVal('calidad-bobinado') || 'media',
                 imanMotorNombre: getTxt('iman-motor'),
                 imanMotorOrientacion: getVal('iman-orientacion') || 'long',
+                imanMotorPolaridad: getVal('iman-polaridad') || '1',
                 imanMotorDistancia: getVal('iman-distancia') || 2.0,
                 campoB: getVal('campo-b') || 0.18,
                 radioEfectivo: getVal('radio-efectivo-mm') || 0,
@@ -2476,6 +3306,29 @@ function calcularOcupacionRanura() {
                 lumConexion: getVal('lum-conexion') || '0',
                 fcemRpmSim: getVal('fcem-rpm-sim') || 0,
                 fcemPerdidas: getVal('fcem-perdidas') || 15,
+                
+                // Paso 8
+                equilMasaAdicional: getVal('equil-masa-adicional') || 0,
+                equilRadioMasa: getVal('equil-radio-masa') || 0,
+                equilAnguloMasa: getVal('equil-angulo-masa') || 0,
+                
+                // Paso 9
+                levBaseX: getVal('lev-base-x') || 150,
+                levBaseY: getVal('lev-base-y') || 60,
+                levSustImanNombre: getTxt('lev-sust-iman'),
+                levSustSepX: getVal('lev-sust-sep-x') || 30,
+                levSustSepY: getVal('lev-sust-sep-y') || 40,
+                levSustInc: getVal('lev-sust-inclinacion') || 0,
+                levSustZ: getVal('lev-sust-z') || 0,
+                levSustPolIzq: getVal('lev-sust-pol-izq') || 1,
+                levSustPolDer: getVal('lev-sust-pol-der') || 1,
+                levRotorImanNombre: getTxt('lev-rotor-iman'),
+                levRotorPolIzq: getVal('lev-rotor-pol-izq') || -1,
+                levRotorPolDer: getVal('lev-rotor-pol-der') || -1,
+                levRotorOffsetIzq: getVal('lev-rotor-offset-izq') || 0,
+                levRotorOffsetDer: getVal('lev-rotor-offset-der') || 0,
+                levApoyoDist: getVal('lev-apoyo-dist') || 0,
+                
                 informe: document.getElementById('informe-automatico')?.value || "",
                 resumen: {
                     tipoRotor,
@@ -2669,12 +3522,21 @@ function calcularOcupacionRanura() {
             contenedor.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#64748b;">⏳ Cargando galería de proyectos...</div>';
 
             try {
-                // 1. Obtener proyectos públicos de Supabase con TIMEOUT de seguridad
-                const fetchPromise = dbMendocinoClient
-                    .from('motores')
-                    .select('*')
-                    .eq('es_publico', true)
-                    .order('creado_en', { ascending: false });
+                // 1. Obtener proyectos de Supabase según nivel de acceso
+                let fetchPromise;
+                if (window.esAdmin) {
+                    fetchPromise = dbMendocinoClient.from('motores').select('*').order('creado_en', { ascending: false });
+                } else if (window.sessionActiva) {
+                    fetchPromise = dbMendocinoClient.from('motores')
+                        .select('*')
+                        .or(`es_publico.eq.true,usuario_id.eq.${window.sessionActiva.user.id}`)
+                        .order('creado_en', { ascending: false });
+                } else {
+                    fetchPromise = dbMendocinoClient.from('motores')
+                        .select('*')
+                        .eq('es_publico', true)
+                        .order('creado_en', { ascending: false });
+                }
 
                 const timeoutPromise = new Promise((_, reject) => 
                     setTimeout(() => reject(new Error("Tiempo de espera agotado al conectar con el servidor.")), 10000)
@@ -2684,15 +3546,29 @@ function calcularOcupacionRanura() {
 
                 if (error) throw error;
                 if (!proyectos || proyectos.length === 0) {
-                    contenedor.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#64748b;">No hay proyectos públicos disponibles en este momento.</div>';
+                    contenedor.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:50px; color:#64748b;">No hay proyectos disponibles en este momento.</div>';
                     return;
                 }
 
                 contenedor.innerHTML = proyectos.map((proyecto) => {
                     const autor = proyecto.autor_nombre ? `<span class="proyecto-autor">👤 Por: ${proyecto.autor_nombre}</span>` : '';
+                    
+                    const miUid = window.sessionActiva ? window.sessionActiva.user.id : null;
+                    const esMio = proyecto.usuario_id === miUid;
+                    const adminUser = window.esAdmin;
+                    
+                    let adminHtml = '';
+                    if (adminUser) {
+                        adminHtml += `<button onclick="togglePublicoMotor('${proyecto.id_unico}')" style="font-size: 11px; padding: 3px 6px; margin-right: 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.2s; ${proyecto.es_publico ? 'background-color: #10b981; color: white; box-shadow: 0 2px 4px rgba(16,185,129,0.3);' : 'background-color: #cbd5e1; color: #475569;'}">${proyecto.es_publico ? 'PÚBLICO ✓' : 'PRIVADO'}</button>`;
+                    } else if (esMio) {
+                        adminHtml += `<span style="font-size: 10px; padding: 3px 6px; margin-right: 8px; border-radius: 4px; font-weight: bold; ${proyecto.es_publico ? 'background-color: #d1fae5; color: #065f46;' : 'background-color: #f1f5f9; color: #475569;'}">${proyecto.es_publico ? 'PÚBLICO' : 'PRIVADO (Pendiente)'}</span>`;
+                    }
+                    if (adminUser || esMio) {
+                        adminHtml += `<button class="btn-delete" style="font-size: 11px; padding: 3px 6px;" onclick="borrarMotorDB('${proyecto.id_unico}')">🗑️</button>`;
+                    }
 
                     return `
-                        <div class="proyecto-card">
+                        <div class="proyecto-card" ${esMio ? 'style="border: 2px solid #3b82f6;"' : ''}>
                             <div class="proyecto-card__media">
                                 <video controls preload="metadata" loading="lazy">
                                     <source src="${proyecto.video_url || ''}" type="video/mp4">
@@ -2700,9 +3576,12 @@ function calcularOcupacionRanura() {
                                 </video>
                             </div>
                             <div class="proyecto-card__body">
-                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
                                     <h3 class="proyecto-card__title" style="margin:0;">${proyecto.titulo}</h3>
                                     ${autor}
+                                </div>
+                                <div style="margin-bottom:10px; display:flex; align-items:center;">
+                                    ${adminHtml}
                                 </div>
                                 <p class="proyecto-card__subtitle">${proyecto.subtitulo || ''}</p>
 
@@ -2761,6 +3640,66 @@ function calcularOcupacionRanura() {
                     </div>`;
             }
         }
+        
+        window.togglePublicoMotor = async function(id_unico) {
+            if (!window.esAdmin) return;
+            try {
+                // Obtener estado actual primero
+                const { data: motor, error: fetchErr } = await window.dbMendocinoClient
+                    .from('motores')
+                    .select('es_publico')
+                    .eq('id_unico', id_unico)
+                    .single();
+                
+                if (fetchErr) throw fetchErr;
+
+                const nuevoEstado = !motor.es_publico;
+                const { error } = await window.dbMendocinoClient
+                    .from('motores')
+                    .update({ es_publico: nuevoEstado })
+                    .eq('id_unico', id_unico);
+                
+                if (error) throw error;
+                
+                mostrarToast(`Proyecto ${nuevoEstado ? 'publicado' : 'ocultado'} correctamente.`, 'ok');
+                renderizarProyectos(); // Recargar galería
+            } catch (e) {
+                console.error("Error cambiando estado público del motor:", e);
+                mostrarToast("Error de conexión al actualizar proyecto.", "error");
+            }
+        };
+
+        window.borrarMotorDB = async function(id_unico) {
+            const confirmacion = await mostrarConfirmacion("Borrar Diseño", "¿Seguro que quieres borrar permanentemente este proyecto de la nube?");
+            if (!confirmacion) return;
+            
+            try {
+                const { error } = await window.dbMendocinoClient
+                    .from('motores')
+                    .delete()
+                    .eq('id_unico', id_unico);
+                
+                if (error) throw error;
+                
+                mostrarToast("Proyecto borrado correctamente.", "ok");
+                renderizarProyectos(); // Recargar galería
+                
+                // Opcional: borrar del localStorage si existe
+                try {
+                    const misMotores = await obtenerMotoresGuardados();
+                    const keyMotor = Object.keys(misMotores).find(k => misMotores[k].id_unico === id_unico);
+                    if (keyMotor) {
+                        delete misMotores[keyMotor];
+                        localStorage.setItem('listaMotoresMendocino', JSON.stringify(misMotores));
+                        renderizarMisMotores(); // Recargar modal
+                    }
+                } catch(e) {}
+                
+            } catch (e) {
+                console.error("Error borrando motor de la base de datos:", e);
+                mostrarToast("Error al borrar el proyecto.", "error");
+            }
+        };
 
         // --- INICIALIZACIÓN BASE ---
         function inicializarAplicacionBase() {
@@ -2994,7 +3933,7 @@ function generarInformeAutomatico() {
         [ 4. EFECTOS MAGNÉTICOS ]
         Fuerza magnetomotriz: ${fmm.toFixed(2)} Av
         Campo B asumido: ${campoB.toFixed(3)} T
-        Fuerza de Lorenz estimada: ${fuerzaLorentz.toFixed(4)} N
+        Fuerza de Lorentz estimada: ${fuerzaLorentz.toFixed(4)} N
         Par ejercido estimado: ${parMagnetico.toFixed(6)} N·m
 
         ──────────────────────────────────────────────
@@ -3122,13 +4061,45 @@ function calcularPasoFCEM() {
     const perdidasPerc = parseFloat(document.getElementById('fcem-perdidas')?.value || 15);
     const factorPerdidas = (100 - perdidasPerc) / 100;
     
-    // V_fcem = 2 * N * B * L * r * omega
-    const omegaSim = (rpmSim * 2 * Math.PI) / 60;
-    const vfcemSim = 2 * vueltas * campoB * L_m * R_m * omegaSim;
+    // Nueva física: En SI, K_t (Constante de par) = K_e (Constante eléctrica)
+    // K_t = Torque (Nm) / Corriente (A)
+    const corrienteA = (EstadoDiseno.intensidadPanel_mA || 101) / 1000;
+    const parMaxMagpylib = EstadoDiseno.par_Nm || 0;
     
-    // RPM Máximas (cuando Vfcem = Vmp * factorPerdidas)
-    const factorK = 2 * vueltas * campoB * L_m * R_m;
-    const rpmMaxTeo = (vmp > 0 && factorK > 0) ? (vmp * 60) / (2 * Math.PI * factorK) : 0;
+    let factorK_pico = 0;
+    if (corrienteA > 0 && parMaxMagpylib > 0) {
+        factorK_pico = parMaxMagpylib / corrienteA;
+    } else {
+        // Fallback si Magpylib no ha cargado: Asume campo sólo en 1 lado de la espira
+        factorK_pico = vueltas * campoB * L_m * R_m;
+    }
+    
+    // El par calculado es el MÁXIMO (espira a 0º, en el centro del imán).
+    // En un motor Mendocino el campo magnético del imán rectangular decae rapidísimamente 
+    // cuando la espira gira unos pocos grados (campo altamente no uniforme).
+    // Por tanto, la FCEM promedio (integral del flujo) es muchísimo menor que la FCEM pico.
+    // Un factor empírico del ~15-20% refleja mejor esta caída brusca en comparación con el 63% (2/pi) de un motor ideal.
+    const factorK_promedio = factorK_pico * 0.18;
+    
+    // Voltaje en vacío (Voc) de una célula solar suele ser el que delimita el techo de velocidad.
+    // Usamos el Vmp proporcionado por el usuario y estimamos el Voc (+20%).
+    const voc_estimado = vmp * 1.2;
+
+    const omegaSim = (rpmSim * 2 * Math.PI) / 60;
+    const vfcemSim = factorK_promedio * omegaSim;
+    
+    // RPM Máximas Teóricas (cuando Vfcem_promedio = Voc_estimado)
+    let rpmMaxTeo = 0;
+    
+    // Fricción estática: Si el par magnético es menor a 50 uN·m (0.00005 N·m), el motor 
+    // no tiene fuerza suficiente para vencer el rozamiento estático de la punta del eje y no gira.
+    const elAlertaFriccion = document.getElementById('alerta-friccion');
+    if (parMaxMagpylib > 0.00005) {
+        rpmMaxTeo = (voc_estimado > 0 && factorK_promedio > 0) ? (voc_estimado * 60) / (2 * Math.PI * factorK_promedio) : 0;
+        if (elAlertaFriccion) elAlertaFriccion.style.display = 'none';
+    } else {
+        if (elAlertaFriccion) elAlertaFriccion.style.display = 'block';
+    }
     const rpmMaxReal = rpmMaxTeo * factorPerdidas;
 
     // Persistir para el informe
@@ -3144,13 +4115,28 @@ function calcularPasoFCEM() {
     if (elTeo) elTeo.textContent = Math.round(rpmMaxTeo) + ' RPM';
     if (elReal) elReal.textContent = Math.round(rpmMaxReal) + ' RPM';
     
+    const elFuente = document.getElementById('alerta-fcem-fuente');
+    if (elFuente) {
+        if (EstadoDiseno.usandoParMagpylib) {
+            elFuente.style.backgroundColor = '#dcfce7';
+            elFuente.style.color = '#166534';
+            elFuente.style.border = '1px solid #bbf7d0';
+            elFuente.innerHTML = '✨ <strong>Alta Precisión:</strong> Se está utilizando el par exacto calculado por <strong>Magpylib 3D</strong> (Paso 8).';
+        } else {
+            elFuente.style.backgroundColor = '#f1f5f9';
+            elFuente.style.color = '#475569';
+            elFuente.style.border = '1px solid #e2e8f0';
+            elFuente.innerHTML = 'ℹ️ <strong>Estimación Teórica:</strong> Basado en fórmulas analíticas. Para mayor precisión, calcula las fuerzas en el <strong>Paso 8</strong>.';
+        }
+    }
+    
     // Resistencia (ya calculada en paso 2)
     const resTotal = (EstadoDiseno.resistenciaTotal || 0);
     const elRes = document.getElementById('fcem-resistencia');
     if (elRes) elRes.value = resTotal.toFixed(2) + ' Ω';
     
     // 4. Dibujar Gráfica
-    dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim);
+    dibujarGraficaFCEM(voc_estimado, factorK_promedio, rpmMaxReal, rpmSim, vfcemSim);
 
     // 5. Ajustar el slider de simulación y el input manual para que se acomoden al motor real.
     const sliderRpm = document.getElementById('fcem-rpm-sim');
@@ -3266,17 +4252,45 @@ function cambiarPaso(numPaso) {
     if (paso) paso.classList.add('active');
     if (indicador) indicador.classList.add('active');
 
-    if (numPaso === 3) {
+    if (numPaso === 1) {
+        if (typeof actualizarEsquemaEnsayo === 'function') {
+            setTimeout(actualizarEsquemaEnsayo, 100);
+        }
+    }
+    if (numPaso === 4) {
+        if (typeof dibujarLevitacionSVG === 'function') {
+            setTimeout(dibujarLevitacionSVG, 100);
+        }
+    }
+    if (numPaso === 5) {
         precargarPasoMagnetico();
         calcularPasoMagnetico();
     }
-    if (numPaso === 4) {
+    if (numPaso === 6) {
         calcularPasoLuminico();
     }
-    if (numPaso === 5) {
+    if (numPaso === 7) {
         calcularPasoFCEM();
     }
-    if (numPaso === 5) {
+    if (numPaso === 8) {
+        // Al entrar en Magpylib, renderizar si no está
+        setTimeout(() => {
+            if (document.getElementById('magpylib-resultados').innerHTML.includes('Haz clic')) {
+                renderizarPasoMagpylib();
+            }
+        }, 300);
+    }
+    if (numPaso === 12) {
+        if (typeof renderizarAnimacionDinamica === 'function') {
+            actualizarAnimacionManual(); // Inicializa y pinta
+        }
+    } else {
+        // Detener animación al salir del paso 12
+        if (typeof animacionCorriendo !== 'undefined' && animacionCorriendo) {
+            toggleAnimacionGlobal(); 
+        }
+    }
+    if (numPaso === 13) {
         generarInformeAutomatico();
     }
 
@@ -3382,7 +4396,7 @@ function aplicarNivelUsuario() {
         selectorNivel.value = usuarioActual.nivel;
     }
 
-    const pasos = [1, 2, 3, 4, 5, 6];
+    const pasos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
     pasos.forEach((numPaso) => {
         const indicador = document.getElementById(`ind-${numPaso}`);
@@ -3390,12 +4404,12 @@ function aplicarNivelUsuario() {
 
         const permitido = config.pasosPermitidos.includes(numPaso);
 
-        indicador.style.opacity = permitido ? '1' : '0.35';
+        indicador.style.opacity = permitido ? '1' : '0.4';
         indicador.style.pointerEvents = permitido ? 'auto' : 'none';
         indicador.title = permitido ? '' : 'Bloqueado para tu configuración actual';
         
-        // Opcionalmente podemos ocultar o mostrar
-        indicador.style.display = permitido ? 'flex' : (usuarioActual.nivel === 'experto' ? 'flex' : 'none');
+        // Mostrar siempre todas las pestañas, pero atenuadas si no están permitidas
+        indicador.style.display = 'flex';
     });
 
     aplicarVisibilidadPorNivel();
@@ -3670,8 +4684,14 @@ async function cerrarSesion() {
     try {
         console.log("Iniciando cierre de sesión robusto...");
         
-        // 1. Limpieza local inmediata e infalible
-        localStorage.clear();
+        // 1. Limpieza local inmediata de sesión (sin borrar datos de simulador guardados)
+        // Eliminamos las claves de sesión sin hacer un clear() total
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+                localStorage.removeItem(key);
+            }
+        }
         sessionStorage.clear();
         
         // Forzamos la desaparición del badge por si el reload tarda
@@ -3825,10 +4845,33 @@ async function actualizarNivelAlumno(id, nombre) {
 function guardarProgresoCalculadora() {
     try {
         const inputs = [
-            'caras', 'margen-placa', 'ranura-ancho', 'ranura-alto', 'ranura-tipo', 
+            // Paso 1
+            'ensayo-nombre-panel', 'ensayo-l-panel', 'ensayo-a-panel',
+            'ensayo-proveedor', 'ensayo-precio', 'ensayo-peso',
+            
+            // Paso 2
+            'caras', 'margen-placa', 'ranura-ancho', 'ranura-alto', 'ranura-tipo', 'diametro-eje', 
+            
+            // Paso 3
             'material-hilo', 'dia-hilo-select', 'calidad-bobinado', 
-            'campo-b', 'radio-efectivo-mm',
-            'iman-motor', 'iman-orientacion', 'iman-distancia',
+            
+            // Paso 4
+            'campo-b', 'radio-efectivo-mm', 'iman-orientacion', 'iman-polaridad', 'iman-distancia',
+            
+            // Paso 5
+            'lum-conexion', 'lum-giro', 'lum-angulo-luz',
+            
+            // Paso 8
+            'equil-masa-adicional', 'equil-radio-masa', 'equil-angulo-masa',
+            
+            // Paso 9
+            'lev-base-x', 'lev-base-y', 'lev-sust-sep-x', 'lev-sust-sep-y', 'lev-sust-inclinacion', 'lev-sust-z',
+            'lev-sust-pol-izq', 'lev-sust-pol-der',
+            'lev-rotor-pol-izq', 'lev-rotor-pol-der',
+            'lev-rotor-offset-izq', 'lev-rotor-offset-der',
+            'lev-apoyo-dist',
+            
+            // Paso 10
             'fcem-rpm-sim', 'fcem-perdidas'
         ];
 
@@ -3851,16 +4894,21 @@ function guardarProgresoCalculadora() {
             }
         });
 
-        // Guardar nombre del panel en lugar del índice (más robusto)
-        const elPanel = document.getElementById('panel');
-        if (elPanel && elPanel.selectedIndex >= 0) {
-            estado.valores['panelNombre'] = elPanel.options[elPanel.selectedIndex].text;
-        }
+        // Guardar nombre de elementos seleccionados desde selectores dinámicos
+        const selectoresDinamicos = [
+            { id: 'panel', key: 'panelNombre' },
+            { id: 'ensayo-historial-select', key: 'ensayoHistorialNombre' },
+            { id: 'iman-motor', key: 'imanMotorNombre' },
+            { id: 'lev-sust-iman', key: 'levSustImanNombre' },
+            { id: 'lev-rotor-iman', key: 'levRotorImanNombre' }
+        ];
 
-        const elIman = document.getElementById('iman-motor');
-        if (elIman && elIman.selectedIndex >= 0) {
-            estado.valores['imanMotorNombre'] = elIman.options[elIman.selectedIndex].text;
-        }
+        selectoresDinamicos.forEach(selector => {
+            const el = document.getElementById(selector.id);
+            if (el && el.selectedIndex >= 0) {
+                estado.valores[selector.key] = el.options[el.selectedIndex].text;
+            }
+        });
 
         localStorage.setItem('progresoMendocino', JSON.stringify(estado));
     } catch (e) {
@@ -3901,17 +4949,37 @@ function cargarProgresoCalculadora() {
             }
         });
 
-        // 2.5 Restaurar Panel por Nombre (más robusto que índice)
-        const panelNombre = estado.valores['panelNombre'];
-        const elPanel = document.getElementById('panel');
-        if (elPanel && panelNombre) {
-            for (let i = 0; i < elPanel.options.length; i++) {
-                if (elPanel.options[i].text === panelNombre) {
-                    elPanel.selectedIndex = i;
-                    break;
+        // 2.5 Restaurar selectores dinámicos por nombre
+        const selectoresDinamicos = [
+            { id: 'panel', key: 'panelNombre' },
+            { id: 'ensayo-historial-select', key: 'ensayoHistorialNombre' },
+            { id: 'iman-motor', key: 'imanMotorNombre' },
+            { id: 'lev-sust-iman', key: 'levSustImanNombre' },
+            { id: 'lev-rotor-iman', key: 'levRotorImanNombre' }
+        ];
+
+        selectoresDinamicos.forEach(selector => {
+            const nombreGuardado = estado.valores[selector.key];
+            const el = document.getElementById(selector.id);
+            if (el && nombreGuardado) {
+                for (let i = 0; i < el.options.length; i++) {
+                    const optText = el.options[i].text;
+                    if (optText === nombreGuardado || optText.includes(nombreGuardado) || nombreGuardado.includes(optText)) {
+                        el.selectedIndex = i;
+                        // Si es el panel o ensayo, podríamos necesitar disparar su onchange explícitamente
+                        if (selector.id === 'panel') actualizarResumenPaso1();
+                        if (selector.id === 'ensayo-historial-select' && typeof cargarEnsayoDesdeHistorial === 'function') {
+                            // En lugar de disparar el evento aquí, marcamos que se debe cargar, 
+                            // o lo cargamos si los datos ya están listos.
+                            // Para no interferir, se dispara el evento 'change'.
+                            const event = new Event('change');
+                            el.dispatchEvent(event);
+                        }
+                        break;
+                    }
                 }
             }
-        }
+        });
 
         // 3. Restaurar el paso
         if (estado.pasoActual > 1) {
@@ -3919,7 +4987,14 @@ function cargarProgresoCalculadora() {
         }
 
         // Forzar recalcular todo para que los gráficos y resultados se sincronicen
-        actualizarResumenPaso1(); 
+        if (typeof actualizarResumenPaso1 === 'function') actualizarResumenPaso1();
+        if (typeof calcularDimensionesRotor === 'function') calcularDimensionesRotor();
+        if (typeof calcularDevanado === 'function') calcularDevanado();
+        if (typeof calcularFuerzasPaso4 === 'function') calcularFuerzasPaso4();
+        if (typeof calcularPasoLuminico === 'function') calcularPasoLuminico();
+        if (typeof actualizarGraficoRotor === 'function') actualizarGraficoRotor();
+        if (typeof actualizarVistasLevitacion === 'function') actualizarVistasLevitacion();
+        if (typeof calcularFcemYPerdidas === 'function') calcularFcemYPerdidas();
         
     } catch (e) {
         console.error("Error cargando progreso:", e);
@@ -3989,3 +5064,3629 @@ window.onload = async function() {
     }
 };
 
+// === PASO 7: MAGPYLIB ===
+async function renderizarPasoMagpylib() {
+    const contenedorResultados = document.getElementById('magpylib-resultados');
+    if (!contenedorResultados) return;
+    
+    // Verificación de requisitos previos
+    if (!EstadoDiseno.espirasPorDevanado || !EstadoDiseno.intensidadPanel_mA) {
+        if (typeof mostrarToast === 'function') {
+            mostrarToast("⚠️ Error: Faltan datos eléctricos. Debes calcular el Devanado (Paso 2) y el Ensayo Solar (Paso 1).", "error");
+        } else {
+            alert("⚠️ Error: Faltan datos eléctricos. Debes calcular el Devanado (Paso 2) y el Ensayo Solar (Paso 1).");
+        }
+        return;
+    }
+    
+    // UI enhancements
+    contenedorResultados.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px;">
+            <div style="border: 4px solid #e2e8f0; border-left-color: #3b82f6; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-bottom: 15px;"></div>
+            <span style="color: #475569; font-weight: 500;">Calculando física avanzada en el servidor...</span>
+        </div>
+        <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+    `;
+
+    try {
+        // Recopilar parámetros reales
+        const diametro = EstadoDiseno.diametroRotor || 20;
+        const longitud = EstadoDiseno.longitudPanel || 30;
+        const orientacion = document.getElementById('iman-orientacion')?.value || 'long';
+        const distancia = parseFloat(document.getElementById('iman-distancia')?.value || 2.0);
+        
+        // Calcular corriente por la bobina activa
+        // El voltaje depende del área del panel iluminado, usamos el amperaje ya estimado
+        const corrienteTotal = (EstadoDiseno.intensidadPanel_mA || 1000) / 1000;
+        const vueltas = EstadoDiseno.espirasPorDevanado || 100;
+        
+        // Obtener datos del imán seleccionado en el Paso 3
+        const selIman = document.getElementById('iman-motor')?.value;
+        const imanData = typeof dbImanes !== 'undefined' ? dbImanes[Number(selIman)] : null;
+        
+        let dimIman = [30, 15, 5]; // Dimensiones por defecto [Largo, Ancho, Grosor]
+        let magnetizacion = 1.20;  // Magnetización por defecto (T)
+
+        if (imanData) {
+            // Extraer dimensiones y asegurar que el grosor sea la Z
+            const dims = [Number(imanData.l), Number(imanData.a), Number(imanData.h)];
+            const T = Math.min(...dims); // espesor (Z)
+            const baseDims = dims.filter((_, i) => i !== dims.indexOf(T));
+            dimIman = [Math.max(...baseDims), Math.min(...baseDims), T];
+            // Convertir Remanencia Br (Teslas)
+            magnetizacion = Number(imanData.br) || 1.20;
+        }
+        
+        const polaridad = parseInt(document.getElementById('iman-polaridad')?.value) || 1;
+        
+        let imanesBasePayload = [];
+        // Posición Z del centro del imán: - (radio_rotor + entrehierro + mitad_grosor_iman)
+        const z_pos = - (diametro/2 + distancia + dimIman[2]/2);
+        
+        const magZ = magnetizacion * polaridad;
+
+        if (orientacion === 'long') {
+            imanesBasePayload.push({ dimension: dimIman, magnetizacion: [0, 0, magZ], posicion: [0, 0, z_pos] });
+        } else {
+            imanesBasePayload.push({ dimension: [dimIman[1], dimIman[0], dimIman[2]], magnetizacion: [0, 0, magZ], posicion: [0, 0, z_pos] });
+        }
+
+        // Generar todas las bobinas del rotor
+        const caras = EstadoDiseno?.numeroCaras || parseInt(document.getElementById('caras')?.value || 4);
+        const numDevanados = Math.max(1, Math.floor(caras / 2));
+        const bobinasPayload = [];
+        
+        let currents = null;
+        if (window.estadoLuminico && window.estadoLuminico.currents && window.estadoLuminico.currents.length >= caras) {
+            currents = window.estadoLuminico.currents;
+        }
+        
+        for (let i = 0; i < numDevanados; i++) {
+            let bobinaCorriente = 0;
+            if (currents) {
+                // currents[i] ya tiene el signo correcto según el flujo lumínico calculado en el Paso 4
+                bobinaCorriente = corrienteTotal * currents[i];
+            } else {
+                bobinaCorriente = i === 0 ? corrienteTotal : 0;
+            }
+            
+            if (Math.abs(bobinaCorriente) < 1e-5) bobinaCorriente = 0.000001;
+
+            // Sincronizar perfectamente con SVG (rotación inversa y desfase de ranura)
+            const giro_deg = (window.estadoLuminico && window.estadoLuminico.giro !== undefined) ? window.estadoLuminico.giro : parseFloat(document.getElementById('lum-giro')?.value || document.getElementById('giro_motor')?.value || 0);
+            const offset_ranura = 180 / caras;
+            const angulo_final = - (i * (360 / caras) + offset_ranura + giro_deg);
+
+            bobinasPayload.push({
+                dimension: [longitud, diametro],
+                vueltas: vueltas,
+                corriente: bobinaCorriente, // Corriente real para que coincida con la física de SVG
+                angulo_x: angulo_final,
+                posicion: [0, 0, 0]
+            });
+        }
+
+        const style2d = document.getElementById('magpylib-style-forces')?.value || 'scifi';
+
+        const payload = {
+            imanes_base: imanesBasePayload,
+            bobinas: bobinasPayload,
+            style_2d: style2d
+        };
+        
+        window._lastMagpylibPayload = payload;
+
+        const response = await fetch('http://127.0.0.1:5000/api/magpylib-forces', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor Python.');
+        }
+
+        const data = await response.json();
+        
+        const formatNum = (num) => {
+            if (num === 0) return "0.000";
+            if (Math.abs(num) < 0.001) return num.toExponential(2);
+            return num.toFixed(3);
+        };
+
+        let B_mag_val = Math.sqrt(data.b_field[0]**2 + data.b_field[1]**2 + data.b_field[2]**2);
+        let F_mag_val = Math.sqrt(data.force_vector[0]**2 + data.force_vector[1]**2 + data.force_vector[2]**2);
+        
+        let B_mag = formatNum(B_mag_val);
+        let F_mag = formatNum(F_mag_val);
+
+        let resultadoHTML = `
+            <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 15px 0; color: #1e293b; font-size: 16px;">📊 Datos Numéricos de la Simulación</h4>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1 1 200px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <span style="display: block; color: #64748b; font-size: 11px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">Vector Campo B (T)</span>
+                        <span style="color: #0f172a; font-family: monospace; font-size: 13px;">[${data.b_field[0].toFixed(5)}, ${data.b_field[1].toFixed(5)}, ${data.b_field[2].toFixed(5)}]</span>
+                    </div>
+                    <div style="flex: 1 1 200px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <span style="display: block; color: #64748b; font-size: 11px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">Fuerza Lorentz (N)</span>
+                        <span style="color: #0f172a; font-family: monospace; font-size: 13px;">[${formatNum(data.force_vector[0])}, ${formatNum(data.force_vector[1])}, ${formatNum(data.force_vector[2])}]</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; align-items: start;">
+                ${data.image_base64 ? `
+                <div style="flex: 1 1 350px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 12px;">
+                        <h4 style="margin: 0; color: #334155; font-size: 13px; font-weight: 600;">VISUALIZACIÓN 3D DEL ROTOR</h4>
+                    </div>
+                    <div style="padding: 15px;">
+                        <img src="data:image/png;base64,${data.image_base64}" style="max-width: 100%; display: block; margin: 0 auto;" alt="Representación 3D de Magpylib">
+                    </div>
+                </div>
+                ` : ''}
+
+                ${data.streamplot_base64 ? `
+                <div style="flex: 1 1 350px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 12px;">
+                        <h4 style="margin: 0; color: #334155; font-size: 13px; font-weight: 600;">LÍNEAS DE CAMPO MAGNÉTICO</h4>
+                    </div>
+                    <div style="padding: 15px;">
+                        <img src="data:image/png;base64,${data.streamplot_base64}" style="max-width: 100%; display: block; margin: 0 auto;" alt="Líneas de campo magnético">
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+            
+            ${data.plotly_html ? `
+            <div style="margin-top: 25px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <div style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="margin: 0; color: #334155; font-size: 13px; font-weight: 600;">VISOR 3D INTERACTIVO (Plotly)</h4>
+                    <span style="font-size: 11px; color: #64748b; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">Interactúa: Click + Arrastrar para rotar, Rueda para Zoom</span>
+                </div>
+                <div style="padding: 0px; width: 100%; height: 600px; display: flex; justify-content: center; align-items: center;">
+                    <div style="width: 100%; height: 100%;">
+                        ${data.plotly_html}
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+        `;
+        
+        contenedorResultados.innerHTML = resultadoHTML;
+        
+        // Ejecutar los scripts incrustados de Plotly
+        if (data.plotly_html) {
+            const scripts = contenedorResultados.querySelectorAll('script');
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement('script');
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+        }
+
+    } catch (error) {
+        contenedorResultados.innerHTML = `
+            <div style="background: rgba(248, 113, 113, 0.1); border-radius: 8px; padding: 15px; border-left: 4px solid #f87171;">
+                <h4 style="margin: 0 0 10px 0; color: #f87171; display: flex; align-items: center; gap: 8px;">
+                    ⚠️ Error de conexión
+                </h4>
+                <p style="margin: 0; font-size: 13px; color: #ccc;">¿Está corriendo el servidor Python (<code>magpylib_api.py</code>)?</p>
+                <div style="margin-top: 10px; font-size: 11px; color: #888; font-family: monospace; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 4px;">
+                    Detalles: ${error.message}
+                </div>
+            </div>
+        `;
+    }
+}
+
+
+// ==========================================
+// ====== PASO 8: CONEXIONADO ELECTRICO =====
+// ==========================================
+
+function generarOpcionesConexionado() {
+    const carasInput = document.getElementById('caras');
+    const numCaras = (carasInput ? parseInt(carasInput.value) : EstadoDiseno.numeroCaras) || 4;
+    EstadoDiseno.numeroCaras = numCaras; // Sync back just in case
+    const container = document.getElementById('conexion-par-list');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    const numPares = numCaras / 2;
+    
+    if (!window.parSeleccionadoStep8 || window.parSeleccionadoStep8 > numPares) {
+        window.parSeleccionadoStep8 = 1;
+    }
+    
+    for (let i = 1; i <= numPares; i++) {
+        const caraOpuesta = i + numPares;
+        const btn = document.createElement('div');
+        btn.textContent = `Par ${i}: C${i} (Superior) y C${caraOpuesta} (Inferior)`;
+        btn.style.padding = '10px 15px';
+        btn.style.border = '2px solid';
+        btn.style.borderRadius = '6px';
+        btn.style.cursor = 'pointer';
+        btn.style.fontWeight = 'bold';
+        btn.style.transition = 'all 0.2s';
+        btn.style.textAlign = 'center';
+        
+        if (i === window.parSeleccionadoStep8) {
+            btn.style.borderColor = '#3498db';
+            btn.style.backgroundColor = '#ebf5fb';
+            btn.style.color = '#2980b9';
+        } else {
+            btn.style.borderColor = '#cbd5e1';
+            btn.style.backgroundColor = 'white';
+            btn.style.color = '#64748b';
+            
+            // Hover effect
+            btn.onmouseover = () => btn.style.backgroundColor = '#f8fafc';
+            btn.onmouseout = () => btn.style.backgroundColor = 'white';
+        }
+        
+        btn.onclick = () => {
+            window.parSeleccionadoStep8 = i;
+            generarOpcionesConexionado(); // Re-render to update selection style
+        };
+        
+        container.appendChild(btn);
+    }
+    
+    dibujarConexionado();
+}
+
+function dibujarConexionado() {
+    const svg = document.getElementById('conexionado-svg');
+    const svg3d = document.getElementById('rotor-3d-conexionado-svg');
+    if (!svg) return;
+    
+    const carasInput = document.getElementById('caras');
+    const numCaras = (carasInput ? parseInt(carasInput.value) : EstadoDiseno.numeroCaras) || 4;
+    EstadoDiseno.numeroCaras = numCaras;
+    
+    const idx = window.parSeleccionadoStep8 || 1;
+    const numPares = numCaras / 2;
+    const caraTop = parseInt(idx);
+    const caraBot = caraTop + numPares;
+    
+    // --- 3D ROTOR ---
+    if (svg3d) {
+        const R = 45; // Radio
+        const dx = 100; // Extrusión X
+        const dy = -40; // Extrusión Y
+        const cx3d = 90;
+        const cy3d = 100;
+        
+        let vFront = [];
+        let vBack = [];
+        
+        // Un polígono de N caras tiene un vértice inicial rotado para que la Cara 1 quede arriba plana.
+        const giroGlobal = document.getElementById('anim-giro-step8') ? parseFloat(document.getElementById('anim-giro-step8').value) : 0;
+        const giroRad = giroGlobal * Math.PI / 180;
+        const offsetAng = -Math.PI / 2 - Math.PI / numCaras + giroRad;
+        
+        for (let i = 0; i < numCaras; i++) {
+            let ang = offsetAng + (i * 2 * Math.PI / numCaras);
+            let px = cx3d + R * Math.cos(ang);
+            let py = cy3d + R * Math.sin(ang);
+            vFront.push({x: px, y: py});
+            vBack.push({x: px + dx, y: py + dy});
+        }
+        
+        // Determinar qué caras miran hacia la cámara (front-facing)
+        let carasFront = [];
+        let carasBack = [];
+        
+        for (let i = 0; i < numCaras; i++) {
+            const next = (i + 1) % numCaras;
+            const numCara = i + 1;
+            
+            let p1 = vFront[i];
+            let p2 = vFront[next];
+            let p3 = vBack[next];
+            let cross = (p2.x - p1.x) * (p3.y - p2.y) - (p2.y - p1.y) * (p3.x - p2.x);
+            
+            if (cross < 0) {
+                carasFront.push({num: numCara, idx: i, next: next});
+            } else {
+                carasBack.push({num: numCara, idx: i, next: next});
+            }
+        }
+        
+        let html3d = '';
+        
+        // --- Dibujar imán base (N/S) ---
+        let magH = 10; // Altura de cada mitad
+        let magY = cy3d + R + 25; // Debajo del rotor
+        let pM1 = {x: cx3d - 15, y: magY};
+        let pM2 = {x: cx3d + 45, y: magY};
+        let pM3 = {x: cx3d + 45 + dx, y: magY + dy};
+        let pM4 = {x: cx3d - 15 + dx, y: magY + dy};
+        
+        // Norte (Rojo)
+        // Cara superior N
+        html3d += `<polygon points="${pM1.x},${pM1.y} ${pM2.x},${pM2.y} ${pM3.x},${pM3.y} ${pM4.x},${pM4.y}" fill="#e74c3c" stroke="#c0392b" stroke-width="1" opacity="0.9"/>`;
+        // Cara frontal N
+        html3d += `<polygon points="${pM1.x},${pM1.y} ${pM2.x},${pM2.y} ${pM2.x},${pM2.y+magH} ${pM1.x},${pM1.y+magH}" fill="#e74c3c" stroke="#c0392b" stroke-width="1" opacity="0.9"/>`;
+        // Cara lateral derecha N
+        html3d += `<polygon points="${pM2.x},${pM2.y} ${pM3.x},${pM3.y} ${pM3.x},${pM3.y+magH} ${pM2.x},${pM2.y+magH}" fill="#c0392b" stroke="#a93226" stroke-width="1" opacity="0.9"/>`;
+        
+        // Sur (Azul)
+        let sY = pM1.y + magH;
+        let sYback = pM3.y + magH;
+        // Cara frontal S
+        html3d += `<polygon points="${pM1.x},${sY} ${pM2.x},${sY} ${pM2.x},${sY+magH} ${pM1.x},${sY+magH}" fill="#3498db" stroke="#2980b9" stroke-width="1" opacity="0.9"/>`;
+        // Cara lateral derecha S
+        html3d += `<polygon points="${pM2.x},${sY} ${pM3.x},${sYback} ${pM3.x},${sYback+magH} ${pM2.x},${sY+magH}" fill="#2980b9" stroke="#2471a3" stroke-width="1" opacity="0.9"/>`;
+        
+        // Textos N y S en la cara frontal
+        let textX = (pM1.x + pM2.x) / 2;
+        let textNy = pM1.y + magH/2 + 4; // Centro de la mitad superior
+        let textSy = sY + magH/2 + 4;    // Centro de la mitad inferior
+        
+        html3d += `<text x="${textX}" y="${textNy}" fill="#fff" font-size="10" font-weight="bold" font-family="sans-serif" text-anchor="middle">N</text>`;
+        html3d += `<text x="${textX}" y="${textSy}" fill="#fff" font-size="10" font-weight="bold" font-family="sans-serif" text-anchor="middle">S</text>`;
+        
+        // Líneas de campo magnético eliminadas por simplicidad visual
+        
+        const anguloLuz = document.getElementById('lum-angulo-luz') ? parseFloat(document.getElementById('lum-angulo-luz').value) : 0;
+        const luzRad = anguloLuz * Math.PI / 180;
+        
+        // --- 0. DIBUJAR FUENTE DE LUZ (SOL) ---
+        let midRotorX = cx3d + dx/2;
+        let midRotorY = cy3d + dy/2;
+        let solDist = 120;
+        let solX = midRotorX + solDist * Math.sin(luzRad);
+        let solY = midRotorY - solDist * Math.cos(luzRad);
+        
+        // Dibujar el icono del Sol
+        let solGroup = `<g transform="translate(${solX}, ${solY})">`;
+        solGroup += `<circle cx="0" cy="0" r="10" fill="#f1c40f" stroke="#f39c12" stroke-width="1.5"/>`;
+        for(let i=0; i<8; i++) {
+            let a = i * Math.PI / 4;
+            let x1 = 13 * Math.cos(a);
+            let y1 = 13 * Math.sin(a);
+            let x2 = 18 * Math.cos(a);
+            let y2 = 18 * Math.sin(a);
+            solGroup += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#f39c12" stroke-width="2" stroke-linecap="round"/>`;
+        }
+        solGroup += `</g>`;
+        html3d += solGroup;
+        
+        // Rayos de luz direccionales hacia el rotor
+        for (let offset of [-25, 0, 25]) {
+            let ox = offset * Math.cos(luzRad);
+            let oy = offset * Math.sin(luzRad);
+            // Empezar los rayos un poco separados del sol
+            let rSx = solX - 25 * Math.sin(luzRad) + ox;
+            let rSy = solY + 25 * Math.cos(luzRad) + oy;
+            let rayDist = solDist - R - 20;
+            let rEx = rSx - rayDist * Math.sin(luzRad);
+            let rEy = rSy + rayDist * Math.cos(luzRad);
+            
+            html3d += `<line x1="${rSx}" y1="${rSy}" x2="${rEx}" y2="${rEy}" stroke="#f1c40f" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.6"/>`;
+            
+            let arrLen = 6;
+            let ux = -Math.sin(luzRad);
+            let uy = Math.cos(luzRad);
+            let px1 = rEx - ux*arrLen - uy*arrLen*0.6;
+            let py1 = rEy - uy*arrLen + ux*arrLen*0.6;
+            let px2 = rEx - ux*arrLen + uy*arrLen*0.6;
+            let py2 = rEy - uy*arrLen - ux*arrLen*0.6;
+            html3d += `<polygon points="${rEx},${rEy} ${px1},${py1} ${px2},${py2}" fill="#f1c40f" opacity="0.8"/>`;
+        }
+        
+        // 1. Eje central completo (calculado en la misma dirección que la extrusión dx, dy)
+        let len = Math.sqrt(dx*dx + dy*dy);
+        let ux = dx / len;
+        let uy = dy / len;
+        let axisFrontX = cx3d - 30 * ux;
+        let axisFrontY = cy3d - 30 * uy;
+        let axisBackX = cx3d + dx + 30 * ux;
+        let axisBackY = cy3d + dy + 30 * uy;
+        
+        // Eje trasero (sobresale por detrás, sólido)
+        html3d += `<line x1="${cx3d + dx}" y1="${cy3d + dy}" x2="${axisBackX}" y2="${axisBackY}" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>`;
+        
+        // Eje interior (atraviesa el rotor, punteado)
+        html3d += `<line x1="${cx3d}" y1="${cy3d}" x2="${cx3d + dx}" y2="${cy3d + dy}" stroke="#64748b" stroke-width="2" stroke-dasharray="6,3"/>`;
+
+        // 2. Hexágono trasero (transparente)
+        let ptsBack = vBack.map(v => `${v.x},${v.y}`).join(' ');
+        html3d += `<polygon points="${ptsBack}" fill="none" stroke="#94a3b8" stroke-width="1"/>`;
+        
+        // Función auxiliar para dibujar paneles
+        const dibujarPanel = (c, isFrontFacing) => {
+            const i = c.idx;
+            const next = c.next;
+            const numCara = c.num;
+            const isHighlighted = (numCara === caraTop || numCara === caraBot);
+            
+            let fill = isFrontFacing ? "rgba(226, 232, 240, 0.4)" : "rgba(241, 245, 249, 0.2)";
+            let stroke = isFrontFacing ? "rgba(100, 116, 139, 0.6)" : "rgba(148, 163, 184, 0.3)";
+            let strokeW = isFrontFacing ? 1.5 : 1;
+            
+            if (isHighlighted) {
+                fill = isFrontFacing ? "rgba(44, 62, 80, 0.95)" : "rgba(52, 152, 219, 0.85)";
+                stroke = isFrontFacing ? "#1a252f" : "#2980b9";
+                strokeW = 2;
+            }
+            
+            const pts = `${vFront[i].x},${vFront[i].y} ${vFront[next].x},${vFront[next].y} ${vBack[next].x},${vBack[next].y} ${vBack[i].x},${vBack[i].y}`;
+            html3d += `<polygon points="${pts}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeW}" stroke-linejoin="round"/>`;
+        };
+        
+        // 3. Dibujar caras TRASERAS
+        for (let c of carasBack) dibujarPanel(c, false);
+        
+        // --- BOBINA: CALCULAR VERTICES ---
+        const selectConexion = document.getElementById('lum-conexion');
+        const valConexion = selectConexion ? selectConexion.value : "0";
+        let vIdx = (caraTop - 1) % numCaras;
+        if (valConexion === "0") {
+            vIdx = (vIdx + 1) % numCaras; // Derecha
+        }
+        let vIdxOp = (vIdx + numCaras / 2) % numCaras;
+        
+        let cvFront1 = vFront[vIdx];
+        let cvBack1 = vBack[vIdx];
+        let cvFront2 = vFront[vIdxOp];
+        let cvBack2 = vBack[vIdxOp];
+        
+        let v1Visible = carasFront.some(c => c.idx === vIdx || c.next === vIdx);
+        let v2Visible = carasFront.some(c => c.idx === vIdxOp || c.next === vIdxOp);
+        
+        // Bobina: Parte Trasera (Siempre tapada por el interior)
+        html3d += `<line x1="${cvBack1.x}" y1="${cvBack1.y}" x2="${cvBack2.x}" y2="${cvBack2.y}" stroke="#d35400" stroke-width="3.5" stroke-linecap="round"/>`;
+        html3d += `<line x1="${cvBack1.x}" y1="${cvBack1.y}" x2="${cvBack2.x}" y2="${cvBack2.y}" stroke="#f39c12" stroke-width="1.5" stroke-linecap="round"/>`;
+        
+        // Bobina: Lados longitudinales (invisibles)
+        if (!v1Visible) {
+            html3d += `<line x1="${cvFront1.x}" y1="${cvFront1.y}" x2="${cvBack1.x}" y2="${cvBack1.y}" stroke="#d35400" stroke-width="3.5" stroke-linecap="round"/>`;
+            html3d += `<line x1="${cvFront1.x}" y1="${cvFront1.y}" x2="${cvBack1.x}" y2="${cvBack1.y}" stroke="#f39c12" stroke-width="1.5" stroke-linecap="round"/>`;
+        }
+        if (!v2Visible) {
+            html3d += `<line x1="${cvFront2.x}" y1="${cvFront2.y}" x2="${cvBack2.x}" y2="${cvBack2.y}" stroke="#d35400" stroke-width="3.5" stroke-linecap="round"/>`;
+            html3d += `<line x1="${cvFront2.x}" y1="${cvFront2.y}" x2="${cvBack2.x}" y2="${cvBack2.y}" stroke="#f39c12" stroke-width="1.5" stroke-linecap="round"/>`;
+        }
+        
+        // 4. Hexágono frontal (Rotor detallado)
+        const Wp = EstadoDiseno.anchoPanel || 50;
+        const Ws = EstadoDiseno.anchoRanura_mm || 5;
+        const Ds = EstadoDiseno.altoRanura_mm || 4;
+        let angP = EstadoDiseno.anguloPanel;
+        let angS = EstadoDiseno.anguloRanura;
+        if (!angP || !angS) {
+            const WpTotal = Wp + (2 * (EstadoDiseno.margenMarco_mm || 3));
+            const sumaAnchuras = WpTotal + Ws;
+            const anguloTotalRadianes = (2 * Math.PI) / numCaras;
+            angP = anguloTotalRadianes * (WpTotal / sumaAnchuras);
+            angS = anguloTotalRadianes * (Ws / sumaAnchuras);
+        }
+
+        const radioCircunscrito = EstadoDiseno.radioCircunscrito || 25;
+        const escalaPx = R / radioCircunscrito;
+        const profPx = Ds * escalaPx;
+        const RfondoPx = Math.max( R * 0.35, R - profPx );
+        const tipoRanura = document.getElementById('ranura-tipo')?.value || 'rect';
+
+        const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--svg-stroke-color').trim() || "#333";
+        const colorImpresion3D = getComputedStyle(document.documentElement).getPropertyValue('--svg-panel-color').trim() || "#fdebd0";
+
+        let dRotor = "";
+        
+        for (let i = 0; i < numCaras; i++) {
+            const angCenter = (i * 2 * Math.PI / numCaras) - Math.PI / 2 + giroRad;
+            const theta1 = angCenter - (angP / 2);
+            const theta2 = angCenter + (angP / 2);
+            const theta3 = theta2 + angS;
+
+            const p1x = cx3d + R * Math.cos(theta1); const p1y = cy3d + R * Math.sin(theta1);
+            const p2x = cx3d + R * Math.cos(theta2); const p2y = cy3d + R * Math.sin(theta2);
+            const p3x = cx3d + R * Math.cos(theta3); const p3y = cy3d + R * Math.sin(theta3);
+
+            if (i === 0) dRotor += `M ${p1x} ${p1y} `;
+            else dRotor += `L ${p1x} ${p1y} `;
+            dRotor += `L ${p2x} ${p2y} `;
+
+            if (tipoRanura === 'trapecio') {
+                const s1x = cx3d + RfondoPx * Math.cos(theta2); const s1y = cy3d + RfondoPx * Math.sin(theta2);
+                const s2x = cx3d + RfondoPx * Math.cos(theta3); const s2y = cy3d + RfondoPx * Math.sin(theta3);
+                dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
+            } else {
+                const thetaBisectriz = (theta2 + theta3) / 2;
+                const dirX = Math.cos(thetaBisectriz); const dirY = Math.sin(thetaBisectriz);
+                const s1x = p2x - dirX * profPx; const s1y = p2y - dirY * profPx;
+                const s2x = p3x - dirX * profPx; const s2y = p3y - dirY * profPx;
+                dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
+            }
+        }
+        dRotor += "Z";
+        
+        html3d += `<path d="${dRotor}" fill="${colorImpresion3D}" stroke="${strokeColor}" stroke-width="1.5" opacity="0.95"/>`;
+
+        // Placas solares frontales
+        const WpTotal_p = Wp + (2 * (EstadoDiseno.margenMarco_mm || 3));
+        const proporcionPlaca = WpTotal_p > 0 ? (Wp / WpTotal_p) : 1;
+        const angPlacaReal = angP * proporcionPlaca;
+
+        for (let i = 0; i < numCaras; i++) {
+            const angCenter = (i * 2 * Math.PI / numCaras) - Math.PI / 2 + giroRad;
+            const theta1 = angCenter - (angPlacaReal / 2);
+            const theta2 = angCenter + (angPlacaReal / 2);
+
+            const p1x = cx3d + R * Math.cos(theta1);
+            const p1y = cy3d + R * Math.sin(theta1);
+            const p2x = cx3d + R * Math.cos(theta2);
+            const p2y = cy3d + R * Math.sin(theta2);
+
+            html3d += `<line x1="${p1x}" y1="${p1y}" x2="${p2x}" y2="${p2y}" stroke="#2c3e50" stroke-width="2.5" stroke-linecap="round"/>`;
+        }
+        
+        // 5. Dibujar caras FRONTALES
+        for (let c of carasFront) dibujarPanel(c, true);
+        
+        // Bobina: Lados longitudinales (visibles)
+        if (v1Visible) {
+            html3d += `<line x1="${cvFront1.x}" y1="${cvFront1.y}" x2="${cvBack1.x}" y2="${cvBack1.y}" stroke="#d35400" stroke-width="3.5" stroke-linecap="round"/>`;
+            html3d += `<line x1="${cvFront1.x}" y1="${cvFront1.y}" x2="${cvBack1.x}" y2="${cvBack1.y}" stroke="#f39c12" stroke-width="1.5" stroke-linecap="round"/>`;
+        }
+        if (v2Visible) {
+            html3d += `<line x1="${cvFront2.x}" y1="${cvFront2.y}" x2="${cvBack2.x}" y2="${cvBack2.y}" stroke="#d35400" stroke-width="3.5" stroke-linecap="round"/>`;
+            html3d += `<line x1="${cvFront2.x}" y1="${cvFront2.y}" x2="${cvBack2.x}" y2="${cvBack2.y}" stroke="#f39c12" stroke-width="1.5" stroke-linecap="round"/>`;
+        }
+        
+        // Bobina: Parte Delantera (Siempre por delante del frontal)
+        html3d += `<line x1="${cvFront1.x}" y1="${cvFront1.y}" x2="${cvFront2.x}" y2="${cvFront2.y}" stroke="#d35400" stroke-width="3.5" stroke-linecap="round"/>`;
+        html3d += `<line x1="${cvFront1.x}" y1="${cvFront1.y}" x2="${cvFront2.x}" y2="${cvFront2.y}" stroke="#f39c12" stroke-width="1.5" stroke-linecap="round"/>`;
+        
+        // 6. Eje central (parte delantera y agujero a escala)
+        html3d += `<line x1="${axisFrontX}" y1="${axisFrontY}" x2="${cx3d}" y2="${cy3d}" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>`;
+        const diametroEje_mm = EstadoDiseno?.diametroEje || 8;
+        const rEjePx = (diametroEje_mm / 2) * escalaPx;
+        html3d += `<circle cx="${cx3d}" cy="${cy3d}" r="${rEjePx}" fill="#fff" stroke="${strokeColor}" stroke-width="1"/>`;
+        
+        // 7. Textos indicadores alrededor de la cara frontal
+        for (let i = 0; i < numCaras; i++) {
+            const numCara = i + 1;
+            const isHighlighted = (numCara === caraTop || numCara === caraBot);
+            
+            // Ángulo medio de la cara i
+            let angMid = offsetAng + (i + 0.5) * (2 * Math.PI / numCaras);
+            let textX = cx3d + (R + 15) * Math.cos(angMid);
+            let textY = cy3d + (R + 15) * Math.sin(angMid);
+            
+            let textColor = isHighlighted ? "#d35400" : "#64748b";
+            let weight = isHighlighted ? "bold" : "normal";
+            
+            html3d += `<text x="${textX}" y="${textY + 4}" fill="${textColor}" font-size="12" font-weight="${weight}" text-anchor="middle">C${numCara}</text>`;
+        }
+        
+        // 8. Flecha de dirección de corriente (Demostración de la Conmutación)
+        // La cara activa es la que está más cerca de la luz
+        // Ángulo de la cara seleccionada (caraTop) respecto al cenit
+        const idxPar = caraTop - 1;
+        const anguloCaraSeleccionada = giroRad + idxPar * (2 * Math.PI / numCaras);
+        const cosCara = Math.cos(anguloCaraSeleccionada - luzRad);
+        const currentMagnitude = Math.abs(cosCara);
+        
+        // Solo dibujar si hay corriente significativa
+        if (currentMagnitude > 0.05) {
+            // Por defecto asume que caraTop es activa
+            let arrowStart = cvFront1;
+            let arrowEnd = cvFront2;
+            
+            // Si la cara opuesta recibe la luz (cosCara negativo), la corriente se invierte
+            if (cosCara < 0) {
+                arrowStart = cvFront2;
+                arrowEnd = cvFront1;
+            }
+            
+            let midX = (arrowStart.x + arrowEnd.x) / 2;
+            let midY = (arrowStart.y + arrowEnd.y) / 2;
+            let vecX = arrowEnd.x - arrowStart.x;
+            let vecY = arrowEnd.y - arrowStart.y;
+            let lenA = Math.sqrt(vecX*vecX + vecY*vecY) || 1;
+            let uxA = vecX / lenA;
+            let uyA = vecY / lenA;
+            
+            // Tamaño dinámico basado en la cantidad de luz (tamaño base 3 + multiplicador 13)
+            let aSize = 3 + 13 * currentMagnitude;
+            let aOpac = 0.2 + 0.8 * currentMagnitude;
+            
+            let p1A = { x: midX + uxA * aSize, y: midY + uyA * aSize };
+            let p2A = { x: midX - uxA * aSize - uyA * aSize*0.7, y: midY - uyA * aSize + uxA * aSize*0.7 };
+            let p3A = { x: midX - uxA * aSize + uyA * aSize*0.7, y: midY - uyA * aSize - uxA * aSize*0.7 };
+            
+            html3d += `<polygon points="${p1A.x},${p1A.y} ${p2A.x},${p2A.y} ${p3A.x},${p3A.y}" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5" stroke-linejoin="round" opacity="${aOpac}"/>`;
+        }
+        
+        svg3d.innerHTML = html3d;
+    }
+    
+    // --- ESQUEMA ELECTRICO ---
+    
+    // Dimensiones
+    const cx = 150;
+    const pw = 120; // Panel width
+    const ph = 25;  // Panel height
+    
+    // Top panel pos
+    const ty = 40;
+    // Bottom panel pos
+    const by = 260;
+    
+    // Nodos
+    const jxL = 60;  // Junction X left
+    const jxR = 240; // Junction X right
+    const jy = 150;  // Junction Y center
+    
+    let html = '';
+    
+    // Backgrounds for panels
+    html += `<rect x="${cx - pw/2}" y="${ty - ph/2}" width="${pw}" height="${ph}" fill="#2c3e50" rx="4"/>`;
+    html += `<text x="${cx}" y="${ty + 4}" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">C${caraTop}</text>`;
+    
+    html += `<rect x="${cx - pw/2}" y="${by - ph/2}" width="${pw}" height="${ph}" fill="#2c3e50" rx="4"/>`;
+    html += `<text x="${cx}" y="${by + 4}" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">C${caraBot}</text>`;
+    
+    // Terminals on Top Panel
+    // Left (Positive - Red)
+    const tLx = cx - pw/2;
+    html += `<circle cx="${tLx}" cy="${ty}" r="4" fill="#e74c3c"/>`;
+    html += `<text x="${tLx - 14}" y="${ty - 8}" fill="#e74c3c" font-size="16" font-weight="bold" text-anchor="middle">+</text>`;
+    // Right (Negative - Black)
+    const tRx = cx + pw/2;
+    html += `<circle cx="${tRx}" cy="${ty}" r="4" fill="#34495e"/>`;
+    html += `<text x="${tRx + 14}" y="${ty - 8}" fill="#34495e" font-size="18" font-weight="bold" text-anchor="middle">-</text>`;
+    
+    // Terminals on Bottom Panel (Rotated 180 deg -> Left is Negative, Right is Positive)
+    // Left (Negative - Black)
+    const bLx = cx - pw/2;
+    html += `<circle cx="${bLx}" cy="${by}" r="4" fill="#34495e"/>`;
+    html += `<text x="${bLx - 14}" y="${by + 16}" fill="#34495e" font-size="18" font-weight="bold" text-anchor="middle">-</text>`;
+    // Right (Positive - Red)
+    const bRx = cx + pw/2;
+    html += `<circle cx="${bRx}" cy="${by}" r="4" fill="#e74c3c"/>`;
+    html += `<text x="${bRx + 14}" y="${by + 16}" fill="#e74c3c" font-size="16" font-weight="bold" text-anchor="middle">+</text>`;
+    
+    // Wires Top
+    // Top Left (Red) to Junction Left
+    html += `<path d="M ${tLx} ${ty} L ${jxL} ${ty} L ${jxL} ${jy}" stroke="#e74c3c" stroke-width="3" fill="none" stroke-linejoin="round"/>`;
+    // Top Right (Black) to Junction Right
+    html += `<path d="M ${tRx} ${ty} L ${jxR} ${ty} L ${jxR} ${jy}" stroke="#34495e" stroke-width="3" fill="none" stroke-linejoin="round"/>`;
+    
+    // Wires Bottom
+    // Bottom Left (Black) to Junction Left
+    html += `<path d="M ${bLx} ${by} L ${jxL} ${by} L ${jxL} ${jy}" stroke="#34495e" stroke-width="3" fill="none" stroke-linejoin="round"/>`;
+    // Bottom Right (Red) to Junction Right
+    html += `<path d="M ${bRx} ${by} L ${jxR} ${by} L ${jxR} ${jy}" stroke="#e74c3c" stroke-width="3" fill="none" stroke-linejoin="round"/>`;
+    
+    // Junction Dots
+    html += `<circle cx="${jxL}" cy="${jy}" r="5" fill="#7f8c8d"/>`;
+    html += `<circle cx="${jxR}" cy="${jy}" r="5" fill="#7f8c8d"/>`;
+    
+    // Coil between junctions
+    html += `<line x1="${jxL}" y1="${jy}" x2="${cx - 40}" y2="${jy}" stroke="#d35400" stroke-width="3"/>`;
+    html += `<line x1="${jxR}" y1="${jy}" x2="${cx + 40}" y2="${jy}" stroke="#d35400" stroke-width="3"/>`;
+    
+    // Draw Coil symbol (a zigzag or loops)
+    let coilPath = `M ${cx - 40} ${jy}`;
+    for (let i = 0; i < 4; i++) {
+        let lx = (cx - 40) + i * 20;
+        coilPath += ` C ${lx + 5} ${jy - 15}, ${lx + 15} ${jy - 15}, ${lx + 20} ${jy}`;
+    }
+    html += `<path d="${coilPath}" stroke="#d35400" stroke-width="3" fill="none"/>`;
+    // Flechas dinámicas de corriente para el esquema 2D
+    const anguloLuz2D = document.getElementById('lum-angulo-luz') ? parseFloat(document.getElementById('lum-angulo-luz').value) : 0;
+    const luzRad2D = anguloLuz2D * Math.PI / 180;
+    const giroGlobal2D = document.getElementById('anim-giro-step8') ? parseFloat(document.getElementById('anim-giro-step8').value) : 0;
+    const giroRad2D = giroGlobal2D * Math.PI / 180;
+    const idxPar2D = caraTop - 1;
+    const angCara2D = giroRad2D + idxPar2D * (2 * Math.PI / numCaras);
+    const cosCara2D = Math.cos(angCara2D - luzRad2D);
+    const currentMag2D = Math.abs(cosCara2D);
+    
+    if (currentMag2D > 0.05) {
+        let aSize2D = 3 + 13 * currentMag2D;
+        let aOpac2D = 0.2 + 0.8 * currentMag2D;
+        
+        // Función auxiliar para flechas verticales
+        const draw2DArrowVert = (x, y, dirY) => {
+            let py1 = y + dirY * aSize2D;
+            let p1 = { x: x, y: py1 };
+            let p2 = { x: x - aSize2D*0.7, y: y - dirY * aSize2D*0.7 };
+            let p3 = { x: x + aSize2D*0.7, y: y - dirY * aSize2D*0.7 };
+            return `<polygon points="${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5" stroke-linejoin="round" opacity="${aOpac2D}"/>`;
+        };
+        
+        // Función auxiliar para flechas horizontales
+        const draw2DArrowHoriz = (x, y, dirX) => {
+            let px1 = x + dirX * aSize2D;
+            let p1 = { x: px1, y: y };
+            let p2 = { x: x - dirX * aSize2D*0.7, y: y - aSize2D*0.7 };
+            let p3 = { x: x - dirX * aSize2D*0.7, y: y + aSize2D*0.7 };
+            return `<polygon points="${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5" stroke-linejoin="round" opacity="${aOpac2D}"/>`;
+        };
+        
+        if (cosCara2D > 0) {
+            // Cara superior activa (iluminada)
+            // Flecha en cable izquierdo (baja de C_top a bobina)
+            html += draw2DArrowVert(jxL, ty + (jy - ty)/2, 1);
+            // Flecha en cable derecho (sube de bobina a C_top)
+            html += draw2DArrowVert(jxR, ty + (jy - ty)/2, -1);
+            
+            // Flechas horizontales (corriente va de Izquierda a Derecha)
+            html += draw2DArrowHoriz(jxL + 25, jy, 1);
+            html += draw2DArrowHoriz(jxR - 25, jy, 1);
+        } else {
+            // Cara inferior activa (iluminada)
+            // Flecha en cable izquierdo (baja de bobina a C_bot)
+            html += draw2DArrowVert(jxL, by - (by - jy)/2, 1);
+            // Flecha en cable derecho (sube de C_bot a bobina)
+            html += draw2DArrowVert(jxR, by - (by - jy)/2, -1);
+            
+            // Flechas horizontales (corriente va de Derecha a Izquierda)
+            html += draw2DArrowHoriz(jxR - 25, jy, -1);
+            html += draw2DArrowHoriz(jxL + 25, jy, -1);
+        }
+    }
+    
+    html += `<text x="${cx}" y="${jy + 35}" fill="#d35400" font-size="12" font-weight="bold" text-anchor="middle">BOBINA C${caraTop}-C${caraBot}</text>`;
+    
+    svg.innerHTML = html;
+}
+
+// ==========================================
+// ==========================================
+// ====== PASO 9: EQUILIBRADO DE MASAS ======
+// ==========================================
+
+function generarInputsEquilibrado() {
+    const carasInput = document.getElementById('caras');
+    const numCaras = (carasInput ? parseInt(carasInput.value) : EstadoDiseno.numeroCaras) || 4;
+    const contenedor = document.getElementById('contenedor-masas-caras');
+    
+    const elInfo = document.getElementById('info-peso-espira');
+    if (elInfo) {
+        const diam = parseFloat(EstadoDiseno.diametroHilo_mm) || 0;
+        const lon = parseFloat(EstadoDiseno.longitudEspira_m) || 0;
+        if (diam > 0 && lon > 0) {
+            const r_cm = diam / 20;
+            const vol = Math.PI * r_cm * r_cm * (lon * 100);
+            const masaGr = vol * 8.96; // Densidad del cobre en g/cm3
+            elInfo.innerHTML = `💡 <strong>Referencia: Espira = ${masaGr.toFixed(3)} g | Media espira = ${(masaGr/2).toFixed(3)} g</strong><br>Aunque una espira entera añade masa simétricamente a caras opuestas (no desequilibra), <strong>una media vuelta de hilo adicional sí genera desequilibrio real</strong> (ej: cuando los cables de conexión quedan en lados opuestos del eje).`;
+        } else {
+            elInfo.innerHTML = `💡 <strong>Referencia:</strong> Debes configurar los Devanados (Paso 3) para conocer el peso de una espira.`;
+        }
+    }
+
+    if (!contenedor) return;
+    
+    // Solo regenerar los inputs si el número de caras ha cambiado (ahora guardamos 2 caras por fila)
+    if (contenedor.children.length === numCaras / 2) return;
+    
+    contenedor.innerHTML = '';
+    
+    const numPares = numCaras / 2;
+    for (let j = 1; j <= numPares; j++) {
+        // Cara actual
+        const i1 = j;
+        // Cara opuesta
+        const i2 = j + numPares;
+        
+        const carasAAgregar = [i1, i2];
+        
+        const rowDiv = document.createElement('div');
+        rowDiv.style.display = 'flex';
+        rowDiv.style.width = '100%';
+        rowDiv.style.gap = '10px';
+        rowDiv.style.marginBottom = '6px';
+        
+        carasAAgregar.forEach(i => {
+            let angulo = ((360 / numCaras) * (i - 1)).toFixed(0);
+            
+            const div = document.createElement('div');
+            div.style.flex = '1';
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
+            div.style.justifyContent = 'space-between';
+            div.style.padding = '6px 10px';
+            div.style.backgroundColor = '#f8fafc';
+            div.style.border = '1px solid #e2e8f0';
+            div.style.borderRadius = '6px';
+            div.style.boxSizing = 'border-box';
+            
+            div.innerHTML = `
+                <label style="margin: 0; font-size: 13px; font-weight: 500; color: #475569; white-space: nowrap;">C${i} (${angulo}°)</label>
+                <input type="number" id="masa-c${i}" value="0" step="0.1" oninput="calcularEquilibradoMasas()" style="width: 60px; min-width: 60px; margin: 0; padding: 4px; text-align: right; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+            `;
+            rowDiv.appendChild(div);
+        });
+        contenedor.appendChild(rowDiv);
+    }
+}
+
+function calcularEquilibradoMasas() {
+    const carasInput = document.getElementById('caras');
+    const numCaras = (carasInput ? parseInt(carasInput.value) : EstadoDiseno.numeroCaras) || 4;
+    EstadoDiseno.numeroCaras = numCaras;
+    
+    generarInputsEquilibrado(); // Asegurar que los inputs existan
+    
+    const R = (EstadoDiseno.diametroRotor || 20) / 2000; // metros. Fallback a 10mm (0.01m)
+    
+    let M = 0; // Masa total extra en kg
+    let Xcm = 0;
+    let Ycm = 0;
+    
+    for (let i = 1; i <= numCaras; i++) {
+        const input = document.getElementById(`masa-c${i}`);
+        const masaKg = parseFloat(input?.value || 0) / 1000;
+        
+        if (masaKg > 0) {
+            M += masaKg;
+            const rad_fisica = ((360 / numCaras) * (i - 1)) * Math.PI / 180;
+            // Coordenadas para cálculo físico (C1 en 0° real)
+            Xcm += masaKg * R * Math.cos(rad_fisica);
+            Ycm += masaKg * R * Math.sin(rad_fisica);
+        }
+    }
+    
+    let Rcm = 0, theta_cm = 0;
+    if (M > 0) {
+        Xcm = Xcm / M;
+        Ycm = Ycm / M;
+        Rcm = Math.sqrt(Xcm*Xcm + Ycm*Ycm);
+        
+        // Tolerancia para errores de punto flotante
+        if (Rcm < 1e-9) {
+            Rcm = 0;
+            Xcm = 0;
+            Ycm = 0;
+        }
+        
+        theta_cm = Math.atan2(Ycm, Xcm);
+    }
+    
+    EstadoDiseno.masaExtra_kg = M;
+    EstadoDiseno.Rcm_m = Rcm;
+    EstadoDiseno.theta_cm_rad = theta_cm;
+    
+    const masaGramos = M * 1000;
+    document.getElementById('res-masa-neta').textContent = masaGramos.toFixed(2) + ' g';
+    document.getElementById('res-masa-distancia').textContent = (Rcm * 1000).toFixed(2) + ' mm';
+    document.getElementById('res-masa-angulo').textContent = (theta_cm * 180 / Math.PI).toFixed(0) + '°';
+    
+    // Dibujar SVG Rotor Equilibrado superponiendo sobre el rotor azul original
+    const svgRotor = document.getElementById('rotor-equilibrado-svg');
+    if (svgRotor) {
+        // Forzar dibujo limpio del rotor azul
+        if (typeof window.dibujarRotorSVG === 'function') {
+            window.dibujarRotorSVG(); 
+        }
+        
+        let svgHtml = svgRotor.innerHTML; // Conservar el rotor azul
+        const radioSVG = 90; // Mismo radio que usar dibujarRotorSVG
+        
+        // Ejes
+        svgHtml += `<line x1="-10" y1="100" x2="210" y2="100" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2"/>`;
+        svgHtml += `<line x1="100" y1="-10" x2="100" y2="210" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2"/>`;
+        
+        // Caras y Masas
+        for (let i = 1; i <= numCaras; i++) {
+            let rad = ((360 / numCaras) * (i - 1)) * Math.PI / 180 - (Math.PI / 2);
+            let cx = 100 + radioSVG * Math.cos(rad);
+            let cy = 100 + radioSVG * Math.sin(rad); // En SVG, y crece hacia abajo
+            
+            // Texto Cara (Dibujado en el interior para no salirse del viewBox 0 0 200 200)
+            let tx = 100 + (radioSVG - 25) * Math.cos(rad);
+            let ty = 100 + (radioSVG - 25) * Math.sin(rad) + 4;
+            svgHtml += `<text x="${tx}" y="${ty}" font-size="12" fill="#1e3a8a" opacity="0.6" text-anchor="middle" font-weight="bold">C${i}</text>`;
+            
+            // Masa si > 0
+            const input = document.getElementById(`masa-c${i}`);
+            const masaKg = parseFloat(input?.value || 0) / 1000;
+            if (masaKg > 0) {
+                let rDot = Math.min(12, Math.max(5, masaKg * 1000 * 3));
+                svgHtml += `<circle cx="${cx}" cy="${cy}" r="${rDot}" fill="#ef4444" opacity="0.95" stroke="#fff" stroke-width="2"/>`;
+            }
+        }
+        
+        // Vector CM
+        if (M > 0 && Rcm > 0) {
+            let theta_cm_svg = theta_cm - (Math.PI / 2); // Ajuste visual para que C1 esté arriba
+            let cxm = (Rcm / R) * radioSVG * Math.cos(theta_cm_svg);
+            let cym = (Rcm / R) * radioSVG * Math.sin(theta_cm_svg); 
+            
+            let distSVG = Math.sqrt(cxm*cxm + cym*cym);
+            if (distSVG < 20 && distSVG > 0) {
+                let scale = 20 / distSVG;
+                cxm *= scale;
+                cym *= scale;
+            }
+            
+            let finalX = 100 + cxm;
+            let finalY = 100 + cym;
+            
+            svgHtml += `<line x1="100" y1="100" x2="${finalX}" y2="${finalY}" stroke="#3b82f6" stroke-width="2"/>`;
+            svgHtml += `<circle cx="${finalX}" cy="${finalY}" r="4" fill="#3b82f6"/>`;
+            svgHtml += `<text x="${finalX > 100 ? finalX+8 : finalX-8}" y="${finalY > 100 ? finalY+10 : finalY-5}" font-size="10" font-weight="bold" fill="#2563eb" text-anchor="${finalX > 100 ? 'start' : 'end'}">CM</text>`;
+        }
+        
+        svgRotor.innerHTML = svgHtml;
+    }
+    
+    // Preparar gráfica (0 a 360 grados)
+    const angulos = [];
+    const tau_mag = [];
+    const tau_freno = [];
+    
+    // Asumimos un Par Magnético medio calculado en el Paso 7 o Paso 4
+    let parMedio = EstadoDiseno.par_Nm || 0.0001; 
+    if (parMedio === 0) parMedio = 0.0001;
+    
+    let arranca = true;
+    let anguloAtasco = -1;
+    let maxFreno = 0;
+    
+    const g = 9.81;
+    
+    for (let a = 0; a <= 360; a += 5) {
+        let rad = a * Math.PI / 180;
+        angulos.push(a);
+        
+        // Par magnético (rizado dinámico según número de caras)
+        let polosEfectivos = numCaras;
+        let mag = parMedio * (0.9 + 0.1 * Math.cos(polosEfectivos * rad));
+        tau_mag.push(mag * 1e6); // Micro-Newtons metro (µNm)
+        
+        // Freno gravitatorio: Mg * Rcm * cos(theta_cm + theta)
+        // Cos() porque el freno máximo (positivo) es cuando la masa extra está levantándose por el lado derecho (asumiendo theta=0 es "Cara 1 a la derecha")
+        let freno = M * g * Rcm * Math.cos(theta_cm + rad);
+        tau_freno.push(freno * 1e6);
+        
+        if (freno > maxFreno) maxFreno = freno;
+        
+        if (freno > mag && arranca) {
+            arranca = false;
+            anguloAtasco = a;
+        }
+    }
+    
+    // Actualizar Diagnóstico
+    const diagEl = document.getElementById('diagnostico-equilibrado');
+    if (M === 0) {
+        diagEl.innerHTML = "Rotor perfectamente equilibrado. 🟢";
+        diagEl.style.backgroundColor = "#f0fdf4";
+        diagEl.style.color = "#166534";
+    } else if (arranca) {
+        diagEl.innerHTML = `✅ El motor arrancará (El par magnético vence al desequilibrio de ${masaGramos.toFixed(1)}g).`;
+        diagEl.style.backgroundColor = "#f0fdf4";
+        diagEl.style.color = "#166534";
+    } else {
+        diagEl.innerHTML = `❌ El motor se atascará cerca de ${anguloAtasco}° (El freno gravitatorio supera al motor).`;
+        diagEl.style.backgroundColor = "#fef2f2";
+        diagEl.style.color = "#991b1b";
+    }
+    
+    // Dibujar con Plotly
+    const traceMag = {
+        x: angulos,
+        y: tau_mag,
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Fuerza Motor (µNm)',
+        line: {color: '#10b981', width: 3}
+    };
+    
+    const traceFreno = {
+        x: angulos,
+        y: tau_freno,
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Resistencia Peso (µNm)',
+        line: {color: '#ef4444', width: 2, dash: 'dot'}
+    };
+    
+    const layout = {
+        margin: {t: 20, r: 20, b: 70, l: 50},
+        xaxis: {title: 'Ángulo de Giro (Grados)', range: [0, 360]},
+        yaxis: {title: 'Par (µNm)'},
+        legend: {
+            orientation: 'h', 
+            y: -0.4, 
+            x: 0.5, 
+            xanchor: 'center'
+        },
+        hovermode: 'x unified',
+        height: 280
+    };
+    
+    const div = document.getElementById('grafica-equilibrado');
+    const drawPlot = () => {
+        try {
+            if (!document.getElementById('grafica-equilibrado')) return;
+            Plotly.purge('grafica-equilibrado');
+            Plotly.newPlot('grafica-equilibrado', [traceMag, traceFreno], layout, {responsive: true});
+        } catch (e) {
+            console.error("Plotly error:", e);
+            if (div) div.innerHTML = `<div style="padding:20px; color:red;">Error renderizando gráfica: ${e.message}</div>`;
+        }
+    };
+
+    if (div && div.offsetWidth > 0) {
+        drawPlot();
+    } else {
+        // Fallback robusto con reintentos si el contenedor no está visible
+        let retries = 0;
+        const checkAndDraw = () => {
+            const el = document.getElementById('grafica-equilibrado');
+            if (el && el.offsetWidth > 0) {
+                drawPlot();
+            } else if (retries < 10) {
+                retries++;
+                setTimeout(checkAndDraw, 100);
+            } else {
+                drawPlot(); // Forzar dibujo aunque sea 0x0
+            }
+        };
+        setTimeout(checkAndDraw, 100);
+    }
+}
+
+// Sobrescribimos el paso 8 en cambiarPaso para que llame a esta función si entra
+const originalCambiarPasoEquil = window.cambiarPaso;
+window.cambiarPaso = function(numPaso) {
+    originalCambiarPasoEquil(numPaso);
+    if (numPaso === 8) {
+        setTimeout(() => {
+            generarOpcionesConexionado();
+        }, 100);
+    }
+    if (numPaso === 10) {
+        setTimeout(() => {
+            generarInputsEquilibrado();
+            calcularEquilibradoMasas();
+        }, 100);
+    }
+};
+
+let animacionGlobalId = null;
+let animacionCorriendo = false;
+window.animacionAnguloRotor = 0;
+let lastAnimTime = 0;
+
+window.velocidadAngularSimulada = 0; // en grados/s
+
+function toggleAnimacionGlobal() {
+    animacionCorriendo = !animacionCorriendo;
+    const btns = [document.getElementById('btn-anim-play'), document.getElementById('btn-anim-play-step8'), document.getElementById('btn-anim-play-step9')];
+    
+    // Deslizadores de giro manual
+    const slidersGiro = [document.getElementById('anim-giro'), document.getElementById('lum-giro'), document.getElementById('anim-giro-step8')];
+    
+    if (animacionCorriendo) {
+        btns.forEach(btn => {
+            if (btn) {
+                btn.innerHTML = '🛑 Cortar Corriente (Inercia)';
+                btn.style.background = '#e74c3c';
+            }
+        });
+        slidersGiro.forEach(slider => {
+            if (slider) slider.disabled = true;
+        });
+        
+        if (!animacionGlobalId) {
+            lastAnimTime = performance.now();
+            animacionGlobalId = requestAnimationFrame(bucleAnimacionGlobal);
+        }
+    } else {
+        btns.forEach(btn => {
+            if (btn) {
+                btn.innerHTML = '⚡ Arrancar Motor';
+                btn.style.background = '#2c3e50';
+            }
+        });
+        
+        // No los habilitamos de inmediato para evitar pelear contra la inercia
+        // Se habilitarán cuando se detenga por completo en el bucle
+        
+        // IMPORTANTE: Ya no cancelamos la animación aquí. El bucle se encargará
+        // de decelerar por inercia y auto-cancelarse cuando se detenga del todo.
+        if (!animacionGlobalId) {
+            lastAnimTime = performance.now();
+            animacionGlobalId = requestAnimationFrame(bucleAnimacionGlobal);
+        }
+    }
+}
+
+window.obtenerDireccionGiro = function() {
+    // Si Magpylib ha calculado el par físico 3D, usamos ese como "fuente de verdad absoluta"
+    if (typeof EstadoDiseno !== 'undefined' && EstadoDiseno.par_Nm_X !== undefined && Math.abs(EstadoDiseno.par_Nm_X) > 0.0001) {
+        // En Magpylib, par_Nm_X > 0 es Antihorario (SVG -1), < 0 es Horario (SVG 1)
+        return EstadoDiseno.par_Nm_X >= 0 ? -1 : 1; 
+    }
+    // Fallback determinista inmediato basado en interfaz (mientras el servidor responde)
+    const conexion = document.getElementById('lum-conexion')?.value || '0';
+    const polaridad = parseInt(document.getElementById('iman-polaridad')?.value) || 1;
+    return ((conexion === '-1') ? 1 : -1) * polaridad;
+};
+
+function bucleAnimacionGlobal(time) {
+    const dt = Math.min((time - lastAnimTime) / 1000, 0.1); 
+    lastAnimTime = time;
+    
+    const rpmInput1 = document.getElementById('anim-rpm');
+    const rpmInput2 = document.getElementById('anim-rpm-step8');
+    const rpmObjetivo = parseFloat(rpmInput1 ? rpmInput1.value : (rpmInput2 ? rpmInput2.value : 60)) || 60;
+    
+    const dirGiro = window.obtenerDireccionGiro();
+    const degPerSecObjetivo = rpmObjetivo * 6 * dirGiro;
+    
+    if (typeof window.velocidadAngularSimulada === 'undefined') window.velocidadAngularSimulada = 0;
+    
+    let aceleracion = 0;
+    const M_kg = EstadoDiseno.masaExtra_kg || 0;
+    
+    // Leer factores de fricción del Sandbox
+    const aeroInput = document.getElementById('anim-fis-aero');
+    const friccionAero = aeroInput ? parseFloat(aeroInput.value) : 0.08;
+    
+    const mecInput = document.getElementById('anim-fis-mec');
+    const friccionMec = mecInput ? parseFloat(mecInput.value) : 0.02;
+    
+    // Calcular pérdida por fricción total (aerodinámica proporcional a v, mecánica casi constante pero opuesta al giro)
+    const friccionTotal = (friccionAero * window.velocidadAngularSimulada) + (Math.sign(window.velocidadAngularSimulada) * friccionMec * 100);
+    
+    if (animacionCorriendo) {
+        // Motor impulsado: el error de velocidad genera aceleración, pero la fricción se opone
+        const error = degPerSecObjetivo - window.velocidadAngularSimulada;
+        aceleracion = (error * 5.0) - friccionTotal; 
+    } else {
+        // Motor libre: Solo actúa la fricción y el péndulo gravitatorio
+        aceleracion = -friccionTotal;
+        
+        const Rcm_m = EstadoDiseno.Rcm_m || 0;
+        
+        if (M_kg > 0 && Rcm_m > 0) {
+            const theta_cm_rad = EstadoDiseno.theta_cm_rad || 0;
+            const anguloFisicoCM = (window.animacionAnguloRotor * Math.PI / 180) - (Math.PI / 2) + theta_cm_rad;
+            
+            const g = 9.81;
+            // Torque: máximo cuando está a la derecha o izquierda, 0 cuando está vertical
+            const tau_g = M_kg * g * Rcm_m * Math.cos(anguloFisicoCM);
+            
+            // Inercia baja para asegurar que la masa predomine sobre la fricción
+            const inercia = 0.00001; 
+            const alfa_rad = tau_g / inercia; 
+            const alfa_deg = alfa_rad * 180 / Math.PI;
+            
+            aceleracion += alfa_deg;
+        }
+    }
+    
+    window.velocidadAngularSimulada += aceleracion * dt;
+    window.animacionAnguloRotor = (((window.animacionAnguloRotor + (window.velocidadAngularSimulada * dt)) % 360) + 360) % 360;
+    
+    // Parada final más permisiva para no matar el péndulo
+    if (!animacionCorriendo) {
+        if (M_kg === 0) {
+            if (Math.abs(window.velocidadAngularSimulada) < 0.2) window.velocidadAngularSimulada = 0;
+        } else {
+            // El péndulo solo muere si de verdad ya no tiene fuerza ni velocidad
+            if (Math.abs(window.velocidadAngularSimulada) < 0.5 && Math.abs(aceleracion) < 2.0) {
+                window.velocidadAngularSimulada = 0;
+            }
+        }
+    }
+    
+    window.sincronizarGiroGlobal(Math.round(window.animacionAnguloRotor), true);
+    
+    // Asegurar que el bucle continúe mientras haya movimiento o aceleración
+    if (animacionCorriendo || Math.abs(window.velocidadAngularSimulada) > 0 || Math.abs(aceleracion) > 1.0) {
+        animacionGlobalId = requestAnimationFrame(bucleAnimacionGlobal);
+    } else {
+        animacionGlobalId = null;
+        // Motor completamente detenido (inercia terminada), reactivamos los controles manuales
+        const slidersGiro = [document.getElementById('anim-giro'), document.getElementById('lum-giro'), document.getElementById('anim-giro-step8')];
+        slidersGiro.forEach(slider => {
+            if (slider) slider.disabled = false;
+        });
+    }
+}
+
+function actualizarAnimacionManual() {
+    if (animacionCorriendo) toggleAnimacionGlobal();
+    window.animacionAnguloRotor = parseFloat(document.getElementById('anim-giro').value) || 0;
+    renderizarAnimacionDinamica();
+}
+
+function renderizarAnimacionDinamica() {
+    const svg = document.getElementById('svg-simulacion-dinamica');
+    if (!svg) return;
+    svg.innerHTML = ''; // Limpiar lienzo
+    
+    const cx = 0;
+    const cy = 0;
+    
+    // Leer Parámetros
+    const luz_deg = parseFloat(document.getElementById('anim-luz').value) || 0;
+    const dist_iman = parseFloat(document.getElementById('anim-dist').value) || 15;
+    const factorEscalaFuerza = (parseFloat(document.getElementById('anim-escala-fuerza')?.value) || 10) / 10;
+    const giro = window.animacionAnguloRotor;
+    
+    const animBobEspiras = document.getElementById('anim-bob-espiras-readout');
+    if(animBobEspiras) animBobEspiras.innerText = Math.round(EstadoDiseno?.espirasPorDevanado || 0);
+    
+    const animGeoDiam = document.getElementById('anim-geo-diam-readout');
+    if(animGeoDiam) animGeoDiam.innerText = (EstadoDiseno?.diametroRotor || 0).toFixed(1);
+    
+    const N = EstadoDiseno?.numeroCaras || 4;
+    const R_mm = (EstadoDiseno?.diametroRotor || 50) / 2;
+    // Factor de escala visual: R_mm -> 100px
+    const escala = 100 / R_mm;
+    const radioExterior = R_mm * escala;
+    
+    // --- 1. FONDO Y LUZ (Estilo Paso 4) ---
+    const luz_rad = (luz_deg - 90) * Math.PI / 180;
+    const radioOrbita = 150;
+    const solX = cx + Math.cos(luz_rad) * radioOrbita;
+    const solY = cy + Math.sin(luz_rad) * radioOrbita;
+    
+    // Gradiente para el sol si no existe lo creamos
+    let defs = svg.querySelector('defs');
+    if(!defs){
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        svg.appendChild(defs);
+    }
+    
+    let grad = svg.querySelector('#sunGradientDinamica');
+    if(!grad){
+        grad = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+        grad.setAttribute('id', 'sunGradientDinamica');
+        defs.appendChild(grad);
+    }
+    
+    if (animacionCorriendo) {
+        grad.innerHTML = '<stop offset="0%" stop-color="#fff700"/><stop offset="100%" stop-color="#f39c12"/>';
+    } else {
+        grad.innerHTML = '<stop offset="0%" stop-color="#e2e8f0"/><stop offset="100%" stop-color="#94a3b8"/>';
+    }
+
+    const solGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const sol = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    sol.setAttribute("cx", solX); sol.setAttribute("cy", solY);
+    sol.setAttribute("r", 25); sol.setAttribute("fill", "url(#sunGradientDinamica)");
+    solGroup.appendChild(sol);
+    
+    // Rayos direccionales (paralelos)
+    if (animacionCorriendo) {
+        for(let j=-2; j<=2; j++) {
+            const offsetAng = j * 8; // Separación de rayos en grados
+            const r_ang = (luz_deg - 90 + offsetAng) * Math.PI / 180;
+            const rx_s = cx + (radioOrbita - 5) * Math.cos(r_ang);
+            const ry_s = cy + (radioOrbita - 5) * Math.sin(r_ang);
+            
+            let dirX = -Math.cos(luz_rad);
+            let dirY = -Math.sin(luz_rad);
+            
+            const ray = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            ray.setAttribute('x1', rx_s); ray.setAttribute('y1', ry_s);
+            ray.setAttribute('x2', rx_s + dirX * 40); ray.setAttribute('y2', ry_s + dirY * 40);
+            ray.setAttribute('stroke', '#f39c12');
+            ray.setAttribute('stroke-width', '2');
+            ray.setAttribute('stroke-dasharray', '5,5');
+            ray.setAttribute('opacity', '0.7');
+            solGroup.appendChild(ray);
+        }
+    }
+    svg.appendChild(solGroup);
+
+    // --- 1.5. LÍNEAS DE FLUJO MAGNÉTICO (Estilo Magpylib/Físico) ---
+    let styleDef = svg.querySelector('style#flujoStyle');
+    if (!styleDef) {
+        styleDef = document.createElementNS("http://www.w3.org/2000/svg", "style");
+        styleDef.setAttribute('id', 'flujoStyle');
+        styleDef.textContent = `
+            @keyframes flujoMagneticoAnimPos {
+                to { stroke-dashoffset: -24; }
+            }
+            @keyframes flujoMagneticoAnimNeg {
+                to { stroke-dashoffset: 24; }
+            }
+        `;
+        svg.appendChild(styleDef);
+    }
+
+    const fieldGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    
+    const imanW = 120;
+    const imanH = 24;
+    const yImanTop = radioExterior + (dist_iman * escala);
+    const yImanBot = yImanTop + imanH;
+    const yImanMid = (yImanTop + yImanBot) / 2;
+    
+    const animPolaridad = parseInt(document.getElementById('iman-polaridad')?.value) || 1;
+    const animName = animPolaridad === 1 ? 'flujoMagneticoAnimPos' : 'flujoMagneticoAnimNeg';
+
+    const numLineasLado = 9;
+    for (let i = 1; i <= numLineasLado; i++) {
+        let t = i / numLineasLado;
+        // La distribución exponencial concentra más líneas cerca de los bordes del imán
+        let f = Math.pow(t, 0.7); 
+
+        let x = (imanW / 2) * f;
+        let far = Math.pow(1 - f, 2); 
+
+        // H = Altura a la que sube la curva antes de doblar (las centrales suben más)
+        let H = 15 + 250 * far;
+        // x_out = Anchura máxima del lazo (las centrales llegan más lejos)
+        let x_out = (imanW / 2) + 12 + 150 * far;
+        // H_apex = Curvatura en el ecuador
+        let H_apex = 12 + 150 * far;
+
+        // Opacidad: líneas lejanas (f pequeño) son más tenues
+        let opacidad = (0.15 + 0.4 * f).toFixed(2);
+
+        // Path Lado Derecho
+        // Sale del Norte (Top), curva hasta el ecuador (Mid), entra al Sur (Bot), y cierra por el interior (Top)
+        const pathDer = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        let dDer = `M ${x} ${yImanTop} 
+                    C ${x} ${yImanTop - H}, ${x_out} ${yImanMid - H_apex}, ${x_out} ${yImanMid}
+                    C ${x_out} ${yImanMid + H_apex}, ${x} ${yImanBot + H}, ${x} ${yImanBot}
+                    L ${x} ${yImanTop}`;
+        pathDer.setAttribute("d", dDer);
+        pathDer.setAttribute("fill", "none");
+        pathDer.setAttribute("stroke", "#8e44ad"); // Morado magnético
+        pathDer.setAttribute("stroke-width", "1.5");
+        pathDer.setAttribute("stroke-dasharray", "12, 12");
+        pathDer.setAttribute("opacity", opacidad);
+        if (animacionCorriendo) {
+            pathDer.style.animation = `${animName} 1s linear infinite`;
+        }
+        fieldGroup.appendChild(pathDer);
+
+        // Path Lado Izquierdo
+        const pathIzq = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        let dIzq = `M ${-x} ${yImanTop} 
+                    C ${-x} ${yImanTop - H}, ${-x_out} ${yImanMid - H_apex}, ${-x_out} ${yImanMid}
+                    C ${-x_out} ${yImanMid + H_apex}, ${-x} ${yImanBot + H}, ${-x} ${yImanBot}
+                    L ${-x} ${yImanTop}`;
+        pathIzq.setAttribute("d", dIzq);
+        pathIzq.setAttribute("fill", "none");
+        pathIzq.setAttribute("stroke", "#8e44ad");
+        pathIzq.setAttribute("stroke-width", "1.5");
+        pathIzq.setAttribute("stroke-dasharray", "12, 12");
+        pathIzq.setAttribute("opacity", opacidad);
+        if (animacionCorriendo) {
+            pathIzq.style.animation = `${animName} 1s linear infinite`;
+        }
+        fieldGroup.appendChild(pathIzq);
+    }
+    
+    svg.appendChild(fieldGroup);
+    
+    // --- 2. IMÁN BASE (Estilo Limpio Paso 3) ---
+    const imanWidth = 120;
+    const imanHeight = 24;
+    const hMedio = imanHeight / 2;
+    const y_iman_sup = radioExterior + (dist_iman * escala);
+    
+    const polaridad = parseInt(document.getElementById('iman-polaridad')?.value) || 1;
+    
+    // Parte Superior
+    const colorSup = polaridad === 1 ? '#e74c3c' : '#3498db';
+    const borderSup = polaridad === 1 ? '#c0392b' : '#2980b9';
+    const textSup = polaridad === 1 ? 'N' : 'S';
+    
+    const rectSup = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rectSup.setAttribute('x', -imanWidth/2); rectSup.setAttribute('y', y_iman_sup);
+    rectSup.setAttribute('width', imanWidth); rectSup.setAttribute('height', hMedio);
+    rectSup.setAttribute('fill', colorSup); rectSup.setAttribute('stroke', borderSup);
+    rectSup.setAttribute('stroke-width', '1'); rectSup.setAttribute('rx', '1');
+    svg.appendChild(rectSup);
+
+    const txtSup = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txtSup.setAttribute('x', 0); txtSup.setAttribute('y', y_iman_sup + hMedio - 2);
+    txtSup.setAttribute('font-size', '10'); txtSup.setAttribute('fill', 'white');
+    txtSup.setAttribute('font-weight', 'bold'); txtSup.setAttribute('text-anchor', 'middle');
+    txtSup.textContent = textSup;
+    svg.appendChild(txtSup);
+
+    // Parte Inferior
+    const colorInf = polaridad === 1 ? '#3498db' : '#e74c3c';
+    const borderInf = polaridad === 1 ? '#2980b9' : '#c0392b';
+    const textInf = polaridad === 1 ? 'S' : 'N';
+    
+    const rectInf = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rectInf.setAttribute('x', -imanWidth/2); rectInf.setAttribute('y', y_iman_sup + hMedio);
+    rectInf.setAttribute('width', imanWidth); rectInf.setAttribute('height', hMedio);
+    rectInf.setAttribute('fill', colorInf); rectInf.setAttribute('stroke', borderInf);
+    rectInf.setAttribute('stroke-width', '1'); rectInf.setAttribute('rx', '1');
+    svg.appendChild(rectInf);
+
+    const txtInf = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txtInf.setAttribute('x', 0); txtInf.setAttribute('y', y_iman_sup + imanHeight - 2);
+    txtInf.setAttribute('font-size', '10'); txtInf.setAttribute('fill', 'white');
+    txtInf.setAttribute('font-weight', 'bold'); txtInf.setAttribute('text-anchor', 'middle');
+    txtInf.textContent = textInf;
+    svg.appendChild(txtInf);
+    
+    // --- 3. CÁLCULO DE CORRIENTES ---
+    let effs = [];
+    for(let i=0; i<N; i++) {
+        let anguloPanel = (i * 360 / N) - 90 + giro;
+        let delta = anguloPanel - (luz_deg - 90);
+        delta = ((delta % 360) + 360) % 360;
+        if (delta > 180) delta -= 360;
+        let cosInc = Math.cos(delta * Math.PI / 180);
+        effs.push(Math.max(0, cosInc));
+    }
+    
+    let currents = new Array(N).fill(0);
+    const conexion = document.getElementById('lum-conexion')?.value || '0';
+    const off = parseInt(conexion);
+    
+    if (animacionCorriendo) {
+        for (let i = 0; i < N / 2; i++) {
+            let iOpp = i + (N / 2);
+            let netEff = effs[i] - effs[iOpp];
+            let k = (i + off + N) % N;
+            let kOpp = (k + (N / 2)) % N;
+            currents[k] = netEff;
+            currents[kOpp] = -netEff;
+        }
+    }
+    
+    // --- 4. ROTOR POLIGONAL CON EJE (Estilo Paso 3) ---
+    const Wp = EstadoDiseno.anchoPanel || 50;
+    const Ws = EstadoDiseno.anchoRanura_mm || 5;
+    const Ds = EstadoDiseno.altoRanura_mm || 4;
+    
+    let angP = EstadoDiseno.anguloPanel;
+    let angS = EstadoDiseno.anguloRanura;
+    if (!angP || !angS) {
+        const WpTotal = Wp + (2 * (EstadoDiseno.margenMarco_mm || 3));
+        const sumaAnchuras = WpTotal + Ws;
+        const anguloTotalRadianes = (2 * Math.PI) / N;
+        angP = anguloTotalRadianes * (WpTotal / sumaAnchuras);
+        angS = anguloTotalRadianes * (Ws / sumaAnchuras);
+    }
+
+    const profPx = Ds * escala;
+    const RfondoPx = Math.max( radioExterior * 0.35, radioExterior - profPx );
+    const tipoRanura = document.getElementById('ranura-tipo')?.value || 'rect';
+    let dRotor = "";
+
+    const rotOffset = (giro * Math.PI / 180) - (angP + angS) / 2;
+
+    for (let i = 0; i < N; i++) {
+        const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2) + rotOffset;
+        const theta1 = anguloCentroPanel - (angP / 2);
+        const theta2 = anguloCentroPanel + (angP / 2);
+        const theta3 = theta2 + angS;
+
+        const p1x = radioExterior * Math.cos(theta1); const p1y = radioExterior * Math.sin(theta1);
+        const p2x = radioExterior * Math.cos(theta2); const p2y = radioExterior * Math.sin(theta2);
+        const p3x = radioExterior * Math.cos(theta3); const p3y = radioExterior * Math.sin(theta3);
+
+        if (i === 0) dRotor += `M ${p1x} ${p1y} `;
+        else dRotor += `L ${p1x} ${p1y} `;
+        dRotor += `L ${p2x} ${p2y} `;
+
+        if (tipoRanura === 'trapecio') {
+            const s1x = RfondoPx * Math.cos(theta2); const s1y = RfondoPx * Math.sin(theta2);
+            const s2x = RfondoPx * Math.cos(theta3); const s2y = RfondoPx * Math.sin(theta3);
+            dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
+        } else {
+            const thetaBisectriz = (theta2 + theta3) / 2;
+            const dirX = Math.cos(thetaBisectriz); const dirY = Math.sin(thetaBisectriz);
+            const s1x = p2x - dirX * profPx; const s1y = p2y - dirY * profPx;
+            const s2x = p3x - dirX * profPx; const s2y = p3y - dirY * profPx;
+            dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
+        }
+    }
+    dRotor += "Z";
+
+    // Silueta guía externa discontinua
+    const circuloExt = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circuloExt.setAttribute("cx", 0); circuloExt.setAttribute("cy", 0);
+    circuloExt.setAttribute("r", radioExterior);
+    circuloExt.setAttribute("fill", "none"); circuloExt.setAttribute("stroke", "#ccc");
+    circuloExt.setAttribute("stroke-dasharray", "3");
+    svg.appendChild(circuloExt);
+
+    const pathRotor = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    pathRotor.setAttribute("d", dRotor);
+    pathRotor.setAttribute("fill", "#ecf0f1");
+    pathRotor.setAttribute("stroke", "#bdc3c7");
+    pathRotor.setAttribute("stroke-width", "3");
+    svg.appendChild(pathRotor);
+
+    // Eje central
+    const ejeCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    ejeCircle.setAttribute("cx", 0); ejeCircle.setAttribute("cy", 0);
+    ejeCircle.setAttribute("r", radioExterior * 0.15);
+    ejeCircle.setAttribute("fill", "#fff");
+    ejeCircle.setAttribute("stroke", "#95a5a6");
+    ejeCircle.setAttribute("stroke-width", "2");
+    svg.appendChild(ejeCircle);
+    
+    // --- 5. DEVANADOS Y FUERZAS ---
+    let parNeto = 0;
+    let fVerticalTotal = 0; // Fuerza radial neta (cabeceo / levitación)
+    let fHorizontalTotal = 0; // Fuerza lateral neta (empuje horizontal en el eje)
+    const I_max = (EstadoDiseno?.intensidadPanel_mA || 300) / 1000;
+    const L_m = EstadoDiseno?.longitudActiva_m || 0.05;
+    const numEspiras = EstadoDiseno?.espirasPorDevanado || 50;
+    const B_campo_base = EstadoDiseno?.campoB_T || 0.18;
+    
+    const maxDevanadoR = (radioExterior - RfondoPx) / 2;
+    const devanadoR = Math.max(3, Math.min(8, maxDevanadoR));
+    
+    for(let i=0; i<N; i++) {
+        // La ranura i está centrada en la muesca
+        const aRanura = i * (angP + angS) + rotOffset + (angP + angS) / 2 - (Math.PI / 2);
+        const sx = (RfondoPx + devanadoR) * Math.cos(aRanura);
+        const sy = (RfondoPx + devanadoR) * Math.sin(aRanura);
+        
+        const I_inst = currents[i] || 0;
+        
+        // Dibujar ranura activa
+        const devCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        devCircle.setAttribute('cx', sx); devCircle.setAttribute('cy', sy);
+        devCircle.setAttribute('r', devanadoR);
+        
+        let colorFondo = '#7f8c8d'; // Gris/cobre inactivo por defecto
+        if (I_inst > 0.01) colorFondo = '#e74c3c'; // Rojo (entra)
+        else if (I_inst < -0.01) colorFondo = '#2980b9'; // Azul (sale)
+        
+        devCircle.setAttribute('fill', colorFondo); 
+        devCircle.setAttribute('stroke', '#d35400');
+        svg.appendChild(devCircle);
+        
+        // Símbolo Corriente (⊗ o ⊙)
+        const csz = Math.max(2, devanadoR * 0.4);
+        if (I_inst > 0.01) { // Entra (X)
+            const l1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            l1.setAttribute('x1', sx - csz); l1.setAttribute('y1', sy - csz);
+            l1.setAttribute('x2', sx + csz); l1.setAttribute('y2', sy + csz);
+            l1.setAttribute('stroke', '#fff'); l1.setAttribute('stroke-width', '1.2');
+            svg.appendChild(l1);
+            const l2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            l2.setAttribute('x1', sx + csz); l2.setAttribute('y1', sy - csz);
+            l2.setAttribute('x2', sx - csz); l2.setAttribute('y2', sy + csz);
+            l2.setAttribute('stroke', '#fff'); l2.setAttribute('stroke-width', '1.2');
+            svg.appendChild(l2);
+        } else if (I_inst < -0.01) { // Sale (dot)
+            const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            dot.setAttribute('cx', sx); dot.setAttribute('cy', sy);
+            dot.setAttribute('r', csz * 0.7);
+            dot.setAttribute('fill', 'none');
+            dot.setAttribute('stroke', '#fff'); dot.setAttribute('stroke-width', '1.2');
+            svg.appendChild(dot);
+            const dotFill = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            dotFill.setAttribute('cx', sx); dotFill.setAttribute('cy', sy);
+            dotFill.setAttribute('r', 1.5);
+            dotFill.setAttribute('fill', '#fff');
+            svg.appendChild(dotFill);
+        }
+        
+        // --- FUERZAS DE LORENTZ EN TODAS LAS ESPIRAS INFERIORES ---
+        if (Math.abs(I_inst) > 0.01) {
+            const dist_real_mm = ((y_iman_sup - sy) / escala);
+            
+            if(sy > 0) { // Sólo consideramos fuerzas si la ranura está en la mitad inferior (cerca del imán)
+                // Distancia horizontal al centro del imán
+                const distHorizontal = Math.abs(sx);
+                // Amortiguación B_efectivo como en Paso 3
+                const damping_lateral = Math.exp(-Math.pow(distHorizontal / (imanWidth * 0.8), 2));
+                const pol = parseInt(document.getElementById('iman-polaridad')?.value) || 1;
+                const B_efectivo = pol * B_campo_base * Math.pow(10 / Math.max(5, dist_real_mm), 2) * damping_lateral;
+                
+                const F_local = I_inst * L_m * numEspiras * B_efectivo;
+                
+                if (Math.abs(F_local) > 0.0001) {
+                    // UNIFICACIÓN: Forzamos la dirección de la fuerza para que el torque visual
+                    // siempre cuadre exactamente con la "fuente de verdad" (Magpylib).
+                    const giroGlobal = window.obtenerDireccionGiro();
+                    // FÍSICA ESTRICTA MAGPYLIB: 
+                    // Si el giro es Antihorario (-1), el vector inferior debe empujar a la DERECHA (+1)
+                    // Si el giro es Horario (+1), el vector inferior debe empujar a la IZQUIERDA (-1)
+                    const dirF = -giroGlobal; 
+                    // El par local no lo necesitamos pintar más como arco, 
+                    // pero lo calculamos para el registro o variables
+                    const magnitudPar = Math.abs(F_local * (radioExterior/escala)/1000);
+                    const parLocal = (giroGlobal === 1) ? magnitudPar : -magnitudPar; 
+                    parNeto += parLocal;
+                    
+                    const F_px = Math.abs(F_local) * 8000 * factorEscalaFuerza;
+                    
+                    // Componente horizontal (tangencial / empuje X visual) - dibujada en verde oscuro
+                    if (F_px > 1) {
+                        const len = Math.min(100, F_px);
+                        const endX = sx + (dirF > 0 ? len : -len);
+                        
+                        const arr = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        arr.setAttribute("x1", sx); arr.setAttribute("y1", sy);
+                        arr.setAttribute("x2", endX); arr.setAttribute("y2", sy);
+                        arr.setAttribute("stroke", "#27ae60"); 
+                        arr.setAttribute("stroke-width", "2");
+                        arr.setAttribute("stroke-dasharray", "3,2");
+                        svg.appendChild(arr);
+                        
+                        const head = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                        if(dirF > 0) head.setAttribute("points", `${endX},${sy} ${endX-6},${sy-4} ${endX-6},${sy+4}`);
+                        else head.setAttribute("points", `${endX},${sy} ${endX+6},${sy-4} ${endX+6},${sy+4}`);
+                        head.setAttribute("fill", "#27ae60");
+                        svg.appendChild(head);
+                    }
+                    
+                    // F_vertical local (Cabeceo Y visual)
+                    // Esta fuerza tiende a separar o atraer el rotor del imán
+                    const F_vertical_local = - Math.abs(I_inst) * (sx - cx) * 0.5 * (Math.abs(F_local) * 2000) * factorEscalaFuerza * pol;
+                    
+                    const FV_px = Math.abs(F_vertical_local) * 2;
+                    if (FV_px > 1) {
+                        const lenV = Math.min(80, FV_px);
+                        const dirFV = F_vertical_local > 0 ? 1 : -1; // >0 significa hacia abajo en SVG
+                        const endY = sy + (dirFV > 0 ? lenV : -lenV);
+                        
+                        const arrV = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        arrV.setAttribute("x1", sx); arrV.setAttribute("y1", sy);
+                        arrV.setAttribute("x2", sx); arrV.setAttribute("y2", endY);
+                        arrV.setAttribute("stroke", "#d35400"); 
+                        arrV.setAttribute("stroke-width", "2");
+                        arrV.setAttribute("stroke-dasharray", "3,2");
+                        svg.appendChild(arrV);
+                        
+                        const headV = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                        if(dirFV > 0) headV.setAttribute("points", `${sx},${endY} ${sx-4},${endY-6} ${sx+4},${endY-6}`);
+                        else headV.setAttribute("points", `${sx},${endY} ${sx-4},${endY+6} ${sx+4},${endY+6}`);
+                        headV.setAttribute("fill", "#d35400");
+                        svg.appendChild(headV);
+                    }
+                    
+                    fVerticalTotal += F_vertical_local;
+                    fHorizontalTotal += (dirF > 0 ? 1 : -1) * F_px;
+                }
+            }
+        }
+    }
+    
+    // --- 6. ARCO DE TORQUE NETO (ELIMINADO) ---
+    // A petición del usuario, como el rotor ya se ve girar,
+    // no pintamos el sentido de giro (arco morado) en la simulación dinámica.
+    
+    // --- 7. DIBUJAR VECTOR DE CABECEO (FUERZA VERTICAL NETA MAGPYLIB) ---
+    // Magpylib Z es el eje vertical. +Z es hacia arriba (SVG -Y).
+    const fMagpylibZ = EstadoDiseno?.fuerzaLorentz_Z || 0;
+    const fVertVisual = fMagpylibZ * factorEscalaFuerza * 1000; 
+    if (Math.abs(fVertVisual) > 0.5) {
+        const len = Math.max(15, Math.abs(fVertVisual));
+        const endY = cy + (fMagpylibZ > 0 ? -len : len); // Z>0 sube en la pantalla (y menor)
+        
+        const arrV = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        arrV.setAttribute("x1", cx); arrV.setAttribute("y1", cy);
+        arrV.setAttribute("x2", cx); arrV.setAttribute("y2", endY);
+        arrV.setAttribute("stroke", "#e67e22"); // Naranja
+        arrV.setAttribute("stroke-width", "4");
+        svg.appendChild(arrV);
+        
+        const headV = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        if(fMagpylibZ > 0) headV.setAttribute("points", `${cx},${endY} ${cx-6},${endY+8} ${cx+6},${endY+8}`);
+        else headV.setAttribute("points", `${cx},${endY} ${cx-6},${endY-8} ${cx+6},${endY-8}`);
+        headV.setAttribute("fill", "#e67e22");
+        svg.appendChild(headV);
+    }
+    
+    // --- 8. DIBUJAR VECTOR LATERAL (FUERZA HORIZONTAL NETA MAGPYLIB) ---
+    // Magpylib Y es el eje lateral. +Y es hacia la derecha (SVG +X).
+    const fMagpylibY = EstadoDiseno?.fuerzaLorentz_Y || 0;
+    const fHorizVisual = fMagpylibY * factorEscalaFuerza * 1000;
+    if (Math.abs(fHorizVisual) > 0.5) {
+        const len = Math.max(15, Math.abs(fHorizVisual));
+        const endX = cx + (fMagpylibY > 0 ? len : -len); // Y>0 derecha
+        
+        const arrH = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        arrH.setAttribute("x1", cx); arrH.setAttribute("y1", cy);
+        arrH.setAttribute("x2", endX); arrH.setAttribute("y2", cy);
+        arrH.setAttribute("stroke", "#3498db"); // Azul
+        arrH.setAttribute("stroke-width", "4");
+        svg.appendChild(arrH);
+        
+        const headH = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        if(fMagpylibY > 0) headH.setAttribute("points", `${endX},${cy} ${endX-8},${cy-6} ${endX-8},${cy+6}`);
+        else headH.setAttribute("points", `${endX},${cy} ${endX+8},${cy-6} ${endX+8},${cy+6}`);
+        headH.setAttribute("fill", "#3498db");
+        svg.appendChild(headH);
+    }
+    
+    // Mostrar estadísticas
+    const strSentido = Math.abs(parNeto) < 1e-6 ? "Neutro" : (parNeto < 0 ? "Antihorario" : "Horario");
+    document.getElementById('anim-par-neto').innerText = parNeto.toExponential(2) + " N·m";
+    document.getElementById('anim-sentido').innerText = strSentido;
+}
+
+
+// --- LÓGICA PASO 1: ENSAYO PLACAS SOLARES ---
+let datosEnsayoSolar = JSON.parse(localStorage.getItem('mendocino_ensayo_actual')) || [];
+
+function guardarEnsayoLocal() {
+    localStorage.setItem('mendocino_ensayo_actual', JSON.stringify(datosEnsayoSolar));
+}
+
+function limpiarEnsayoSolar(force = false) {
+    if (force || confirm('¿Estás seguro de que quieres borrar todos los datos del ensayo actual?')) {
+        datosEnsayoSolar = [];
+        window.ensayoEsPropietario = true;
+        if (typeof toggleEdicionEnsayo === 'function') toggleEdicionEnsayo(true);
+        guardarEnsayoLocal();
+        actualizarTablaEnsayo();
+        document.getElementById('ensayo-nombre-panel').value = '';
+        document.getElementById('ensayo-l-panel').value = '';
+        document.getElementById('ensayo-a-panel').value = '';
+        const select = document.getElementById('ensayo-historial-select');
+        if (select) select.value = '';
+        
+        // Limpiar nuevos campos
+        const p1 = document.getElementById('ensayo-proveedor'); if (p1) p1.value = '';
+        const p2 = document.getElementById('ensayo-precio'); if (p2) p2.value = '';
+        const p3 = document.getElementById('ensayo-peso'); if (p3) p3.value = '';
+    }
+}
+
+function agregarMedidaEnsayo() {
+    const vInput = document.getElementById('ensayo-v');
+    const iInput = document.getElementById('ensayo-i');
+    
+    const v = parseFloat(vInput.value);
+    const i = parseFloat(iInput.value);
+    
+    if (isNaN(v) || isNaN(i) || v <= 0 || i <= 0) {
+        mostrarToast('Introduce valores válidos y positivos.', 'error');
+        return;
+    }
+    
+    // V está en mV (10^-3 V), I en mA (10^-3 A)
+    // P = V * I = 10^-6 W = microW. Para mW, dividimos entre 1000.
+    const p = (v * i) / 1000; // mW
+    
+    // R = V_mV / I_mA = Ohmios. Para mOhmios multiplicamos por 1000.
+    const r = (v / i) * 1000; // mOhm
+    
+    datosEnsayoSolar.push({ v, i, p, r });
+    datosEnsayoSolar.sort((a, b) => a.v - b.v);
+    
+    guardarEnsayoLocal();
+    actualizarTablaEnsayo();
+    
+    vInput.value = '';
+    iInput.value = '';
+    vInput.focus();
+}
+
+function actualizarTablaEnsayo() {
+    const tbody = document.getElementById('tabla-ensayo-body');
+    if (!tbody) return;
+    
+    if (datosEnsayoSolar.length === 0) {
+        tbody.innerHTML = '<tr id="ensayo-no-data"><td colspan="5" style="padding: 15px; color: #94a3b8;">No hay datos registrados.</td></tr>';
+        if (typeof renderizarResultadosFase1 === 'function') {
+            renderizarResultadosFase1();
+        }
+        dibujarGraficaEnsayo();
+        return;
+    }
+    
+    let html = '';
+    let maxP = -1;
+    let pmpData = null;
+    
+    datosEnsayoSolar.forEach((d) => {
+        if (d.p > maxP) {
+            maxP = d.p;
+            pmpData = d;
+        }
+    });
+    
+    datosEnsayoSolar.forEach((d, index) => {
+        const isMax = (d === pmpData);
+        // Base styling for the whole row
+        const rowStyle = isMax ? 'border-bottom: 2px solid #fbbf24; font-weight: bold;' : 'border-bottom: 1px solid #e2e8f0;';
+        
+        // Specific styling per column block (Measurement vs Calculation)
+        const cellStyleMeasure = isMax ? 'background-color: #f0f9ff; color: #0369a1;' : 'background-color: #f8fafc; color: #334155;';
+        const cellStyleCalc = isMax ? 'background-color: #fef3c7; color: #b45309;' : 'background-color: #fffbeb; color: #78350f;';
+        const isOwner = (typeof window.ensayoEsPropietario === 'undefined' || window.ensayoEsPropietario);
+        const btnStyle = isOwner 
+            ? 'background: none; border: none; color: #ef4444; cursor: pointer; font-size: 16px;' 
+            : 'background: none; border: none; color: #ef4444; cursor: not-allowed; font-size: 16px; opacity: 0.4;';
+        
+        html += `
+            <tr style="${rowStyle}">
+                <td style="padding: 8px; ${cellStyleMeasure} border-right: 1px solid #e0f2fe;">${d.v.toFixed(2)}</td>
+                <td style="padding: 8px; ${cellStyleMeasure} border-right: 1px solid #e2e8f0;">${d.i.toFixed(2)}</td>
+                <td style="padding: 8px; ${cellStyleCalc} border-right: 1px solid #fef3c7;">${d.p.toFixed(2)}</td>
+                <td style="padding: 8px; ${cellStyleCalc} border-right: 1px solid #e2e8f0;">${d.r.toFixed(2)}</td>
+                <td style="padding: 8px; background-color: #f8fafc;">
+                    <button style="${btnStyle}" onclick="eliminarMedidaEnsayo(${index})" title="Eliminar fila" ${!isOwner ? 'disabled' : ''}>🗑️</button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html;
+    
+    // Llamar a la nueva función de resultados globales
+    if (typeof renderizarResultadosFase1 === 'function') {
+        renderizarResultadosFase1();
+    }
+    
+    dibujarGraficaEnsayo();
+}
+
+function eliminarMedidaEnsayo(index) {
+    datosEnsayoSolar.splice(index, 1);
+    guardarEnsayoLocal();
+    actualizarTablaEnsayo();
+}
+
+function dibujarGraficaEnsayo() {
+    const svg = document.getElementById('grafica-ensayo-svg');
+    if (!svg) return;
+    
+    const w = 300, h = 200;
+    const margin = 35;
+    
+    if (datosEnsayoSolar.length === 0) {
+        svg.innerHTML = `
+            <line x1="${margin}" y1="${h-margin}" x2="${w-10}" y2="${h-margin}" stroke="#cbd5e1" stroke-width="1"/>
+            <line x1="${margin}" y1="${h-margin}" x2="${margin}" y2="10" stroke="#cbd5e1" stroke-width="1"/>
+            <text x="${w/2}" y="${h/2}" font-size="12" fill="#94a3b8" text-anchor="middle">Añade datos para ver la curva</text>
+            <text x="${w-10}" y="${h-15}" font-size="9" fill="#64748b" text-anchor="end">V [mV]</text>
+            <text x="${margin-10}" y="35" font-size="9" fill="#64748b" text-anchor="middle" transform="rotate(-90 ${margin-10},35)">P [mW]</text>
+        `;
+        return;
+    }
+    
+    let maxV = Math.max(...datosEnsayoSolar.map(d => d.v), 100);
+    let maxP = Math.max(...datosEnsayoSolar.map(d => d.p), 1);
+    
+    // Leer valores directos de Voc e Isc si existen
+    const inputVoc = document.getElementById('ensayo-voc');
+    const inputIsc = document.getElementById('ensayo-isc');
+    const explicitVoc = inputVoc && !isNaN(parseFloat(inputVoc.value)) ? parseFloat(inputVoc.value) : 0;
+    const explicitIsc = inputIsc && !isNaN(parseFloat(inputIsc.value)) ? parseFloat(inputIsc.value) : 0;
+    
+    // Calcular P. Teórica Ideal para ajustar la escala Y
+    const vocMax = explicitVoc > 0 ? explicitVoc : Math.max(...datosEnsayoSolar.map(d => d.v));
+    const iscMax = explicitIsc > 0 ? explicitIsc : Math.max(...datosEnsayoSolar.map(d => d.i));
+    const pIdeal = (vocMax * iscMax) / 1000;
+    
+    if (vocMax > maxV) maxV = vocMax;
+    
+    if (pIdeal > maxP) {
+        maxP = pIdeal;
+    }
+    
+    maxV = maxV * 1.1;
+    maxP = maxP * 1.15;
+    
+    const toX = (val) => margin + (val / maxV) * (w - margin * 1.5);
+    const toY = (val) => (h - margin) - (val / maxP) * (h - margin * 1.5);
+    
+    const puntos = [[toX(0), toY(0)]];
+    datosEnsayoSolar.forEach(d => puntos.push([toX(d.v), toY(d.p)]));
+
+    let pathD = `M ${puntos[0][0]} ${puntos[0][1]} `;
+    const smoothing = 0.2; // Tensión de la curva
+    for (let i = 1; i < puntos.length; i++) {
+        const p_prev2 = puntos[i - 2] || puntos[i - 1] || puntos[0];
+        const p_prev1 = puntos[i - 1];
+        const p_curr = puntos[i];
+        const p_next = puntos[i + 1] || puntos[i];
+
+        let control1_x = p_prev1[0] + (p_curr[0] - p_prev2[0]) * smoothing;
+        let control1_y = p_prev1[1] + (p_curr[1] - p_prev2[1]) * smoothing;
+
+        let control2_x = p_curr[0] - (p_next[0] - p_prev1[0]) * smoothing;
+        let control2_y = p_curr[1] - (p_next[1] - p_prev1[1]) * smoothing;
+
+        // Evitar que la curva se hunda por debajo del eje X visual (rebase de p=0)
+        const ejeY0 = toY(0);
+        if (control1_y > ejeY0) control1_y = ejeY0;
+        if (control2_y > ejeY0) control2_y = ejeY0;
+
+        pathD += `C ${control1_x},${control1_y} ${control2_x},${control2_y} ${p_curr[0]},${p_curr[1]} `;
+    }
+    
+    let puntosHtml = '';
+    let pmpData = null;
+    let currentMaxP = -1;
+    
+    datosEnsayoSolar.forEach(d => {
+        if (d.p > currentMaxP) {
+            currentMaxP = d.p;
+            pmpData = d;
+        }
+    });
+    
+    datosEnsayoSolar.forEach(d => {
+        const isMax = (d === pmpData);
+        const color = isMax ? '#d97706' : '#3b82f6';
+        const radio = isMax ? 4.5 : 2.5;
+        const opacidad = isMax ? '1' : '0.8';
+        puntosHtml += `<circle cx="${toX(d.v)}" cy="${toY(d.p)}" r="${radio}" fill="${color}" opacity="${opacidad}" cursor="pointer"><title>V: ${d.v} mV | P: ${d.p.toFixed(2)} mW</title></circle>`;
+    });
+    
+    // Cálculo del Factor de Forma (FF)
+    const ff = pmpData ? (pmpData.p / pIdeal) : 0;
+    
+    let html = `
+        <line x1="${margin}" y1="${h-margin}" x2="${w-10}" y2="${h-margin}" stroke="#94a3b8" stroke-width="1"/>
+        <line x1="${margin}" y1="${h-margin}" x2="${margin}" y2="10" stroke="#94a3b8" stroke-width="1"/>
+        
+        <text x="${w-10}" y="${h-15}" font-size="9" fill="#64748b" text-anchor="end">Voltaje [mV]</text>
+        <text x="${margin-10}" y="40" font-size="9" fill="#64748b" text-anchor="middle" transform="rotate(-90 ${margin-10},40)">Potencia [mW]</text>
+        
+        <!-- Línea Potencia Teórica Ideal (Voc x Isc) -->
+        ${pIdeal > 0 ? `
+            <line x1="${margin}" y1="${toY(pIdeal)}" x2="${w-10}" y2="${toY(pIdeal)}" stroke="#10b981" stroke-width="1" stroke-dasharray="4,4" opacity="0.6"/>
+            <text x="${w-10}" y="${toY(pIdeal) - 4}" font-size="9" fill="#059669" text-anchor="end">P. Teórica (Voc×Isc)</text>
+            <text x="${w-10}" y="${toY(pIdeal) + 10}" font-size="9" fill="#059669" text-anchor="end" font-weight="bold">FF: ${(ff * 100).toFixed(1)}%</text>
+        ` : ''}
+
+        <!-- Líneas guía PMP -->
+        ${pmpData ? `
+            <line x1="${toX(pmpData.v)}" y1="${toY(pmpData.p)}" x2="${toX(pmpData.v)}" y2="${h-margin}" stroke="#fcd34d" stroke-width="1" stroke-dasharray="2,2"/>
+            <line x1="${margin}" y1="${toY(pmpData.p)}" x2="${toX(pmpData.v)}" y2="${toY(pmpData.p)}" stroke="#fcd34d" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="${toX(pmpData.v)}" y="${toY(pmpData.p) - 8}" font-size="9" font-weight="bold" fill="#b45309" text-anchor="middle">PMP</text>
+        ` : ''}
+        
+        <path d="${pathD}" stroke="#60a5fa" stroke-width="2" fill="none" opacity="0.8"/>
+        
+        ${puntosHtml}
+    `;
+    
+    svg.innerHTML = html;
+}
+
+async function guardarPanelEnsayoDB() {
+    if (datosEnsayoSolar.length === 0) {
+        mostrarToast('No hay datos de ensayo para guardar.', 'error');
+        return;
+    }
+    
+    const nombre = document.getElementById('ensayo-nombre-panel').value.trim();
+    const l = parseFloat(document.getElementById('ensayo-l-panel').value);
+    const a = parseFloat(document.getElementById('ensayo-a-panel').value);
+    
+    if (!nombre || isNaN(l) || isNaN(a) || l <= 0 || a <= 0) {
+        mostrarToast('Por favor, indica un nombre y las dimensiones (Largo y Ancho).', 'aviso');
+        return;
+    }
+    
+    // Calcular Vmp, Imp del Punto de Máxima Potencia
+    let maxP = -1;
+    let pmpData = null;
+    datosEnsayoSolar.forEach(d => {
+        if (d.p > maxP) {
+            maxP = d.p;
+            pmpData = d;
+        }
+    });
+    
+    // Convertimos de mV a V
+    const vmp = pmpData.v / 1000;
+    // Imp se queda en mA
+    const imp = pmpData.i;
+    
+    // Estimar Voc e Isc
+    // Estimar Voc e Isc o cogerlos de los inputs directos
+    const inputVoc = document.getElementById('ensayo-voc');
+    const inputIsc = document.getElementById('ensayo-isc');
+    
+    let voc = Math.max(...datosEnsayoSolar.map(d => d.v));
+    if (inputVoc && !isNaN(parseFloat(inputVoc.value)) && parseFloat(inputVoc.value) > 0) {
+        voc = parseFloat(inputVoc.value);
+    }
+    voc = voc / 1000; // Convert to V
+    
+    let isc = Math.max(...datosEnsayoSolar.map(d => d.i));
+    if (inputIsc && !isNaN(parseFloat(inputIsc.value)) && parseFloat(inputIsc.value) > 0) {
+        isc = parseFloat(inputIsc.value);
+    }
+    
+    const inputLSil = document.getElementById('ensayo-l-silicio');
+    const inputASil = document.getElementById('ensayo-a-silicio');
+    const selectLuz = document.getElementById('ensayo-fuente-luz');
+    const inputDist = document.getElementById('ensayo-distancia');
+    const inputLux = document.getElementById('ensayo-lux');
+    const inputProveedor = document.getElementById('ensayo-proveedor');
+    const inputPrecio = document.getElementById('ensayo-precio');
+    const inputPeso = document.getElementById('ensayo-peso');
+
+    const datosPanel = {
+        nombre: nombre,
+        l: l,
+        a: a,
+        voc: voc,
+        isc: isc,
+        v: vmp,
+        i: imp,
+        ensayo_data: {
+            puntos: [...datosEnsayoSolar],
+            l_sil: inputLSil ? inputLSil.value : '',
+            a_sil: inputASil ? inputASil.value : '',
+            luz: selectLuz ? selectLuz.value : 'halogena',
+            distancia: inputDist ? inputDist.value : '156',
+            lux: inputLux ? inputLux.value : '',
+            proveedor: inputProveedor ? inputProveedor.value : '',
+            precio: inputPrecio ? inputPrecio.value : '',
+            peso: inputPeso ? inputPeso.value : ''
+        }
+    };
+    
+    // Comprobar si ya existe un panel con este nombre
+    const idxExistente = dbPaneles.findIndex(p => p.nombre === nombre);
+    let panelExistente = null;
+    let esPropietario = true;
+
+    if (idxExistente >= 0) {
+        panelExistente = dbPaneles[idxExistente];
+        // Verificar si tiene ID de la nube (si es local puro, asumimos que es suyo)
+        if (panelExistente.id) {
+            if (window.sessionActiva && window.sessionActiva.user) {
+                if (panelExistente.usuario_id !== window.sessionActiva.user.id && !window.esAdmin) {
+                    esPropietario = false;
+                }
+            } else {
+                esPropietario = false; // Sin sesión no puede sobrescribir algo de la nube
+            }
+        }
+    }
+
+    if (panelExistente && !esPropietario) {
+        mostrarToast('Este panel es público y no te pertenece. Cambia el nombre para guardarlo como uno nuevo.', 'aviso');
+        document.getElementById('ensayo-nombre-panel').value = nombre + ' (Copia)';
+        return;
+    }
+
+    if (panelExistente) {
+        // ACTUALIZAR EXISTENTE
+        dbPaneles[idxExistente] = { ...panelExistente, ...datosPanel };
+        guardarDatos();
+        
+        if (window.dbMendocinoClient && typeof sessionActiva !== 'undefined' && sessionActiva && panelExistente.id) {
+            try {
+                const { error } = await window.dbMendocinoClient.from('paneles').update(datosPanel).eq('id', panelExistente.id);
+                if (error) throw error;
+                mostrarToast(`¡Panel "${nombre}" actualizado correctamente!`, 'ok');
+            } catch (e) {
+                console.error("Error actualizando panel", e);
+                mostrarToast('Error en la nube: ' + (e.message || 'Desconocido'), 'error');
+            }
+        } else {
+            mostrarToast(`Panel "${nombre}" actualizado localmente.`, 'ok');
+        }
+    } else {
+        // INSERTAR NUEVO
+        if (window.dbMendocinoClient && typeof sessionActiva !== 'undefined' && sessionActiva) {
+            const pParaSubir = { ...datosPanel, usuario_id: sessionActiva.user.id, es_publico: false };
+            try {
+                const { data, error } = await window.dbMendocinoClient.from('paneles').insert([pParaSubir]).select();
+                if (error) throw error;
+                
+                if (data && data.length > 0) {
+                    dbPaneles.push(data[0]); // Guardar con el ID real devuelto por la BD
+                } else {
+                    dbPaneles.push(pParaSubir);
+                }
+                guardarDatos();
+                mostrarToast(`¡Panel "${nombre}" creado en la base de datos!`, 'ok');
+            } catch (e) {
+                console.error("Error subiendo panel", e);
+                dbPaneles.push(pParaSubir);
+                guardarDatos();
+                mostrarToast('Error en la nube: ' + (e.message || 'Desconocido'), 'error');
+            }
+        } else {
+            dbPaneles.push(datosPanel);
+            guardarDatos();
+            mostrarToast(`Panel "${nombre}" guardado localmente para ti.`, 'ok');
+        }
+    }
+    
+    // Seleccionar automáticamente el panel en el Paso 2
+    setTimeout(() => {
+        const selectPanel = document.getElementById('panel');
+        if (selectPanel) {
+            // Repoblar para asegurar (guardarDatos() ya llama a renderizarUI, pero por si acaso)
+            poblarPanelesDropdown();
+            // Seleccionar el último (el nuestro recién añadido)
+            const options = selectPanel.options;
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].text === nombre) {
+                    selectPanel.selectedIndex = i;
+                    break;
+                }
+            }
+            actualizarResumenPaso1();
+        }
+    }, 500);
+}
+
+function actualizarEsquemaEnsayo() {
+    const svg = document.getElementById('esquema-electrico-svg');
+    if (!svg) return;
+    
+    const tipoLuz = document.getElementById('ensayo-fuente-luz') ? document.getElementById('ensayo-fuente-luz').value : 'halogena';
+    const distancia = document.getElementById('ensayo-distancia') ? document.getElementById('ensayo-distancia').value : 156;
+    
+    let svgFuenteLuz = '';
+    let colorRayo = '#fef08a';
+    
+    if (tipoLuz === 'sol') {
+        svgFuenteLuz = '<text x="100" y="30" font-size="28" text-anchor="middle" dominant-baseline="central">☀️</text>';
+        colorRayo = '#fde047';
+    } else if (tipoLuz === 'incandescente') {
+        // La incandescente usa ahora el emoji de bombilla normal (antigua halógena) rotado 180 grados
+        svgFuenteLuz = '<text x="100" y="30" font-size="28" text-anchor="middle" dominant-baseline="central" transform="rotate(180, 100, 30)">💡</text>';
+        colorRayo = '#fef08a';
+    } else if (tipoLuz === 'halogena') {
+        // Halógena Dicroica apuntando hacia abajo
+        svgFuenteLuz = `
+            <g transform="translate(85, 10)">
+                <!-- Pines -->
+                <line x1="10" y1="0" x2="10" y2="8" stroke="#94a3b8" stroke-width="2" />
+                <line x1="20" y1="0" x2="20" y2="8" stroke="#94a3b8" stroke-width="2" />
+                <!-- Cono -->
+                <polygon points="10,8 20,8 30,25 0,25" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5" />
+                <!-- Reflector interno -->
+                <polygon points="12,10 18,10 26,24 4,24" fill="#f1f5f9" />
+                <!-- Bulbo interno -->
+                <circle cx="15" cy="18" r="4" fill="#fef08a" />
+            </g>`;
+        colorRayo = '#fef08a';
+    } else if (tipoLuz === 'fluorescente') {
+        // Tubo fluorescente horizontal
+        svgFuenteLuz = `
+            <g transform="translate(60, 20)">
+                <!-- Tubo -->
+                <rect x="0" y="0" width="80" height="12" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" />
+                <!-- Casquillos -->
+                <rect x="-2" y="1" width="4" height="10" fill="#cbd5e1" stroke="#64748b" stroke-width="1" />
+                <rect x="78" y="1" width="4" height="10" fill="#cbd5e1" stroke="#64748b" stroke-width="1" />
+                <!-- Brillo -->
+                <line x1="10" y1="4" x2="70" y2="4" stroke="#ffffff" stroke-width="2" opacity="0.8" />
+            </g>`;
+        colorRayo = '#e2e8f0';
+    } else if (tipoLuz === 'led') {
+        // Diodo LED 5mm apuntando hacia abajo
+        svgFuenteLuz = `
+            <g transform="translate(90, 8)">
+                <!-- Patas -->
+                <line x1="7" y1="0" x2="7" y2="12" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="13" y1="0" x2="13" y2="12" stroke="#94a3b8" stroke-width="1.5" />
+                <!-- Base plana -->
+                <rect x="4" y="12" width="12" height="3" fill="#bfdbfe" stroke="#60a5fa" stroke-width="1" />
+                <!-- Cápsula epoxi -->
+                <path d="M 4,15 L 4,22 Q 10,32 16,22 L 16,15 Z" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.5" />
+                <!-- Cristal central -->
+                <circle cx="10" cy="20" r="2.5" fill="#93c5fd" />
+            </g>`;
+        colorRayo = '#bfdbfe';
+    }
+    
+    // Panel Solar (80x16)
+    const px = 60, py = 97, pw = 80, ph = 16;
+    
+    const html = `
+        <!-- FUENTE DE LUZ -->
+        ${svgFuenteLuz}
+        
+        <!-- RAYOS DE LUZ Y COTA DISTANCIA -->
+        <g stroke="${colorRayo}" stroke-width="2" stroke-dasharray="4,4">
+            <line x1="85" y1="45" x2="85" y2="${py - 5}" />
+            <line x1="100" y1="45" x2="100" y2="${py - 5}" />
+            <line x1="115" y1="45" x2="115" y2="${py - 5}" />
+        </g>
+        
+        <!-- COTA DE DISTANCIA -->
+        <line x1="160" y1="30" x2="160" y2="${py}" stroke="#94a3b8" stroke-width="1"/>
+        <line x1="155" y1="30" x2="165" y2="30" stroke="#94a3b8" stroke-width="1"/>
+        <line x1="155" y1="${py}" x2="165" y2="${py}" stroke="#94a3b8" stroke-width="1"/>
+        <text x="165" y="${(30+py)/2}" font-size="10" fill="#64748b" dominant-baseline="middle">d=${distancia}mm</text>
+        
+        <!-- PANEL SOLAR -->
+        <!-- Marco protector -->
+        <rect x="${px-2}" y="${py-2}" width="${pw+4}" height="${ph+4}" fill="#f1f5f9" rx="3" stroke="#cbd5e1" stroke-width="1.5"/>
+        <!-- Silicio (azul más claro y brillante) -->
+        <rect x="${px}" y="${py}" width="${pw}" height="${ph}" fill="#3b82f6" rx="1"/>
+        
+        <!-- Separación entre celdas (grid vertical) -->
+        <line x1="${px+16}" y1="${py}" x2="${px+16}" y2="${py+ph}" stroke="#1e40af" stroke-width="1.5"/>
+        <line x1="${px+32}" y1="${py}" x2="${px+32}" y2="${py+ph}" stroke="#1e40af" stroke-width="1.5"/>
+        <line x1="${px+48}" y1="${py}" x2="${px+48}" y2="${py+ph}" stroke="#1e40af" stroke-width="1.5"/>
+        <line x1="${px+64}" y1="${py}" x2="${px+64}" y2="${py+ph}" stroke="#1e40af" stroke-width="1.5"/>
+        
+        <!-- Busbars plateadas horizontales -->
+        <line x1="${px}" y1="${py+5}" x2="${px+pw}" y2="${py+5}" stroke="#bfdbfe" stroke-width="0.8" opacity="0.9"/>
+        <line x1="${px}" y1="${py+11}" x2="${px+pw}" y2="${py+11}" stroke="#bfdbfe" stroke-width="0.8" opacity="0.9"/>
+        
+        <!-- Terminales Panel -->
+        <line x1="30" y1="${py+ph/2}" x2="${px}" y2="${py+ph/2}" stroke="#dc2626" stroke-width="2"/>
+        <line x1="140" y1="${py+ph/2}" x2="170" y2="${py+ph/2}" stroke="#0f172a" stroke-width="2"/>
+        
+        <!-- Etiquetas de Polaridad -->
+        <text x="48" y="${py-2}" font-size="18" font-weight="bold" fill="#dc2626" text-anchor="middle">+</text>
+        <text x="152" y="${py-2}" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">-</text>
+        
+        <!-- CABLEADO PRINCIPAL -->
+        <!-- Rama izquierda (Roja / Positivo) -->
+        <line x1="30" y1="${py+ph/2}" x2="30" y2="250" stroke="#dc2626" stroke-width="2"/>
+        <line x1="30" y1="250" x2="86" y2="250" stroke="#dc2626" stroke-width="2"/>
+        <!-- Rama derecha (Negra / Negativo) -->
+        <line x1="114" y1="250" x2="170" y2="250" stroke="#0f172a" stroke-width="2"/>
+        <line x1="170" y1="${py+ph/2}" x2="170" y2="190" stroke="#0f172a" stroke-width="2"/>
+        <line x1="170" y1="220" x2="170" y2="250" stroke="#0f172a" stroke-width="2"/>
+        
+        <!-- VOLTÍMETRO (En paralelo al panel) -->
+        <line x1="30" y1="150" x2="86" y2="150" stroke="#dc2626" stroke-width="1.5"/>
+        <line x1="114" y1="150" x2="170" y2="150" stroke="#0f172a" stroke-width="1.5"/>
+        <circle cx="30" cy="150" r="2.5" fill="#dc2626"/>
+        <circle cx="170" cy="150" r="2.5" fill="#0f172a"/>
+        <circle cx="100" cy="150" r="14" fill="white" stroke="#0f172a" stroke-width="2"/>
+        <text x="100" y="154" font-size="12" font-weight="bold" font-family="monospace" text-anchor="middle" fill="#0f172a">V</text>
+        
+        <!-- AMPERÍMETRO (En serie) -->
+        <circle cx="100" cy="250" r="14" fill="white" stroke="#0f172a" stroke-width="2"/>
+        <text x="100" y="254" font-size="12" font-weight="bold" font-family="monospace" text-anchor="middle" fill="#0f172a">A</text>
+        
+        <!-- POTENCIÓMETRO (~100 Ohm) -->
+        <!-- Resistencia variable en la rama derecha -->
+        <polyline points="170,190 162,194 178,199 162,204 178,209 162,214 170,220" fill="none" stroke="#0f172a" stroke-width="2"/>
+        <line x1="150" y1="215" x2="185" y2="195" stroke="#0f172a" stroke-width="1.5"/>
+        <polygon points="185,195 180,193 182,198" fill="#0f172a"/>
+        <text x="190" y="205" font-size="10" fill="#334155" dominant-baseline="middle">~100Ω</text>
+    `;
+    
+    svg.innerHTML = html;
+}
+
+window.mostrarInstruccionesMontaje = function() {
+    const modal = document.getElementById('modal-dialogo');
+    const t = document.getElementById('modal-dialogo-titulo');
+    const m = document.getElementById('modal-dialogo-mensaje');
+    const iCont = document.getElementById('modal-dialogo-input-cont');
+    const btnAceptar = document.getElementById('modal-dialogo-btn-aceptar');
+    const btnCancelar = document.getElementById('modal-dialogo-btn-cancelar');
+
+    if (modal && t && m && btnAceptar) {
+        t.innerText = "Instrucciones de Montaje";
+        m.innerHTML = `
+            <div style="text-align: left; font-size: 14px; color: #334155;">
+                <p>Sigue estos pasos para realizar el ensayo eléctrico:</p>
+                <ol style="padding-left: 20px; margin-bottom: 0;">
+                    <li style="margin-bottom: 8px;">Coloca la placa alineada con la luz y a la distancia del ensayo.</li>
+                    <li style="margin-bottom: 8px;">Conecta el cable <b style="color: #dc2626;">rojo</b> al terminal positivo <b>(+)</b> de la placa.</li>
+                    <li style="margin-bottom: 8px;">Conecta el cable <b style="color: #0f172a;">negro</b> al terminal negativo <b>(-)</b> de la placa.</li>
+                    <li style="margin-bottom: 8px;">Conecta el <b>Voltímetro (V)</b> en paralelo a la placa (entre los cables rojo y negro) para medir la Tensión.</li>
+                    <li style="margin-bottom: 8px;">Conecta el <b>Amperímetro (A)</b> en serie con el circuito para medir la Corriente.</li>
+                    <li style="margin-bottom: 8px;">Cierra el circuito con el <b>Potenciómetro</b> variable y enciende la luz para comenzar a tomar mediciones.</li>
+                </ol>
+                <div style="margin-top: 15px; padding: 12px; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px;">
+                    <strong style="color: #b45309; display: flex; align-items: center; gap: 5px;">🔥 Advertencia: Riesgo Térmico</strong>
+                    <p style="margin-top: 5px; margin-bottom: 8px; font-size: 13px; line-height: 1.4;">
+                        Utiliza un potenciómetro bobinado de al menos <b>2W (Vatios)</b>. Uno de carbón estándar (0.25W) se quemará al acercarse a 0&Omega; (cortocircuito).
+                    </p>
+                    <div style="font-size: 12px; color: #78350f; background: rgba(253, 230, 138, 0.4); padding: 8px; border-radius: 4px;">
+                        <b>¿Por qué ocurre esto?</b><br>
+                        El límite de corriente de un potenciómetro de 100&Omega; y 0.25W es apenas <b>50 mA</b> \\( (I = \\sqrt{\\frac{0.25}{100}}) \\). Si ajustas la resistencia a casi cero (ej. 0.5&Omega;), el panel solar entregará toda su corriente de cortocircuito (<b>133 mA</b>).<br><br>
+                        Aunque la potencia total disipada sea ínfima \\( (P = I^2 \\cdot R = 0.133^2 \\cdot 0.5 = 0.008 \\text{ W}) \\), esa corriente <b>supera el límite de densidad</b> de la minúscula pista de carbón por la que pasa y la fundirá. Uno de 2W soporta 141 mA en toda su pista y resistirá sin problemas.
+                    </div>
+                </div>
+            </div>
+        `;
+        if (iCont) iCont.style.display = 'none';
+        if (btnCancelar) btnCancelar.style.display = 'none';
+        
+        btnAceptar.innerText = "¡Entendido!";
+        btnAceptar.onclick = () => {
+            modal.style.display = 'none';
+            if (btnCancelar) btnCancelar.style.display = 'block'; // Restaurar botón
+            m.innerHTML = '¿Estás seguro de realizar esta acción?'; // Limpiar mensaje
+            t.innerText = 'Confirmación'; // Limpiar título
+        };
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            if(window.renderizarMatematicas) window.renderizarMatematicas();
+        }, 10);
+    } else {
+        alert("INSTRUCCIONES:\\n1. Conecta el cable rojo al (+)\\n2. Conecta el cable negro al (-)\\n3. Conecta el Voltímetro en paralelo\\n4. Conecta el Amperímetro en serie.");
+    }
+};
+
+// Llamar al dibujar la primera vez
+document.addEventListener('DOMContentLoaded', () => {
+    // ...
+    setTimeout(() => {
+        if (typeof actualizarEsquemaEnsayo === 'function') {
+            actualizarEsquemaEnsayo();
+        }
+        if (typeof actualizarSelectorHistorial === 'function') {
+            actualizarSelectorHistorial();
+        }
+    }, 1000);
+});
+
+// --- HISTORIAL DE ENSAYOS LOCAL ---
+// Eliminado para depender exclusivamente de la base de datos
+
+function actualizarSelectorHistorial() {
+    const select = document.getElementById('ensayo-historial-select');
+    if (!select) return;
+    
+    // Obtener paneles de la DB que contengan ensayo_data
+    const panelesDBConEnsayo = (typeof dbPaneles !== 'undefined' ? dbPaneles : [])
+        .filter(p => p && p.ensayo_data && p.ensayo_data.puntos && p.ensayo_data.puntos.length > 0);
+        
+    // Obtener paneles genéricos sin ensayo, filtrando los que ya tienen ensayo guardado
+    const panelesDBSinEnsayo = (typeof dbPaneles !== 'undefined' ? dbPaneles : [])
+        .filter(p => {
+            if (!p || !p.nombre) return false;
+            if (p.ensayo_data && p.ensayo_data.puntos && p.ensayo_data.puntos.length > 0) return false;
+            const existeEnDB = panelesDBConEnsayo.some(pdb => pdb.nombre === p.nombre);
+            return !existeEnDB;
+        });
+    
+    let html = '<option value="">📂 Cargar ensayo guardado...</option>';
+    
+    if (panelesDBConEnsayo.length > 0) {
+        html += '<optgroup label="Ensayos en Base de Datos (Públicos/Propios)">';
+        panelesDBConEnsayo.forEach(p => {
+            html += `<option value="db_${p.nombre}">${p.nombre} (DB)</option>`;
+        });
+        html += '</optgroup>';
+    }
+    
+    if (panelesDBSinEnsayo.length > 0) {
+        html += '<optgroup label="Placas Disponibles (Sin ensayo)">';
+        panelesDBSinEnsayo.forEach(p => {
+            if(p && p.nombre) {
+                html += `<option value="placa_${p.nombre}">${p.nombre}</option>`;
+            }
+        });
+        html += '</optgroup>';
+    }
+    
+    select.innerHTML = html;
+
+    // Restaurar valor previo si existe en progresoMendocino
+    try {
+        const progreso = JSON.parse(localStorage.getItem('progresoMendocino'));
+        if (progreso && progreso.valores && progreso.valores.ensayoHistorialNombre) {
+            const nombreGuardado = progreso.valores.ensayoHistorialNombre;
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].text === nombreGuardado) {
+                    select.selectedIndex = i;
+                    cargarEnsayoDesdeHistorial();
+                    break;
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Error restaurando selector historial:", e);
+    }
+}
+
+function cargarEnsayoDesdeHistorial() {
+    const select = document.getElementById('ensayo-historial-select');
+    if (!select || !select.value) return;
+    
+    const valorSeleccionado = select.value;
+    let itemParaCargar = null;
+    let nombreCargar = "";
+    let esPropietario = true;
+    
+    if (valorSeleccionado.startsWith('db_')) {
+        nombreCargar = valorSeleccionado.substring(3);
+        const panelDB = dbPaneles.find(p => p.nombre === nombreCargar);
+        if (panelDB && panelDB.ensayo_data) {
+            itemParaCargar = {
+                ...panelDB.ensayo_data,
+                l: panelDB.l,
+                a: panelDB.a,
+                voc: panelDB.voc,
+                isc: panelDB.isc
+            };
+            
+            // Check ownership
+            if (panelDB.id) {
+                if (window.sessionActiva && window.sessionActiva.user) {
+                    esPropietario = (panelDB.usuario_id === window.sessionActiva.user.id || window.esAdmin);
+                } else {
+                    esPropietario = false;
+                }
+            }
+        }
+    } else if (valorSeleccionado.startsWith('placa_')) {
+        nombreCargar = valorSeleccionado.substring(6);
+        const panelDB = dbPaneles.find(p => p.nombre === nombreCargar);
+        if (panelDB) {
+            itemParaCargar = {
+                l: panelDB.l,
+                a: panelDB.a,
+                voc: panelDB.voc,
+                isc: panelDB.isc,
+                puntos: [] // Sin puntos de ensayo
+            };
+            // Al ser solo los datos base de una placa, permitimos "esPropietario" para que el usuario 
+            // pueda rellenar el formulario, hacer un ensayo y guardarlo como suyo.
+            esPropietario = true; 
+        }
+    }
+    
+    window.ensayoEsPropietario = esPropietario;
+    
+    if (itemParaCargar) {
+        if (Array.isArray(itemParaCargar)) {
+            // Compatibilidad con versión antigua
+            datosEnsayoSolar = [...itemParaCargar];
+        } else {
+            // Nueva versión con metadatos
+            datosEnsayoSolar = [...(itemParaCargar.puntos || [])];
+            
+            const inputL = document.getElementById('ensayo-l-panel');
+            const inputA = document.getElementById('ensayo-a-panel');
+            const inputLSil = document.getElementById('ensayo-l-silicio');
+            const inputASil = document.getElementById('ensayo-a-silicio');
+            const selectLuz = document.getElementById('ensayo-fuente-luz');
+            const inputDist = document.getElementById('ensayo-distancia');
+            const inputLux = document.getElementById('ensayo-lux');
+            const inputVoc = document.getElementById('ensayo-voc');
+            const inputIsc = document.getElementById('ensayo-isc');
+            const inputProveedor = document.getElementById('ensayo-proveedor');
+            const inputPrecio = document.getElementById('ensayo-precio');
+            const inputPeso = document.getElementById('ensayo-peso');
+            
+            if (inputL) { inputL.value = itemParaCargar.l || ''; inputL.dispatchEvent(new Event('input')); }
+            if (inputA) { inputA.value = itemParaCargar.a || ''; inputA.dispatchEvent(new Event('input')); }
+            if (inputLSil) { inputLSil.value = itemParaCargar.l_sil || ''; inputLSil.dispatchEvent(new Event('input')); }
+            if (inputASil) { inputASil.value = itemParaCargar.a_sil || ''; inputASil.dispatchEvent(new Event('input')); }
+            if (selectLuz && itemParaCargar.luz) { selectLuz.value = itemParaCargar.luz; selectLuz.dispatchEvent(new Event('change')); }
+            if (inputDist && itemParaCargar.distancia) { inputDist.value = itemParaCargar.distancia; inputDist.dispatchEvent(new Event('input')); }
+            if (inputLux && itemParaCargar.lux !== undefined) { inputLux.value = itemParaCargar.lux; inputLux.dispatchEvent(new Event('input')); }
+            if (inputVoc && itemParaCargar.voc !== undefined) { inputVoc.value = itemParaCargar.voc; inputVoc.dispatchEvent(new Event('input')); }
+            if (inputIsc && itemParaCargar.isc !== undefined) { inputIsc.value = itemParaCargar.isc; inputIsc.dispatchEvent(new Event('input')); }
+            if (inputProveedor && itemParaCargar.proveedor !== undefined) { inputProveedor.value = itemParaCargar.proveedor; inputProveedor.dispatchEvent(new Event('input')); }
+            if (inputPrecio && itemParaCargar.precio !== undefined) { inputPrecio.value = itemParaCargar.precio; inputPrecio.dispatchEvent(new Event('input')); }
+            if (inputPeso && itemParaCargar.peso !== undefined) { inputPeso.value = itemParaCargar.peso; inputPeso.dispatchEvent(new Event('input')); }
+        }
+        
+        guardarEnsayoLocal();
+        actualizarTablaEnsayo();
+        renderizarResultadosFase1();
+        if (typeof actualizarEsquemaEnsayo === 'function') actualizarEsquemaEnsayo();
+        
+        // Auto-rellenar nombre
+        const inputNombre = document.getElementById('ensayo-nombre-panel');
+        if (inputNombre) {
+            inputNombre.value = nombreCargar;
+            inputNombre.dispatchEvent(new Event('input'));
+        }
+        
+        if (typeof toggleEdicionEnsayo === 'function') toggleEdicionEnsayo(esPropietario);
+        
+        // Sincronizar hacia el Paso 2
+        const elPanel2 = document.getElementById('panel');
+        if (elPanel2 && nombreCargar) {
+            for (let i = 0; i < elPanel2.options.length; i++) {
+                if (elPanel2.options[i].text === nombreCargar) {
+                    if (elPanel2.selectedIndex !== i) {
+                        elPanel2.selectedIndex = i;
+                        if (typeof actualizarResumenPaso1 === 'function') actualizarResumenPaso1(true);
+                    }
+                    break;
+                }
+            }
+        }
+        
+        mostrarToast(`Ensayo "${nombreCargar}" cargado correctamente.`, 'ok');
+    }
+}
+
+window.toggleEdicionEnsayo = function(esPropietario) {
+    const inputs = [
+        'ensayo-nombre-panel', 'ensayo-l-panel', 'ensayo-a-panel',
+        'ensayo-l-silicio', 'ensayo-a-silicio', 'ensayo-fuente-luz',
+        'ensayo-distancia', 'ensayo-lux', 'ensayo-voc', 'ensayo-isc',
+        'ensayo-v', 'ensayo-i', 'ensayo-proveedor', 'ensayo-precio', 'ensayo-peso'
+    ];
+    
+    inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = !esPropietario;
+    });
+
+    const btnAdd = document.querySelector('button[onclick="agregarMedidaEnsayo()"]');
+    if (btnAdd) btnAdd.disabled = !esPropietario;
+    
+    let alertEl = document.getElementById('ensayo-alerta-publico');
+    if (!esPropietario) {
+        if (!alertEl) {
+            alertEl = document.createElement('div');
+            alertEl.id = 'ensayo-alerta-publico';
+            alertEl.style.cssText = 'background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; border-left: 4px solid #ffeeba;';
+            alertEl.innerHTML = '<strong>⚠️ Modo Lectura:</strong> Este ensayo es público y no te pertenece. Puedes visualizar sus datos, pero no puedes editarlo. Si quieres hacer uno nuevo, usa "Limpiar".';
+            
+            const tituloEnsayo = document.querySelector('#step-1 h3');
+            if (tituloEnsayo && tituloEnsayo.parentNode) {
+                tituloEnsayo.parentNode.insertBefore(alertEl, tituloEnsayo.nextSibling);
+            }
+        } else {
+            alertEl.style.display = 'block';
+        }
+    } else {
+        if (alertEl) alertEl.style.display = 'none';
+    }
+};
+
+async function borrarEnsayoDelHistorial() {
+    const select = document.getElementById('ensayo-historial-select');
+    if (!select || !select.value) {
+        mostrarToast('Selecciona primero el ensayo que quieres borrar.', 'aviso');
+        return;
+    }
+    
+    const valorSeleccionado = select.value;
+    
+    let nombreCargar = "";
+    if (valorSeleccionado.startsWith('db_')) nombreCargar = valorSeleccionado.substring(3);
+    else if (valorSeleccionado.startsWith('placa_')) nombreCargar = valorSeleccionado.substring(6);
+    else return;
+    
+    const panelDB = dbPaneles.find(p => p.nombre === nombreCargar);
+    if (!panelDB) return;
+    
+    let esPropietario = false;
+    if (panelDB.id) {
+        if (window.sessionActiva && window.sessionActiva.user) {
+            esPropietario = (panelDB.usuario_id === window.sessionActiva.user.id || window.esAdmin);
+        }
+    }
+    
+    if (!esPropietario) {
+        mostrarToast('No puedes borrar una placa que es pública o no te pertenece.', 'error');
+        return;
+    }
+    
+    if (confirm(`¿Estás seguro de que quieres borrar completamente la placa "${nombreCargar}"?\n\nEsto la eliminará tanto del ensayo como del Gestor de Componentes.`)) {
+        try {
+            if (window.dbMendocinoClient && panelDB.id) {
+                const { error } = await window.dbMendocinoClient
+                    .from('paneles')
+                    .delete()
+                    .eq('id', panelDB.id);
+                    
+                if (error) throw error;
+            }
+            
+            // Actualizar array local eliminando la placa
+            const index = dbPaneles.findIndex(p => p.id === panelDB.id);
+            if (index > -1) dbPaneles.splice(index, 1);
+            
+            guardarDatos();
+            actualizarSelectorHistorial();
+            mostrarToast(`Placa "${nombreCargar}" borrada por completo.`, 'ok');
+            
+            // Limpiar pantalla
+            limpiarEnsayoSolar(true);
+            select.value = "";
+            
+        } catch (err) {
+            console.error("Error borrando placa:", err);
+            mostrarToast('Error en la nube: ' + err.message, 'error');
+        }
+    }
+}
+
+// --- NUEVAS FUNCIONES DE LA FASE 1 ---
+
+function renderizarResultadosFase1() {
+    const display = document.getElementById('panel-resultados-ensayo');
+    if (!display) return;
+    
+    if (datosEnsayoSolar.length === 0) {
+        display.innerHTML = '<div style="text-align: center; color: #64748b; font-size: 13px;">Añade datos para calcular...</div>';
+        return;
+    }
+    
+    let maxV = 0;
+    let maxI = 0;
+    let maxP = -1;
+    let pmpData = null;
+    
+    datosEnsayoSolar.forEach(d => {
+        if (d.v > maxV) maxV = d.v;
+        if (d.i > maxI) maxI = d.i;
+        if (d.p > maxP) {
+            maxP = d.p;
+            pmpData = d;
+        }
+    });
+    
+    if (!pmpData || maxP <= 0) {
+        display.innerHTML = '<div style="text-align: center; color: #64748b; font-size: 13px;">Añade datos para calcular...</div>';
+        return;
+    }
+
+    const inputVoc = document.getElementById('ensayo-voc');
+    const inputIsc = document.getElementById('ensayo-isc');
+    
+    const explicitVoc = inputVoc && !isNaN(parseFloat(inputVoc.value)) ? parseFloat(inputVoc.value) : 0;
+    const explicitIsc = inputIsc && !isNaN(parseFloat(inputIsc.value)) ? parseFloat(inputIsc.value) : 0;
+    
+    const finalVoc = explicitVoc > 0 ? explicitVoc : maxV;
+    const finalIsc = explicitIsc > 0 ? explicitIsc : maxI;
+
+    // FF Calculation: Pmax (mW) / (Voc(mV) * Isc(mA) / 1000)
+    const pTeorica = (finalVoc * finalIsc) / 1000;
+    const ff = pTeorica > 0 ? (maxP / pTeorica) : 0;
+    
+    let htmlContent = `
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; align-items: center;">
+            <span style="color: #334155;">Tensión de Vacío (Voc):</span>
+            <span style="font-weight: bold; color: #1e40af; text-align: right;">${(finalVoc / 1000).toFixed(2)} V</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; align-items: center;">
+            <span style="color: #334155;">Corriente Cortocircuito (Isc):</span>
+            <span style="font-weight: bold; color: #1e40af; text-align: right;">${finalIsc.toFixed(1)} mA</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; align-items: center;">
+            <span style="color: #334155;">Tensión P. Máx. (Vmp):</span>
+            <span style="font-weight: bold; color: #1e40af; text-align: right;">${(pmpData.v / 1000).toFixed(2)} V</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; align-items: center;">
+            <span style="color: #334155;">Corriente P. Máx. (Imp):</span>
+            <span style="font-weight: bold; color: #1e40af; text-align: right;">${pmpData.i.toFixed(1)} mA</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; align-items: center;">
+            <span style="color: #334155;">Potencia Máxima (Pmax):</span>
+            <span style="font-weight: bold; color: #d97706; text-align: right;">${maxP.toFixed(2)} mW</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; align-items: center;">
+            <span style="color: #334155;">Factor de Forma (FF):</span>
+            <span style="font-weight: bold; color: #1e40af; text-align: right;">${ff.toFixed(3)}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; align-items: center;">
+            <span style="color: #334155;">Resistencia Óptima:</span>
+            <span style="font-weight: bold; color: #1e40af; text-align: right;">${(pmpData.r / 1000).toFixed(2)} Ω</span>
+        </div>
+    `;
+
+    // Calculation of Efficiency
+    const l_ext = parseFloat(document.getElementById('ensayo-l-panel').value);
+    const a_ext = parseFloat(document.getElementById('ensayo-a-panel').value);
+    const l_sil = parseFloat(document.getElementById('ensayo-l-silicio').value);
+    const a_sil = parseFloat(document.getElementById('ensayo-a-silicio').value);
+    
+    let area = 0;
+    let tipo = '';
+    if (!isNaN(l_sil) && !isNaN(a_sil) && l_sil > 0 && a_sil > 0) {
+        area = l_sil * a_sil;
+        tipo = 'Neta';
+    } else if (!isNaN(l_ext) && !isNaN(a_ext) && l_ext > 0 && a_ext > 0) {
+        area = l_ext * a_ext;
+        tipo = 'Bruta';
+    }
+    
+    if (area > 0) {
+        const eficienciaSTC = (maxP / area) * 100;
+        htmlContent += `
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; align-items: center; margin-top: 15px;">
+            <span style="color: #334155;">Eficiencia STC (${tipo}):</span>
+            <span style="font-weight: bold; color: #059669; text-align: right;">${eficienciaSTC.toFixed(2)}%</span>
+        </div>`;
+        
+        const inputLux = document.getElementById('ensayo-lux');
+        const luxVal = inputLux ? parseFloat(inputLux.value) : NaN;
+        
+        if (!isNaN(luxVal) && luxVal > 0) {
+            const irradiacionRealMwMm2 = luxVal * 0.00001;
+            const pRealEntrada = area * irradiacionRealMwMm2;
+            const eficienciaReal = (maxP / pRealEntrada) * 100;
+            
+            htmlContent += `
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; align-items: center;">
+                <span style="color: #334155;">Eficiencia Real (${luxVal} Lux):</span>
+                <span style="font-weight: bold; color: #d97706; text-align: right;">${eficienciaReal.toFixed(2)}%</span>
+            </div>`;
+        }
+    }
+    
+    display.innerHTML = htmlContent;
+}
+
+function exportarEnsayoCSV() {
+    if (datosEnsayoSolar.length === 0) {
+        mostrarToast('No hay datos para exportar.', 'aviso');
+        return;
+    }
+    
+    let csv = 'V [mV],I [mA],P [mW],R [mOhm]\n';
+    datosEnsayoSolar.forEach(d => {
+        csv += `${d.v.toFixed(2)},${d.i.toFixed(2)},${d.p.toFixed(2)},${d.r.toFixed(2)}\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'ensayo_panel_solar.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    mostrarToast('Archivo CSV descargado.', 'ok');
+}
+
+
+
+
+// --- LÓGICA PASO 9: LEVITACIÓN MAGNÉTICA ---
+async function ejecutarMagpylibLevitacion() {
+    const contenedor = document.getElementById('res-magpylib-levitacion');
+    if (!contenedor) return;
+    
+    // Verificación de requisitos previos
+    if (!EstadoDiseno.masaTotal) {
+        if (typeof mostrarToast === 'function') {
+            mostrarToast("⚠️ Error: Debes completar y calcular los pasos anteriores (Geometría y Masa) para conocer el peso real del rotor.", "error");
+        } else {
+            alert("⚠️ Error: Debes completar y calcular los pasos anteriores (Geometría y Masa) para conocer el peso real del rotor.");
+        }
+        return;
+    }
+
+    contenedor.innerHTML = '<div style="padding: 20px; text-align: center; color: #3b82f6;"><div class="spinner"></div> Calculando punto de equilibrio exacto (Búsqueda Binaria de Fuerzas)...</div>';
+    
+    try {
+        // Recoger variables geométricas
+        let sustL = 20, sustW = 10, sustH = 5, brSust = 1200;
+        const selLevSust = document.getElementById('lev-sust-iman')?.value;
+        if (typeof dbImanes !== 'undefined' && selLevSust !== undefined && dbImanes[Number(selLevSust)]) {
+            const iman = dbImanes[Number(selLevSust)];
+            sustL = parseFloat(iman.l) || 20;
+            sustW = parseFloat(iman.a) || 10;
+            sustH = parseFloat(iman.h) || 5;
+            brSust = parseFloat(iman.br) * 1000 || 1200; // a mT
+        }
+        const sepX = parseFloat(document.getElementById('lev-sust-sep-x')?.value) || 100;
+        const sepY = parseFloat(document.getElementById('lev-sust-sep-y')?.value) || 40;
+        const inclinacion = parseFloat(document.getElementById('lev-sust-inclinacion')?.value) || 0;
+        const elevZ = parseFloat(document.getElementById('lev-sust-z')?.value) || 0;
+        
+        const polIzq = document.getElementById('lev-sust-pol-izq')?.value || "1";
+        const polDer = document.getElementById('lev-sust-pol-der')?.value || "-1";
+
+        const base_mags_data = [];
+        const posBase = [
+            [-sepX/2, -sepY/2], [sepX/2, -sepY/2], // Lado Izquierdo (Y < 0)
+            [-sepX/2, sepY/2], [sepX/2, sepY/2]    // Lado Derecho (Y > 0)
+        ];
+        
+        posBase.forEach((p, idx) => {
+            const isLeftSupport = p[0] < 0; // Eje X determina si es el soporte izquierdo o derecho
+            const isFrontMagnet = p[1] < 0; // Eje Y determina si es el imán delantero o trasero de ese soporte
+            
+            const polVal = isLeftSupport ? (polIzq === "1" ? brSust : -brSust) : (polDer === "1" ? brSust : -brSust);
+            // Magpylib usa la regla de la mano derecha. Para que inclinacion > 0 signifique "abrir hacia afuera" (como en el SVG),
+            // el imán delantero (Y < 0) debe rotar en positivo, y el trasero (Y > 0) en negativo.
+            const anguloRot = isFrontMagnet ? inclinacion : -inclinacion;
+            
+            base_mags_data.push({
+                dimension: [sustH, sustW, sustL], // X, Y, Z
+                posicion: [p[0], p[1], elevZ + sustL/2], 
+                magnetizacion: [polVal, 0, 0],
+                // El eje Z en Magpylib apunta hacia arriba, y la base está en Z=0.
+                // El ancla de rotación es la parte inferior del imán (elevZ).
+                rotacion: { angle: anguloRot, axis: 'x', anchor: [p[0], p[1], elevZ] }
+            });
+        });
+
+        let rIman = 7.5, wIman = 3, brRotor = 1200;
+        const selLevRotor = document.getElementById('lev-rotor-iman')?.value;
+        if (typeof dbImanes !== 'undefined' && selLevRotor !== undefined && dbImanes[Number(selLevRotor)]) {
+            const iman = dbImanes[Number(selLevRotor)];
+            rIman = (parseFloat(iman.d || iman.l) || 15) / 2;
+            wIman = parseFloat(iman.h || iman.a) || 3;
+            brRotor = parseFloat(iman.br) * 1000 || 1200; // a mT
+        }
+
+        const orientacionRotorIzq = document.getElementById('lev-rotor-pol-izq')?.value || "1";
+        const orientacionRotorDer = document.getElementById('lev-rotor-pol-der')?.value || "1";
+        const realPolRotorIzq = orientacionRotorIzq === "1" ? polIzq : (polIzq === "1" ? "-1" : "1");
+        const realPolRotorDer = orientacionRotorDer === "1" ? polDer : (polDer === "1" ? "-1" : "1");
+
+        const rotor_mags_data = [
+            { x: -sepX/2, y: 0, r: rIman, w: wIman, pol_x: realPolRotorIzq === "1" ? brRotor : -brRotor },
+            { x: sepX/2,  y: 0, r: rIman, w: wIman, pol_x: realPolRotorDer === "1" ? brRotor : -brRotor }
+        ];
+
+        const masaKg = (EstadoDiseno.masaTotal || 50) / 1000;
+        const weight_N = masaKg * 9.81;
+
+        const distApoyo = parseFloat(document.getElementById('lev-apoyo-dist')?.value) || 15;
+
+        // We can just use the input if possible, but let's safely read baseX/Y
+        const baseX = parseFloat(document.getElementById('lev-base-x')?.value) || 120;
+        const baseY = parseFloat(document.getElementById('lev-base-y')?.value) || 80;
+        const diamEje = parseFloat(document.getElementById('diametro-eje')?.value) || EstadoDiseno.diametroEje || 8;
+        
+        const style2d = document.getElementById('magpylib-style')?.value || 'scifi';
+        
+        const payload = {
+            imanes_sustentacion: base_mags_data,
+            imanes_rotor: rotor_mags_data,
+            rotor_weight_N: weight_N,
+            style_2d: style2d,
+            rotor_body: {
+                diametro: parseFloat(document.getElementById('diametro')?.value) || EstadoDiseno.diametroRotor || 20,
+                longitud: (EstadoDiseno.longitudPanel || 30) + 2 * (EstadoDiseno.margenMarco_mm || 0),
+                caras: parseInt(document.getElementById('caras')?.value) || EstadoDiseno.numeroCaras || 4
+            },
+            shaft: {
+                diametro: diamEje,
+                longitud: baseX
+            },
+            base_plate: {
+                x: baseX,
+                y: baseY,
+                z_pos: -2.5 // Base plate at Z=0, con grosor de 5mm, su centro es -2.5
+            }
+        };
+        const response = await fetch('http://127.0.0.1:5000/api/magpylib-levitation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error('Error en el servidor Python calculando levitación.');
+        const data = await response.json();
+        
+        let html = '<div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">';
+        html += '<h4 style="margin-top:0; color: #1e293b;">🎯 Resultado del Equilibrio</h4>';
+        
+        if (data.levita) {
+            // Sincronización automática del entrehierro del Paso 4
+            // Nota: elevZ y sustL ya están definidos correctamente arriba.
+            const R = (parseFloat(document.getElementById('diametro')?.value) || 30) / 2;
+            
+            const selImanMotor = document.getElementById('iman-motor')?.value;
+            let indH = 5;
+            if (typeof dbImanes !== 'undefined' && selImanMotor !== undefined && dbImanes[Number(selImanMotor)]) {
+                indH = parseFloat(dbImanes[Number(selImanMotor)].h) || 5;
+            }
+            
+            // Altura absoluta del eje respecto a la base de apoyo (mesa Z=0)
+            // Como ahora base_mags_data.posicion Z es positiva, equilibrio_z ES la altura absoluta.
+            const h_eje_base = data.equilibrio_z;
+            EstadoDiseno.equilibrio_z = data.equilibrio_z;
+            // Entrehierro físico = altura del eje - radio rotor - grosor imán motor
+            const gap_fisico = h_eje_base - R - indH;
+            
+            const inputGap = document.getElementById('iman-distancia');
+            if (inputGap) {
+                inputGap.value = Math.max(0, gap_fisico).toFixed(1);
+                if (gap_fisico < 0) {
+                    inputGap.style.color = '#dc2626';
+                    inputGap.title = "¡El rotor choca con el imán del motor! Aumenta la Elevación Z o cambia el imán de sustentación.";
+                } else {
+                    inputGap.style.color = '';
+                    inputGap.title = "Calculado automáticamente desde Levitación (Paso 9)";
+                }
+                if (typeof actualizarResumenPaso1 === 'function') actualizarResumenPaso1();
+            }
+
+            if (gap_fisico < 0) {
+                html += `<div style="background: #fef2f2; color: #dc2626; padding: 10px; border-radius: 6px; font-weight: bold; margin-bottom: 10px; border: 1px solid #fecaca;">⚠️ ¡Alerta: El rotor choca con el imán inferior! Sube la Elevación Z.</div>`;
+            } else {
+                html += `<div style="background: #dcfce7; color: #166534; padding: 10px; border-radius: 6px; font-weight: bold; margin-bottom: 10px;">¡Levitación conseguida!</div>`;
+            }
+            
+            html += `<p><strong>Altura del eje (Z):</strong> <span style="font-family:monospace; font-size:1.1em; color: #16a34a;">${h_eje_base.toFixed(2)} mm</span> (desde la base)</p>`;
+            
+            const gapColor = gap_fisico < 0 ? '#dc2626' : '#d97706';
+            html += `<p><strong>Entrehierro resultante (Paso 4):</strong> <span style="font-family:monospace; font-size:1.1em; color: ${gapColor}; font-weight: ${gap_fisico < 0 ? 'bold' : 'normal'};">${gap_fisico.toFixed(2)} mm</span></p>`;
+            html += `<p><strong>Peso del Rotor:</strong> <span style="font-family:monospace;">${weight_N.toFixed(4)} N</span></p>`;
+            html += `<p style="font-size: 13px; color: #64748b; margin-top: 10px;">El algoritmo de búsqueda binaria ha encontrado el punto exacto donde la repulsión iguala a la gravedad.</p>`;
+        } else {
+            html += `<div style="background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 6px; font-weight: bold; margin-bottom: 10px;">La levitación falla</div>`;
+            html += `<p>${data.mensaje}</p>`;
+        }
+        
+        html += `<div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; align-items: start;">`;
+        
+        if (data.streamplot_base64) {
+            html += `
+            <div style="flex: 1 1 350px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-top: 15px;">
+                <div style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 12px;">
+                    <h4 style="margin: 0; color: #334155; font-size: 13px; font-weight: 600;">LÍNEAS DE CAMPO MAGNÉTICO (Corte Central)</h4>
+                </div>
+                <div style="padding: 15px;">
+                    <img src="data:image/png;base64,${data.streamplot_base64}" style="max-width: 100%; display: block; margin: 0 auto;" alt="Líneas de campo magnético">
+                </div>
+            </div>`;
+        }
+        
+        html += `</div>`; // Close row
+        
+        if (data.plotly_html) {
+             html += `
+             <div style="margin-top: 25px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                 <div style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                     <h4 style="margin: 0; color: #334155; font-size: 13px; font-weight: 600;">VISOR 3D INTERACTIVO (Plotly)</h4>
+                     <span style="font-size: 11px; color: #64748b; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">Interactúa: Click + Arrastrar para rotar, Rueda para Zoom</span>
+                 </div>
+                 <div style="padding: 0px; width: 100%; height: 500px; display: flex; justify-content: center; align-items: center;">
+                     <div style="width: 100%; height: 100%;">
+                         ${data.plotly_html}
+                     </div>
+                 </div>
+             </div>`;
+        } else if (data.image_base64) {
+             html += `<div style="text-align:center; margin-top:15px;"><img src="data:image/png;base64,${data.image_base64}" style="max-width: 100%; border-radius:8px; border:1px solid #cbd5e1;" alt="Vista 3D Isométrica"></div>`;
+        }
+        
+        html += '</div>';
+        contenedor.innerHTML = html;
+        
+        // Ejecutar los scripts incrustados de Plotly
+        if (data.plotly_html) {
+            const scripts = contenedor.querySelectorAll('script');
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement('script');
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+        }
+        
+    } catch (error) {
+        contenedor.innerHTML = `<div style="padding: 15px; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">Error: ${error.message}. ¿Está corriendo el servidor Python?</div>`;
+    }
+}
+
+
+// --- PASO 9: SIMULACION GLOBAL MAGPYLIB ---
+async function renderizarPasoMagpylibGlobal() {
+    const contenedor = document.getElementById('magpylib-resultados-global');
+    if (!contenedor) return;
+    
+    // Verificaciones de requisitos previos
+    if (!window._lastMagpylibPayload) {
+        if (typeof mostrarToast === 'function') {
+            mostrarToast("⚠️ Error: Debes calcular primero el Paso 8 (Simulación Magpylib) para definir el motor base.", "error");
+        } else {
+            alert("⚠️ Error: Debes calcular primero el Paso 8 (Simulación Magpylib) para definir el motor base.");
+        }
+        return;
+    }
+    
+    if (!EstadoDiseno.equilibrio_z) {
+        if (typeof mostrarToast === 'function') {
+            mostrarToast("⚠️ Error: Debes simular primero el Paso 4 (Levitación) para hallar la altura de equilibrio.", "error");
+        } else {
+            alert("⚠️ Error: Debes simular primero el Paso 4 (Levitación) para hallar la altura de equilibrio.");
+        }
+        return;
+    }
+    
+    contenedor.innerHTML = '<div style="padding: 20px; text-align: center; color: #8e44ad;"><div class="spinner"></div> Calculando interacción magnética global en 3D...</div>';
+    
+    try {
+        // 1. Recoger Imán Base (Inducción) y Bobinas (igual que Paso 8)
+        const payloadForces = window._lastMagpylibPayload;
+        
+        // 2. Recoger Imanes de Levitación
+        let sustL = 20, sustW = 10, sustH = 5, brSust = 1200;
+        const selLevSust = document.getElementById('lev-sust-iman')?.value;
+        if (typeof dbImanes !== 'undefined' && selLevSust !== undefined && dbImanes[Number(selLevSust)]) {
+            const iman = dbImanes[Number(selLevSust)];
+            sustL = parseFloat(iman.l) || 20;
+            sustW = parseFloat(iman.a) || 10;
+            sustH = parseFloat(iman.h) || 5;
+            brSust = parseFloat(iman.br) * 1000 || 1200;
+        }
+        const sepX = parseFloat(document.getElementById('lev-sust-sep-x')?.value) || 100;
+        const sepY = parseFloat(document.getElementById('lev-sust-sep-y')?.value) || 40;
+        const inclinacion = parseFloat(document.getElementById('lev-sust-inclinacion')?.value) || 0;
+        const elevZ = parseFloat(document.getElementById('lev-sust-z')?.value) || 0;
+        const polIzqSust = document.getElementById('lev-sust-pol-izq')?.value || "1";
+        const polDerSust = document.getElementById('lev-sust-pol-der')?.value || "-1";
+
+        const imanes_sustentacion = [];
+        const posBase = [
+            [-sepX/2, -sepY/2], [-sepX/2, sepY/2],
+            [sepX/2, -sepY/2], [sepX/2, sepY/2]
+        ];
+        posBase.forEach((p, i) => {
+            const isLeftSupport = p[0] < 0;
+            const isFrontMagnet = p[1] < 0;
+            
+            const polVal = isLeftSupport ? (polIzqSust === "1" ? brSust : -brSust) : (polDerSust === "1" ? brSust : -brSust);
+            const anguloRot = isFrontMagnet ? inclinacion : -inclinacion;
+            
+            imanes_sustentacion.push({
+                dimension: [sustH, sustW, sustL], // X, Y, Z
+                posicion: [p[0], p[1], elevZ + sustL/2], 
+                magnetizacion: [polVal, 0, 0],
+                rotacion: { angle: anguloRot, axis: 'x', anchor: [p[0], p[1], elevZ] }
+            });
+        });
+
+        // 3. Imanes del Rotor
+        let rIman = 15/2, wIman = 3, brRotor = 1200;
+        const selLevRotor = document.getElementById('lev-rotor-iman')?.value;
+        if (typeof dbImanes !== 'undefined' && selLevRotor !== undefined && dbImanes[Number(selLevRotor)]) {
+            const iman = dbImanes[Number(selLevRotor)];
+            rIman = (parseFloat(iman.d || iman.l) || 15) / 2;
+            wIman = parseFloat(iman.h || iman.a) || 3;
+            brRotor = parseFloat(iman.br) * 1000 || 1200;
+        }
+        const orientacionRotorIzq = document.getElementById('lev-rotor-pol-izq')?.value || "1";
+        const orientacionRotorDer = document.getElementById('lev-rotor-pol-der')?.value || "1";
+        const realPolRotorIzq = orientacionRotorIzq === "1" ? polIzqSust : (polIzqSust === "1" ? "-1" : "1");
+        const realPolRotorDer = orientacionRotorDer === "1" ? polDerSust : (polDerSust === "1" ? "-1" : "1");
+
+        // Obtenemos la altura del eje desde el backend si está disponible
+        const h_eje_base = EstadoDiseno.equilibrio_z || 22.45; // Default estimación
+
+        const imanes_rotor = [
+            { x: -sepX/2, y: 0, z: h_eje_base, r: rIman, w: wIman, pol_x: realPolRotorIzq === "1" ? brRotor : -brRotor },
+            { x: sepX/2,  y: 0, z: h_eje_base, r: rIman, w: wIman, pol_x: realPolRotorDer === "1" ? brRotor : -brRotor }
+        ];
+
+        const baseX = parseFloat(document.getElementById('lev-base-x')?.value) || 120;
+        const baseY = parseFloat(document.getElementById('lev-base-y')?.value) || 80;
+        const diamEje = parseFloat(document.getElementById('diametro-eje')?.value) || EstadoDiseno.diametroEje || 8;
+
+        const payloadGlobal = {
+            imanes_base: payloadForces.imanes_base,
+            bobinas: payloadForces.bobinas,
+            imanes_sustentacion: imanes_sustentacion,
+            imanes_rotor: imanes_rotor,
+            style_2d: document.getElementById('magpylib-style-global')?.value || 'scifi',
+            rotor_body: {
+                diametro: parseFloat(document.getElementById('diametro')?.value) || EstadoDiseno.diametroRotor || 20,
+                longitud: (EstadoDiseno.longitudPanel || 30) + 2 * (EstadoDiseno.margenMarco_mm || 0),
+                z_pos: h_eje_base
+            },
+            shaft: {
+                diametro: diamEje,
+                longitud: baseX,
+                z_pos: h_eje_base
+            },
+            base_plate: {
+                x: baseX,
+                y: baseY,
+                z_pos: -2.5
+            }
+        };
+
+        const response = await fetch('http://127.0.0.1:5000/api/magpylib-global', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payloadGlobal)
+        });
+
+        if (!response.ok) throw new Error('Error en el servidor Python simulando el circuito global.');
+        const dataGlobal = await response.json();
+        
+        let html = '<div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">';
+        html += '<h4 style="margin-top:0; color: #1e293b;">🪐 Análisis de Fuerzas Global</h4>';
+        
+        const realTorqueGlobal = dataGlobal.torque_x || 0;
+        const torqueBase = EstadoDiseno.par_Nm || 0;
+        
+        const diffTorque = Math.abs(realTorqueGlobal) - torqueBase;
+        const diffPercent = torqueBase > 0 ? (diffTorque / torqueBase * 100).toFixed(2) : 0;
+        const diffColor = diffTorque < 0 ? '#dc2626' : (diffTorque > 0 ? '#16a34a' : '#64748b');
+        const diffSign = diffTorque > 0 ? '+' : '';
+        
+        html += `<div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">`;
+        html += `
+            <div style="flex: 1; min-width: 200px; background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <div style="font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 5px;">PAR MOTRIZ TEÓRICO (Paso 8)</div>
+                <div style="font-size: 24px; font-weight: bold; color: #3b82f6; font-family: monospace;">${torqueBase.toExponential(3)} N·m</div>
+                <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">Solo imán base</div>
+            </div>`;
+        html += `
+            <div style="flex: 1; min-width: 200px; background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <div style="font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 5px;">PAR MOTRIZ GLOBAL (Con Levitación)</div>
+                <div style="font-size: 24px; font-weight: bold; color: #8e44ad; font-family: monospace;">${Math.abs(realTorqueGlobal).toExponential(3)} N·m</div>
+                <div style="font-size: 13px; color: ${diffColor}; font-weight: 600; margin-top: 5px;">
+                    Diferencia: ${diffSign}${diffTorque.toExponential(2)} N·m (${diffSign}${diffPercent}%)
+                </div>
+            </div>`;
+        html += `</div>`;
+        
+        if (dataGlobal.plotly_html) {
+             html += `
+             <div style="margin-top: 15px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                 <div style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                     <h4 style="margin: 0; color: #334155; font-size: 13px; font-weight: 600;">VISOR 3D GLOBAL (MENDOCINO COMPLETO)</h4>
+                 </div>
+                 <div style="padding: 0px; width: 100%; height: 500px; display: flex; justify-content: center; align-items: center;">
+                     <div style="width: 100%; height: 100%;">
+                         ${dataGlobal.plotly_html}
+                     </div>
+                 </div>
+             </div>`;
+        }
+        
+        html += '</div>';
+        contenedor.innerHTML = html;
+        
+        if (dataGlobal.plotly_html) {
+            const scripts = contenedor.querySelectorAll('script');
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement('script');
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+        }
+        
+    } catch (error) {
+        contenedor.innerHTML = `<div style="padding: 15px; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">Error: ${error.message}.</div>`;
+    }
+}
+
+// --- LEVITACIÓN MAGNÉTICA (PASO 9) ---
+function actualizarVistasLevitacion() {
+    let sustL = 20, sustW = 10, sustH = 5;
+    const selLevSust = document.getElementById('lev-sust-iman')?.value;
+    const imanSustData = (typeof dbImanes !== 'undefined' && selLevSust !== undefined && dbImanes[Number(selLevSust)]) ? dbImanes[Number(selLevSust)] : null;
+    
+    if (imanSustData) {
+        sustL = parseFloat(imanSustData.l) || 20;
+        sustW = parseFloat(imanSustData.a) || 10;
+        sustH = parseFloat(imanSustData.h) || 5;
+        const infoSust = document.getElementById('info-lev-sust-iman');
+        if (infoSust) {
+            infoSust.innerHTML = `Dimensiones: ${sustL} x ${sustW} x ${sustH} mm | Campo Br: ${imanSustData.br} T`;
+        }
+    }
+    const sepX = parseFloat(document.getElementById('lev-sust-sep-x')?.value) || 100;
+    const sepY = parseFloat(document.getElementById('lev-sust-sep-y')?.value) || 40;
+    const inclinacion = parseFloat(document.getElementById('lev-sust-inclinacion')?.value) || 0;
+    const elevZ = parseFloat(document.getElementById('lev-sust-z')?.value) || 0;
+    const distApoyo = parseFloat(document.getElementById('lev-apoyo-dist')?.value) || 15;
+    
+    // Imán del Rotor (Anular/Disco)
+    let rIman = 15/2, wIman = 3; // Radio y grosor del imán
+    const selLevRotor = document.getElementById('lev-rotor-iman')?.value;
+    const imanRotorData = (typeof dbImanes !== 'undefined' && selLevRotor !== undefined && dbImanes[Number(selLevRotor)]) ? dbImanes[Number(selLevRotor)] : null;
+    
+    if (imanRotorData) {
+        const diametro = parseFloat(imanRotorData.d || imanRotorData.l) || 15;
+        rIman = diametro / 2;
+        wIman = parseFloat(imanRotorData.h || imanRotorData.a) || 3;
+        
+        const infoRotor = document.getElementById('info-lev-rotor-iman');
+        if (infoRotor) {
+            infoRotor.innerHTML = `Diámetro: ${diametro} mm | Grosor: ${wIman} mm | Campo Br: ${imanRotorData.br} T`;
+        }
+    }
+    const dIman = wIman; 
+
+    // Imán de Inducción desde Paso 4
+    let indL = 40, indW = 20, indH = 5;
+    const selImanMotor = document.getElementById('iman-motor')?.value;
+    const imanData = (typeof dbImanes !== 'undefined' && selImanMotor !== undefined && dbImanes[Number(selImanMotor)]) ? dbImanes[Number(selImanMotor)] : null;
+    let orientacionInd = document.getElementById('iman-orientacion')?.value || "long";
+    
+    if (imanData) {
+        indL = parseFloat(imanData.l) || 40;
+        indW = parseFloat(imanData.a) || 20;
+        indH = parseFloat(imanData.h) || 5;
+        const infoSpan = document.getElementById('info-iman-induccion');
+        if (infoSpan) {
+            infoSpan.innerHTML = `Imán base seleccionado: <b>${imanData.nombre}</b> (${indL}x${indW}x${indH} mm)<br>Orientación: ${orientacionInd === 'long' ? 'Largo paralelo al eje' : 'Ancho paralelo al eje'}`;
+        }
+    }
+    
+    let indX = indL;
+    let indY = indW;
+    if (orientacionInd === "trans") {
+        indX = indW;
+        indY = indL;
+    }
+
+    // --- CÁLCULO DINÁMICO DE LA BASE ---
+    const apoyoAncho = 1; // Grosor físico real del cristal
+    const R_edge = (sepX/2) + distApoyo + apoyoAncho + 10;
+    const L_edge = -(sepX/2) - (sustH/2) - 10;
+    const baseX = Math.ceil(R_edge - L_edge);
+    const centerX = (R_edge + L_edge) / 2;
+    
+    const radY = Math.abs(inclinacion * Math.PI / 180);
+    const wProjY = sustW * Math.cos(radY) + sustL * Math.sin(radY);
+    const dispY = (sustL / 2) * Math.sin(radY);
+    const max_sust_Y = (sepY/2) + dispY + (wProjY/2);
+    const max_ind_Y = indY / 2;
+    const baseY = Math.ceil(2 * Math.max(max_sust_Y + 10, max_ind_Y + 10));
+
+    const inBaseX = document.getElementById('lev-base-x');
+    const inBaseY = document.getElementById('lev-base-y');
+    if (inBaseX) inBaseX.value = baseX;
+    if (inBaseY) inBaseY.value = baseY;
+
+    const polaridadInd = document.getElementById('iman-polaridad')?.value || "1";
+    const indFill = polaridadInd === "1" ? "#ef4444" : "#3b82f6";
+    const indStroke = polaridadInd === "1" ? "#b91c1c" : "#1d4ed8";
+
+    const topSvg = document.getElementById('svg-lev-top');
+    const frontSvg = document.getElementById('svg-lev-front');
+    if(!topSvg || !frontSvg) return;
+
+    // --- VISTA SUPERIOR (TOP) ---
+    // X = eje del rotor, Y = transversal
+    let topHtml = `<rect x="${L_edge}" y="${-baseY/2}" width="${baseX}" height="${baseY}" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2" rx="4"/>`;
+    
+    // Imán inducción
+    topHtml += `<rect x="${-indX/2}" y="${-indY/2}" width="${indX}" height="${indY}" fill="${indFill}" stroke="${indStroke}" stroke-width="0.3" rx="2"/>`;
+    
+    // Imanes de sustentación
+    const pos = [
+        [-sepX/2, -sepY/2], [sepX/2, -sepY/2],
+        [-sepX/2, sepY/2], [sepX/2, sepY/2]
+    ];
+    const polIzq = document.getElementById('lev-sust-pol-izq')?.value || "1";
+    const polDer = document.getElementById('lev-sust-pol-der')?.value || "-1";
+
+    pos.forEach((p, idx) => {
+        const isLeft = (idx === 0 || idx === 2);
+        const pol = isLeft ? polIzq : polDer;
+        
+        // Si pol == "1" (Norte +X): cara +X (derecha) es Roja, cara -X (izquierda) es Azul.
+        // Si pol == "-1" (Sur +X): cara +X (derecha) es Azul, cara -X (izquierda) es Roja.
+        const colorNegX = pol === "1" ? "#3b82f6" : "#ef4444"; // Mitad izquierda
+        const colorPosX = pol === "1" ? "#ef4444" : "#3b82f6"; // Mitad derecha
+        
+        const rad = inclinacion * Math.PI / 180;
+        const wProj = sustW * Math.abs(Math.cos(rad)) + sustL * Math.abs(Math.sin(rad));
+        
+        // Si inclinacion > 0 (hacia afuera), el centro se desplaza hacia afuera
+        // p[1] es -sepY/2 (izq) o +sepY/2 (der).
+        const disp = (sustL / 2) * Math.sin(Math.abs(rad));
+        const dir = p[1] < 0 ? -1 : 1; 
+        // Si inclinacion > 0, desplaza hacia afuera (mismo signo que p[1])
+        // Si inclinacion < 0, desplaza hacia adentro (signo opuesto)
+        const sign = inclinacion >= 0 ? 1 : -1;
+        const cy = p[1] + (dir * sign * disp);
+        
+        topHtml += `<rect x="${p[0] - sustH/2}" y="${cy - wProj/2}" width="${sustH/2}" height="${wProj}" fill="${colorNegX}" stroke="none"/>`;
+        topHtml += `<rect x="${p[0]}" y="${cy - wProj/2}" width="${sustH/2}" height="${wProj}" fill="${colorPosX}" stroke="none"/>`;
+        topHtml += `<rect x="${p[0] - sustH/2}" y="${cy - wProj/2}" width="${sustH}" height="${wProj}" fill="none" stroke="#1e293b" stroke-width="0.3" rx="1"/>`;
+    });
+
+    // Apoyo del eje (Tope de Fricción / Cristal)
+    // El imán derecho está en x = sepX/2
+    const xApoyo = sepX/2 + distApoyo;
+    const apoyoAlto = 15; // En vista superior, representa el ancho del cristal
+
+    // Dibujar el apoyo en Vista Superior
+    topHtml += `<rect x="${xApoyo}" y="${-apoyoAlto/2}" width="${apoyoAncho}" height="${apoyoAlto}" fill="#bae6fd" stroke="#7dd3fc" stroke-width="0.5" rx="0.5" opacity="0.6"/>`;
+
+    // Eje del rotor (Cilindro central semi-transparente con un extremo en punta)
+    const diamEje = EstadoDiseno.diametroEje || 8;
+    const puntaLargo = diamEje; // La punta ocupa un largo proporcional al diámetro
+    
+    // La punta toca exactamente la cara izquierda del cristal de apoyo
+    const xDchaPunta = xApoyo;
+    const xDchaRecta = xDchaPunta - puntaLargo;
+    
+    // Asumimos un eje simétrico o que sobresale por la izquierda la misma distancia total
+    // o simplemente un largo base más un margen. Hagamos que por la izquierda asome un poco más de la base:
+    const xIzq = L_edge - 15;
+    
+    const yArr = -diamEje/2;
+    const yAba = diamEje/2;
+    
+    const puntosEje = `${xIzq},${yArr} ${xDchaRecta},${yArr} ${xDchaPunta},0 ${xDchaRecta},${yAba} ${xIzq},${yAba}`;
+    topHtml += `<polygon points="${puntosEje}" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2" opacity="0.4"/>`;
+    // Cuerpo del rotor (Cilindro circunscrito semi-transparente)
+    const largoTotalRotor = (EstadoDiseno.longitudPanel || 30) + 2 * (EstadoDiseno.margenMarco_mm || 0);
+    const diamRotor = EstadoDiseno.diametroRotor || 20;
+    topHtml += `<rect x="${-largoTotalRotor/2}" y="${-diamRotor/2}" width="${largoTotalRotor}" height="${diamRotor}" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2" opacity="0.4"/>`;
+    
+    // Colores basados en polaridad para imanes de levitación del rotor
+    const orientacionRotorIzq = document.getElementById('lev-rotor-pol-izq')?.value || "1";
+    const orientacionRotorDer = document.getElementById('lev-rotor-pol-der')?.value || "1";
+
+    // Si orientacion es 1 (Alineado), tiene la MISMA polaridad que la sustentación.
+    // Si orientacion es -1 (Invertido), invertimos la polaridad lógica.
+    const realPolRotorIzq = orientacionRotorIzq === "1" ? polIzq : (polIzq === "1" ? "-1" : "1");
+    const realPolRotorDer = orientacionRotorDer === "1" ? polDer : (polDer === "1" ? "-1" : "1");
+
+    const colorNegX_izq = realPolRotorIzq === "1" ? "#3b82f6" : "#ef4444";
+    const colorPosX_izq = realPolRotorIzq === "1" ? "#ef4444" : "#3b82f6";
+    
+    const colorNegX_der = realPolRotorDer === "1" ? "#3b82f6" : "#ef4444";
+    const colorPosX_der = realPolRotorDer === "1" ? "#ef4444" : "#3b82f6";
+
+    // Leer desplazamiento axial de los imanes del rotor
+    const offsetRotorIzq = parseFloat(document.getElementById('lev-rotor-offset-izq')?.value) || 0;
+    const offsetRotorDer = parseFloat(document.getElementById('lev-rotor-offset-der')?.value) || 0;
+
+    // Imán anular izquierdo
+    topHtml += `<rect x="${-sepX/2 - wIman/2 + offsetRotorIzq}" y="${-rIman}" width="${wIman/2}" height="${rIman*2}" fill="${colorNegX_izq}" stroke="none" opacity="0.9"/>`;
+    topHtml += `<rect x="${-sepX/2 + offsetRotorIzq}" y="${-rIman}" width="${wIman/2}" height="${rIman*2}" fill="${colorPosX_izq}" stroke="none" opacity="0.9"/>`;
+    topHtml += `<rect x="${-sepX/2 - wIman/2 + offsetRotorIzq}" y="${-rIman}" width="${wIman}" height="${rIman*2}" fill="none" stroke="#1e293b" stroke-width="0.5"/>`;
+
+    // Imán anular derecho
+    topHtml += `<rect x="${sepX/2 - wIman/2 + offsetRotorDer}" y="${-rIman}" width="${wIman/2}" height="${rIman*2}" fill="${colorNegX_der}" stroke="none" opacity="0.9"/>`;
+    topHtml += `<rect x="${sepX/2 + offsetRotorDer}" y="${-rIman}" width="${wIman/2}" height="${rIman*2}" fill="${colorPosX_der}" stroke="none" opacity="0.9"/>`;
+    topHtml += `<rect x="${sepX/2 - wIman/2 + offsetRotorDer}" y="${-rIman}" width="${wIman}" height="${rIman*2}" fill="none" stroke="#1e293b" stroke-width="0.5"/>`;
+    
+    // Ajuste dinámico de vista superior (Top View)
+    const maxTopW = Math.max(baseX, sepX + sustH) + 60;
+    const maxTopH = Math.max(baseY, sepY + sustW) + 60;
+    topSvg.setAttribute('viewBox', `${centerX - maxTopW/2} ${-maxTopH/2} ${maxTopW} ${maxTopH}`);
+    
+    topSvg.innerHTML = topHtml;
+
+    // --- VISTA FRONTAL (FRONT) ---
+    // Y = transversal, Z = altura
+    
+    // Calcular profundidad máxima de los imanes en la base
+    const radFrontal = inclinacion * Math.PI / 180;
+    const yCorners = [
+        (-sustW/2) * Math.sin(radFrontal),
+        (sustW/2) * Math.sin(radFrontal),
+        (-sustW/2) * Math.sin(radFrontal) - sustL * Math.cos(radFrontal),
+        (sustW/2) * Math.sin(radFrontal) - sustL * Math.cos(radFrontal)
+    ];
+    const maxDescenso = Math.max(...yCorners); // Cuánto baja respecto al pivote
+    const profundidadTotal = -elevZ + maxDescenso; // Profundidad desde la superficie de la base
+    
+    let baseH = 10; // Altura mínima por defecto
+    if (profundidadTotal + 5 > baseH) {
+        baseH = profundidadTotal + 5; // Adaptar la base si el imán excede
+    }
+    
+    const airgap = 10; // Gap entre sustentación y rotor
+    
+    // Suelo
+    const maxFrontW = Math.max(baseY, sepY + sustW) + 60;
+    
+    // Máscara para hacer translúcidos los objetos hundidos en la base
+    let frontHtml = `
+    <defs>
+        <mask id="mask-base">
+            <rect x="-1000" y="-1000" width="2000" height="${1000 - baseH/2}" fill="white"/>
+            <rect x="-1000" y="${-baseH/2}" width="2000" height="2000" fill="white" fill-opacity="0.3"/>
+        </mask>
+    </defs>`;
+    
+    frontHtml += `<line x1="${-maxFrontW/2}" y1="${baseH/2}" x2="${maxFrontW/2}" y2="${baseH/2}" stroke="#cbd5e1" stroke-width="2"/>`;
+    
+    // Base frontal (solo el ancho Y) con aristas superiores redondeadas
+    const rBaseFront = 6;
+    const x0 = -baseY/2;
+    const y0 = -baseH/2;
+    const x1 = baseY/2;
+    const y1 = baseH/2;
+    const pathBaseFront = `M ${x0},${y1} L ${x0},${y0 + rBaseFront} A ${rBaseFront},${rBaseFront} 0 0 1 ${x0 + rBaseFront},${y0} L ${x1 - rBaseFront},${y0} A ${rBaseFront},${rBaseFront} 0 0 1 ${x1},${y0 + rBaseFront} L ${x1},${y1} Z`;
+    frontHtml += `<path d="${pathBaseFront}" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>`;
+    
+    // Imán inducción (vemos la dimensión transversal Y y su altura real)
+    const indBotColor = polaridadInd === "1" ? "#3b82f6" : "#ef4444";
+    frontHtml += `<rect x="${-indY/2}" y="${-baseH/2 - indH}" width="${indY}" height="${indH/2}" fill="${indFill}" stroke="none"/>`;
+    frontHtml += `<rect x="${-indY/2}" y="${-baseH/2 - indH/2}" width="${indY}" height="${indH/2}" fill="${indBotColor}" stroke="none"/>`;
+    frontHtml += `<rect x="${-indY/2}" y="${-baseH/2 - indH}" width="${indY}" height="${indH}" fill="none" stroke="#1e293b" stroke-width="0.5"/>`;
+    
+    // Generamos los imanes de sustentación en un string para añadirlos AL FINAL
+    let frontSustHtml = "";
+    const xs = [-sepY/2 - sustW/2, sepY/2 - sustW/2];
+    xs.forEach((x, idx) => {
+        const caraFrontal = polIzq === "1" ? "#3b82f6" : "#ef4444";
+        const cxPivot = x + sustW/2;
+        const cyPivot = -baseH/2 - elevZ; // Punto de pivote en la base + elevacion
+        // Si idx == 0 (izquierda), un angulo negativo (antihorario) lo abre hacia afuera.
+        // Queremos que inclinacion > 0 signifique "abrir hacia afuera"
+        const anguloRot = idx === 0 ? -inclinacion : inclinacion;
+        
+        // El bloque se dibuja elevZ por encima de la base
+        frontSustHtml += `<rect x="${x}" y="${-baseH/2 - elevZ - sustL}" width="${sustW}" height="${sustL}" fill="${caraFrontal}" stroke="${caraFrontal === '#3b82f6' ? '#1d4ed8' : '#b91c1c'}" stroke-width="0.5" transform="rotate(${anguloRot}, ${cxPivot}, ${cyPivot})"/>`;
+    });
+
+    // Rotor frontal (sección transversal)
+    // El rotor descansa sobre los imanes de sustentación.
+    // La altura máxima de los imanes de sustentación depende de su inclinación y elevación.
+    const rad = inclinacion * Math.PI / 180;
+    const alturaSustEfectiva = sustL * Math.cos(rad);
+    const rotorZ = -baseH/2 - elevZ - alturaSustEfectiva - airgap - dIman;
+    
+    // Geometría del rotor basada en el Paso 2
+    const N = EstadoDiseno.numeroCaras || 4;
+    const tipoRanura = document.getElementById('ranura-tipo')?.value || 'rect';
+    const Ds = EstadoDiseno.altoRanura_mm || 5;
+    const R = EstadoDiseno.radioCircunscrito || dIman + Ds;
+    const angP = EstadoDiseno.anguloPanel || (Math.PI * 2 / N * 0.8);
+    const angS = EstadoDiseno.anguloRanura || (Math.PI * 2 / N * 0.2);
+    
+    let dRotor = "";
+    const Rfondo = Math.max(R - Ds, 2);
+    for (let i = 0; i < N; i++) {
+        const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2); 
+        const theta1 = anguloCentroPanel - (angP / 2); 
+        const theta2 = anguloCentroPanel + (angP / 2); 
+        const theta3 = theta2 + angS;                  
+
+        const p1x = R * Math.cos(theta1);
+        const p1y = rotorZ + R * Math.sin(theta1);
+        const p2x = R * Math.cos(theta2);
+        const p2y = rotorZ + R * Math.sin(theta2);
+        const p3x = R * Math.cos(theta3);
+        const p3y = rotorZ + R * Math.sin(theta3);
+
+        if (i === 0) dRotor += `M ${p1x} ${p1y} `;
+        else dRotor += `L ${p1x} ${p1y} `;
+        
+        dRotor += `L ${p2x} ${p2y} `;
+
+        if (tipoRanura === 'trapecio') {
+            const s1x = Rfondo * Math.cos(theta2);
+            const s1y = rotorZ + Rfondo * Math.sin(theta2);
+            const s2x = Rfondo * Math.cos(theta3);
+            const s2y = rotorZ + Rfondo * Math.sin(theta3);
+            dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
+        } else { 
+            const thetaBisectriz = (theta2 + theta3) / 2;
+            const dirX = Math.cos(thetaBisectriz);
+            const dirY = Math.sin(thetaBisectriz);
+            
+            const s1x = p2x - dirX * Ds;
+            const s1y = p2y - dirY * Ds;
+            const s2x = p3x - dirX * Ds;
+            const s2y = p3y - dirY * Ds;
+            dRotor += `L ${s1x} ${s1y} L ${s2x} ${s2y} `;
+        }
+    }
+    dRotor += "Z";
+    
+    const colorRotor = getComputedStyle(document.documentElement).getPropertyValue('--svg-panel-color').trim() || "#93c5fd";
+    frontHtml += `<path d="${dRotor}" fill="${colorRotor}" stroke="#64748b" stroke-width="0.3"/>`;
+    
+    // --- DIBUJO DEL BOBINADO ---
+    const fo = EstadoDiseno.factorOcupacion || 0;
+    if (fo > 0) {
+        const esExceso = fo >= 1.0;
+        const colorBobinado = esExceso ? "#e74c3c" : "#d35400";
+        const opacidadBobinado = esExceso ? "1.0" : "0.8"; 
+        const profBobinado = Ds * Math.min(fo, 1.2); 
+        
+        for (let i = 0; i < N; i++) {
+            const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
+            const theta2 = anguloCentroPanel + (angP / 2); 
+            const theta3 = theta2 + angS;
+            const thetaBisectriz = (theta2 + theta3) / 2;
+            const dirX = Math.cos(thetaBisectriz);
+            const dirY = Math.sin(thetaBisectriz);
+
+            let pVbob = "";
+
+            if (tipoRanura === 'trapecio') {
+                const f1x = Rfondo * Math.cos(theta2);
+                const f1y = rotorZ + Rfondo * Math.sin(theta2);
+                const f2x = Rfondo * Math.cos(theta3);
+                const f2y = rotorZ + Rfondo * Math.sin(theta3);
+
+                const rExt = Rfondo + profBobinado;
+                const o1x = rExt * Math.cos(theta2);
+                const o1y = rotorZ + rExt * Math.sin(theta2);
+                const o2x = rExt * Math.cos(theta3);
+                const o2y = rotorZ + rExt * Math.sin(theta3);
+                
+                pVbob = `${f1x},${f1y} ${o1x},${o1y} ${o2x},${o2y} ${f2x},${f2y}`;
+            } else {
+                const p2x = R * Math.cos(theta2);
+                const p2y = rotorZ + R * Math.sin(theta2);
+                const p3x = R * Math.cos(theta3);
+                const p3y = rotorZ + R * Math.sin(theta3);
+
+                const f1x = p2x - dirX * Ds;
+                const f1y = p2y - dirY * Ds;
+                const f2x = p3x - dirX * Ds;
+                const f2y = p3y - dirY * Ds;
+
+                const o1x = f1x + dirX * profBobinado;
+                const o1y = f1y + dirY * profBobinado;
+                const o2x = f2x + dirX * profBobinado;
+                const o2y = f2y + dirY * profBobinado;
+
+                pVbob = `${f1x},${f1y} ${o1x},${o1y} ${o2x},${o2y} ${f2x},${f2y}`;
+            }
+            frontHtml += `<polygon points="${pVbob}" fill="${colorBobinado}" opacity="${opacidadBobinado}"/>`;
+        }
+    }
+
+    // --- DIBUJO DE PLACAS SOLARES ---
+    const Wp = EstadoDiseno.anchoPanel || 20;
+    for (let i = 0; i < N; i++) {
+        const anguloCentroPanel = i * (angP + angS) - (Math.PI / 2);
+        
+        const WpTotal = Wp + (2 * (EstadoDiseno.margenMarco_mm || 0));
+        const proporcionPlaca = WpTotal > 0 ? (Wp / WpTotal) : 1;
+        const angPlacaReal = angP * proporcionPlaca;
+
+        const theta1 = anguloCentroPanel - (angPlacaReal / 2);
+        const theta2 = anguloCentroPanel + (angPlacaReal / 2);
+
+        const p1x = R * Math.cos(theta1);
+        const p1y = rotorZ + R * Math.sin(theta1);
+        const p2x = R * Math.cos(theta2);
+        const p2y = rotorZ + R * Math.sin(theta2);
+
+        frontHtml += `<line x1="${p1x}" y1="${p1y}" x2="${p2x}" y2="${p2y}" stroke="#2c3e50" stroke-width="0.8"/>`;
+    }
+
+    // --- DIBUJO DEL EJE ---
+    const rEje = (EstadoDiseno.diametroEje || 8) / 2;
+    frontHtml += `<circle cx="0" cy="${rotorZ}" r="${rEje}" fill="#ffffff" stroke="#64748b" stroke-width="0.3"/>`;
+
+    // Imán anular en el eje (visto de frente es un círculo)
+    // Usamos realPolRotorDer ya que la vista frontal mira desde +X hacia el origen
+    const orientacionRotorDerFront = document.getElementById('lev-rotor-pol-der')?.value || "1";
+    const polDerRotorFront = orientacionRotorDerFront === "1" ? (document.getElementById('lev-sust-pol-der')?.value || "-1") : ((document.getElementById('lev-sust-pol-der')?.value || "-1") === "1" ? "-1" : "1");
+    
+    const colorFrontalRotor = polDerRotorFront === "1" ? "#ef4444" : "#3b82f6";
+    const strokeFrontalRotor = polDerRotorFront === "1" ? "#b91c1c" : "#1d4ed8";
+    frontHtml += `<circle cx="0" cy="${rotorZ}" r="${rIman}" fill="${colorFrontalRotor}" stroke="${strokeFrontalRotor}" stroke-width="0.5" opacity="0.9"/>`;
+    frontHtml += `<circle cx="0" cy="${rotorZ}" r="2" fill="#333"/>`; // centro oscuro del eje
+
+    // Cristal de apoyo frontal (Vista Frontal)
+    const cristalWFront = 15;
+    const cristalHFront = Math.abs(rotorZ + baseH/2) + 25; // 15mm por encima del rotor, 10mm por debajo de la superficie
+    const cristalYFront = rotorZ - 15;
+    frontSustHtml += `<rect x="${-cristalWFront/2}" y="${cristalYFront}" width="${cristalWFront}" height="${cristalHFront}" fill="#bae6fd" stroke="#7dd3fc" stroke-width="1" rx="2" opacity="0.6"/>`;
+
+    // AHORA añadimos los imanes de sustentación y el cristal para que queden en primer plano (superpuestos y enmascarados)
+    frontHtml += `<g mask="url(#mask-base)">${frontSustHtml}</g>`;
+
+    // Ajuste dinámico de vista frontal (Front View)
+    const minFrontY = rotorZ - rIman - 20; // Y en SVG, que es altura Z física (negativa)
+    const maxFrontY = baseH/2 + 20;
+    const maxFrontH = maxFrontY - minFrontY;
+    const centerFrontY = (maxFrontY + minFrontY) / 2;
+    frontSvg.setAttribute('viewBox', `${-maxFrontW/2} ${centerFrontY - maxFrontH/2} ${maxFrontW} ${maxFrontH}`);
+
+    frontSvg.innerHTML = frontHtml;
+
+    // --- ACTUALIZAR ENTREHIERRO EN PASO 4 ---
+    // NOTA: Se ha eliminado la sobreescritura del entrehierro aquí porque 
+    // estaba machacando el cálculo físico real de Magpylib con un "airgap" fijo de 10mm.
+    // El entrehierro solo debe actualizarse cuando el servidor Python devuelve el equilibrio real.
+}
+
+// Llamar a la inicialización cuando se cambie al paso 9
+document.addEventListener('DOMContentLoaded', () => {
+    // Si la función cambiarPaso existe, podemos inyectarle la actualización visual
+    const originalCambiarPaso = window.cambiarPaso;
+    window.cambiarPaso = function(paso) {
+        if(originalCambiarPaso) originalCambiarPaso(paso);
+        if(paso === 9) {
+            setTimeout(actualizarVistasLevitacion, 100);
+        }
+    };
+    setTimeout(actualizarVistasLevitacion, 1000);
+});

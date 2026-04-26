@@ -20,8 +20,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <!-- KaTeX para fórmulas matemáticas -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     
+    <!-- Plotly.js para la gráfica de equilibrado de masas -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
     <title>Motor Mendocino - Calculadora y Datos</title>
-        <link rel="stylesheet" href="styles.css?v=35.32">
+        <link rel="stylesheet" href="styles.css?v=35.35">
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -99,13 +102,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
         <div class="top-navbar">
-            <div class="nav-left">
-                <button class="nav-tab active" id="tab-calc" data-page="calc">⚙️ Calculadora</button>
-                <button class="nav-tab" id="tab-db" data-page="db">🗄️ Componentes</button>
-                <button class="nav-tab" id="tab-videos" data-page="videos">🚀 Proyectos</button>
-            </div>
-
-            <div class="nav-right">
+            <div class="nav-right" style="width: 100%; justify-content: center;">
                 <div class="grupo-config-nav" style="display: flex; gap: 10px;">
                     <button class="btn-toolbar-nav" type="button" onclick="nuevoProyecto()" title="Nuevo proyecto desde cero" style="background: rgba(52, 152, 219, 0.2); border-color: rgba(52, 152, 219, 0.3);">
                         <span>Nuevo</span> ✨
@@ -120,12 +117,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
                 <div class="v-separator"></div>
 
-                <button id="btn-ir-admin" class="btn-action" type="button" onclick="abrirPanelAdmin()" style="display:none; background-color: #9b59b6; margin: 0; padding: 6px 12px; font-size: 11px; border-radius: 20px; border: none;">
-                    🛡️ Admin
+                <button id="btn-ir-admin" class="btn-toolbar-nav" type="button" onclick="abrirPanelAdmin()" style="display:none; background: rgba(155, 89, 182, 0.2); border-color: rgba(155, 89, 182, 0.3);">
+                    <span>Admin</span> 🛡️
                 </button>
 
                 <div id="mensaje-nivel" class="estado-usuario" style="margin-right: 5px;">Cargando...</div>
-                <div id="proyecto-activo-display" class="estado-usuario" style="margin-right: 15px; color: #10b981; font-weight: bold; border-left: 1px solid #444; padding-left: 15px; display:none;"></div>
+                <div id="proyecto-activo-display" class="estado-usuario" style="margin-right: 15px; color: #10b981; font-weight: bold; border-left: 1px solid #444; padding-left: 15px; display:none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;"></div>
 
                 <button class="btn-toolbar-nav" style="background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.3);" type="button" onclick="cerrarSesion()">
                     Salir
@@ -133,34 +130,242 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
         </div>
 
-    <div id="page-calc" class="page-container active">
-
-
-        <div class="card">
-            <div class="header">
-                <h1>Diseño de Motor Mendocino</h1>
-                <p>Calculadora y simulador de parámetros</p>
+    <div class="app-layout">
+        <aside class="global-sidebar">
+            <div class="sidebar-nav-main">
+                <h3 class="sidebar-title">MÓDULOS</h3>
+                <button class="nav-tab active" id="tab-calc" data-page="calc">⚙️ Calculadora</button>
+                <button class="nav-tab" id="tab-db" data-page="db">🗄️ Componentes</button>
+                <button class="nav-tab" id="tab-videos" data-page="videos">🚀 Proyectos</button>
             </div>
-
-            <div class="stepper-container">
-                <div class="step-indicator active" id="ind-1" onclick="cambiarPaso(1)"><span>1. Geometría del motor</span></div>
-                <div class="step-arrow">➔</div>
-                <div class="step-indicator" id="ind-2" onclick="cambiarPaso(2)"><span>2. Devanados</span></div>
-                <div class="step-arrow">➔</div>
-                <div class="step-indicator" id="ind-3" onclick="cambiarPaso(3)"><span>3. Interacción magnética</span></div>
-                <div class="step-arrow">➔</div>
-                <div class="step-indicator" id="ind-4" onclick="cambiarPaso(4)"><span>4. Interacción lumínica</span></div>
-                <div class="step-arrow">➔</div>
-                <div class="step-indicator" id="ind-5" onclick="cambiarPaso(5)"><span>5. FCEM y Velocidad</span></div>
-                <div class="step-arrow">➔</div>
-                <div class="step-indicator" id="ind-6" onclick="cambiarPaso(6)"><span>6. Informe</span></div>
+            
+            <div id="sidebar-context-calc" class="sidebar-context">
+                <hr style="border: none; height: 1px; background: rgba(148, 163, 184, 0.3); margin: 25px 10px;">
+                <h3 class="sidebar-title">FASES DEL DISEÑO</h3>
+                <div class="stepper-container">
+                    <div class="step-indicator active" id="ind-1" onclick="cambiarPaso(1)"><span>1. Ensayo Placas Solares</span></div>
+                    <div class="step-indicator" id="ind-2" onclick="cambiarPaso(2)"><span>2. Geometría del motor</span></div>
+                    <div class="step-indicator" id="ind-3" onclick="cambiarPaso(3)"><span>3. Devanados</span></div>
+                    <div class="step-indicator" id="ind-4" onclick="cambiarPaso(4)"><span>4. Levitación Magnética</span></div>
+                    <div class="step-indicator" id="ind-5" onclick="cambiarPaso(5)"><span>5. Interacción magnética</span></div>
+                    <div class="step-indicator" id="ind-6" onclick="cambiarPaso(6)"><span>6. Interacción lumínica</span></div>
+                    <div class="step-indicator" id="ind-7" onclick="cambiarPaso(7)"><span>7. FCEM y Velocidad</span></div>
+                    <div class="step-indicator" id="ind-8" onclick="cambiarPaso(8)"><span>8. Par Motriz (Magpylib)</span></div>
+                    <div class="step-indicator" id="ind-9" onclick="cambiarPaso(9)"><span>9. Simulación Global</span></div>
+                    <div class="step-indicator" id="ind-10" onclick="cambiarPaso(10)"><span>10. Conexionado Eléctrico</span></div>
+                    <div class="step-indicator" id="ind-11" onclick="cambiarPaso(11)"><span>11. Equilibrado de Masas</span></div>
+                    <div class="step-indicator" id="ind-12" onclick="cambiarPaso(12)"><span>12. Simulación Dinámica</span></div>
+                    <div class="step-indicator" id="ind-13" onclick="cambiarPaso(13)"><span>13. Informe</span></div>
+</div>
             </div>
+        </aside>
+
+        <main class="app-main-content">
+            <div id="page-calc" class="page-container active">
+                <div class="card">
+                    <div class="header">
+                        <h1>Diseño de Motor Mendocino <span style="font-size: 0.5em; color: #94a3b8;">v36.21</span></h1>
+                        <p>Calculadora y simulador de parámetros</p>
+                    </div>
 
             <div class="content">
+                
                 <div id="step-1" class="step-container active">
+                    <div class="form-section">
+                        <h3 class="titulo-seccion-principal">☀️ 1. Ensayo Placas Solares</h3>
+                        <p style="font-size: 14px; color: #666; margin-top: -10px;">
+                            Introduce los datos experimentales de voltaje y corriente para trazar la curva I-V y determinar el punto de máxima potencia.
+                        </p>
+
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; margin-bottom: 15px;">
+                            <h4 class="subtitulo-seccion" style="margin-top: 0; margin-bottom: 0;">1. Definición de la Placa</h4>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="display: flex; align-items: center; background: #fff; border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden;">
+                                    <select id="ensayo-historial-select" onchange="cargarEnsayoDesdeHistorial()" style="padding: 3px 5px; font-size: 12px; border: none; outline: none; cursor: pointer; background: transparent;">
+                                        <option value="">📂 Cargar ensayo guardado...</option>
+                                    </select>
+                                    <button onclick="borrarEnsayoDelHistorial()" title="Eliminar del historial" style="background: #fee2e2; border: none; border-left: 1px solid #cbd5e1; color: #ef4444; cursor: pointer; padding: 3px 8px; font-size: 12px;">✖</button>
+                                </div>
+
+                                <button onclick="limpiarEnsayoSolar()" style="background: none; border: none; color: #ef4444; font-size: 13px; cursor: pointer; padding: 0; margin-left: 5px;">🗑️ Limpiar</button>
+                            </div>
+                        </div>
+
+                        <!-- 1. Definición de la placa (Identificador y medidas) -->
+                        <div style="margin-bottom: 15px;">
+                            <div class="fila-formulario" style="gap: 10px; margin-bottom: 5px;">
+                                <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#475569;">Identificador Panel</label>
+                                    <input type="text" id="ensayo-nombre-panel" placeholder="Ej: Celda 53x18">
+                                </div>
+                                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#475569;">L Ext. (mm)</label>
+                                    <input type="number" id="ensayo-l-panel" placeholder="L Ext" oninput="renderizarResultadosFase1()">
+                                </div>
+                                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#475569;">A Ext. (mm)</label>
+                                    <input type="number" id="ensayo-a-panel" placeholder="A Ext" oninput="renderizarResultadosFase1()">
+                                </div>
+                            </div>
+                            <div class="fila-formulario" style="gap: 10px;">
+                                <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#64748b;">(Opcional) Zona Silicio</label>
+                                    <div style="font-size:10px; color:#94a3b8; margin-top:2px; line-height:1.2;">Calcula la Eficiencia Neta</div>
+                                </div>
+                                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#64748b;">L Útil (mm)</label>
+                                    <input type="number" id="ensayo-l-silicio" placeholder="L Int" oninput="renderizarResultadosFase1()" style="border-color:#cbd5e1; background:#f8fafc;">
+                                </div>
+                                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#64748b;">A Útil (mm)</label>
+                                    <input type="number" id="ensayo-a-silicio" placeholder="A Int" oninput="renderizarResultadosFase1()" style="border-color:#cbd5e1; background:#f8fafc;">
+                                </div>
+                            </div>
+                            <div class="fila-formulario" style="gap: 10px; margin-top: 10px;">
+                                <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#475569;">Proveedor</label>
+                                    <input type="text" id="ensayo-proveedor" placeholder="Ej: Aliexpress" style="padding: 4px; font-size: 12px; border-color: #cbd5e1; background: #fff;">
+                                </div>
+                                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#475569;">Precio (€)</label>
+                                    <input type="number" step="0.01" id="ensayo-precio" placeholder="0.00" style="padding: 4px; font-size: 12px; border-color: #cbd5e1; background: #fff;">
+                                </div>
+                                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#475569;">Peso (g)</label>
+                                    <input type="number" step="0.1" id="ensayo-peso" placeholder="0.0" style="padding: 4px; font-size: 12px; border-color: #cbd5e1; background: #fff;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Condiciones del Ensayo -->
+                        <div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
+                            <h5 style="margin-top:0; color:#334155; font-size:14px; margin-bottom: 10px;">2. Condiciones del Ensayo</h5>
+                            <div class="fila-formulario" style="gap: 10px; margin-bottom: 5px;">
+                                <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#475569;">Fuente de luz</label>
+                                    <select id="ensayo-fuente-luz" onchange="actualizarEsquemaEnsayo()" style="padding: 4px; font-size: 12px; width: 100%;">
+                                        <option value="sol">Luz Solar</option>
+                                        <option value="halogena" selected>Halógena</option>
+                                        <option value="incandescente">Incandescente</option>
+                                        <option value="fluorescente">Fluorescente</option>
+                                        <option value="led">Lámpara LED</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#475569;">Dist. (mm)</label>
+                                    <input type="number" id="ensayo-distancia" value="156" oninput="actualizarEsquemaEnsayo()" style="padding: 4px; font-size: 12px;">
+                                </div>
+                                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#475569;">Lux (opc.)</label>
+                                    <input type="number" id="ensayo-lux" placeholder="Ej: 5000" oninput="renderizarResultadosFase1()" style="padding: 4px; font-size: 12px; border-color: #cbd5e1; background: #fff;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Valores Límite para Factor de Forma -->
+                        <div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
+                            <h5 style="margin-top:0; color:#334155; font-size:14px; margin-bottom: 10px;">3. Valores Límite (Multímetro)</h5>
+                            <div class="fila-formulario" style="gap: 10px; margin-bottom: 5px;">
+                                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#475569;">Voc (mV) - Circuito Abierto</label>
+                                    <input type="number" id="ensayo-voc" placeholder="Ej: 450" oninput="renderizarResultadosFase1(); dibujarGraficaEnsayo();" style="padding: 4px; font-size: 12px; border-color: #cbd5e1; background: #fff;">
+                                </div>
+                                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                    <label style="font-size:11px; margin-bottom:2px; display:block; color:#475569;">Isc (mA) - Cortocircuito</label>
+                                    <input type="number" id="ensayo-isc" placeholder="Ej: 150" oninput="renderizarResultadosFase1(); dibujarGraficaEnsayo();" style="padding: 4px; font-size: 12px; border-color: #cbd5e1; background: #fff;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Registro de Medidas -->
+                        <div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
+                                <h5 style="margin-top:0; color:#334155; font-size:14px; margin-bottom: 0;">4. Registro de Medidas (Potenciómetro)</h5>
+                                <button onclick="exportarEnsayoCSV()" title="Descargar datos en Excel" style="background: none; border: none; color: #10b981; font-size: 13px; cursor: pointer; padding: 0;">📥 CSV</button>
+                            </div>
+                            <div class="fila-formulario">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>V [mV] (Medida)</label>
+                                    <input type="number" id="ensayo-v" placeholder="Ej: 344">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>I [mA] (Medida)</label>
+                                    <input type="number" id="ensayo-i" placeholder="Ej: 73.9">
+                                </div>
+                                <div class="form-group" style="flex: 0.5; display: flex; align-items: flex-end;">
+                                    <button class="btn-primary" style="width: 100%; padding: 10px;" onclick="agregarMedidaEnsayo()">Añadir</button>
+                                </div>
+                            </div>
+
+                            <div style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 5px; margin-bottom: 15px;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: center;">
+                                    <thead style="background-color: #f1f5f9; position: sticky; top: 0;">
+                                        <tr>
+                                            <th style="padding: 8px; border-bottom: 1px solid #cbd5e1; background-color: #f0f9ff; color: #0369a1; border-right: 1px solid #e0f2fe;">V [mV]</th>
+                                            <th style="padding: 8px; border-bottom: 1px solid #cbd5e1; background-color: #f0f9ff; color: #0369a1; border-right: 1px solid #e2e8f0;">I [mA]</th>
+                                            <th style="padding: 8px; border-bottom: 1px solid #cbd5e1; background-color: #fffbeb; color: #b45309; border-right: 1px solid #fef3c7;">P [mW]</th>
+                                            <th style="padding: 8px; border-bottom: 1px solid #cbd5e1; background-color: #fffbeb; color: #b45309; border-right: 1px solid #e2e8f0;">R [mΩ]</th>
+                                            <th style="padding: 8px; border-bottom: 1px solid #cbd5e1; background-color: #f8fafc; color: #64748b;">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-ensayo-body">
+                                        <tr id="ensayo-no-data"><td colspan="5" style="padding: 15px; color: #94a3b8;">No hay datos registrados.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <button class="btn-action" style="width: 100%; background-color: #10b981; border-color: #10b981;" onclick="guardarPanelEnsayoDB()">💾 Guardar Panel para mis Simulaciones</button>
+                        </div>
+
+                        <div style="margin-top: 25px; padding: 15px; background: rgba(59, 130, 246, 0.05); border-left: 4px solid #3b82f6; border-radius: 4px;">
+                            <h4 style="margin-top:0; color:#1e40af; font-size: 15px;">💡 Conceptos Físicos: PMP, FF y Eficiencia STC</h4>
+                            <p style="margin-bottom:8px; font-size:13px; color:#334155; line-height: 1.5;">
+                                El <strong>Punto de Máxima Potencia</strong> es el lugar exacto en la curva I-V (Corriente vs Voltaje) donde la celda solar entrega la mayor cantidad de energía útil al circuito.
+                            </p>
+                            <p style="margin-bottom:8px; font-size:13px; color:#334155; line-height: 1.5;">
+                                En los extremos no hay potencia: si cortocircuitamos la celda ($V=0$) o si dejamos el circuito abierto ($I=0$), la multiplicación matemática ($P = V \times I$) es nula. Al variar la resistencia con nuestro potenciómetro, encontramos el equilibrio óptimo de resistencia ($R_{opt} = V_{mp} / I_{mp}$) donde el rectángulo bajo la gráfica logra su área máxima, determinando el potencial real de nuestra placa para alimentar el motor Mendocino.
+                            </p>
+                            <p style="margin-bottom:8px; font-size:13px; color:#334155; line-height: 1.5;">
+                                El <strong>Factor de Forma (Fill Factor, FF)</strong> es un indicador de la calidad de la placa. Se define como el cociente entre la potencia máxima real que consigue darte (tu PMP) y la "Potencia Teórica Ideal", que sería la caja perfecta multiplicando el máximo voltaje (Voc) por la máxima corriente (Isc). Un FF cercano al 80% indica una celda de muy alta calidad con mínimas pérdidas internas.
+                            </p>
+                            <p style="margin-bottom:8px; font-size:13px; color:#334155; line-height: 1.5;">
+                                La <strong>Eficiencia ($\eta$)</strong> calculada asume el estándar industrial STC (pleno sol de verano a $1000 \text{ W/m}^2$, equivalente a $1 \text{ mW/mm}^2$). En nuestros ensayos de laboratorio bajo nuestra fuente de luz artificial, la irradiación lumínica real que recibe la placa es muchísimo más débil que la del sol. Como la fórmula sigue asumiendo el estándar de insolación perfecta, la eficiencia de nuestra placa parecerá artificialmente baja (del orden del 1-3%).
+                            </p>
+                            <p style="margin-bottom:0; font-size:13px; color:#334155; line-height: 1.5;">
+                                Para conocer la <strong>Eficiencia Real</strong> de nuestra celda en el aula, podemos usar un <strong>luxómetro</strong> (o una app móvil). Los Lux miden la luz visible, y aunque ignoran el espectro infrarrojo (que favorece mucho al silicio), nos sirven como aproximación pedagógica. Sabiendo que $100.000 \text{ Lux} \approx 1000 \text{ W/m}^2$, si introducimos la iluminancia medida en el simulador, este compensará la falta de luz y nos revelará el verdadero porcentaje de aprovechamiento energético de la placa, pasando de un deprimente 2% a su rendimiento real de fábrica (ej: 18%).
+                            </p>
+                        </div>
+
+                        <div class="nav-buttons nav-buttons-fin" style="margin-top: 30px;">
+                            <button class="btn-nav btn-next" onclick="cambiarPaso(2)">Siguiente ⮞</button>
+                        </div>
+                    </div>
+
+                    <div class="summary-section">
+                        <h3>Esquema del Ensayo</h3>
+                        
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; min-height: 250px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); position: relative;">
+                            <svg id="esquema-electrico-svg" viewBox="0 0 200 280" style="width: 100%; height: auto; max-height: 280px;"></svg>
+                            <div style="position: absolute; bottom: 10px; right: 10px; font-size: 24px; cursor: pointer; transition: transform 0.2s ease;" onclick="mostrarInstruccionesMontaje()" title="Ver instrucciones de montaje" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">📖</div>
+                        </div>
+                        
+                        <h4 style="margin: 25px 0 10px 0; color: #2c3e50; font-size: 16px;">Resultados del Ensayo</h4>
+                        <div id="panel-resultados-ensayo" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 20px;">
+                            <div style="text-align: center; color: #64748b; font-size: 13px;">Añade datos para calcular...</div>
+                        </div>
+                        
+                        <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 25px 0 15px 0;">
+                        
+                        <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Curva de Potencia (P-V)</h4>
+                        <div style="position: relative;">
+                            <svg id="grafica-ensayo-svg" viewBox="0 0 300 200" style="width: 100%; height: auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);"></svg>
+                        </div>
+                    </div>
+                </div>
+<div id="step-2" class="step-container">
 
                     <div class="form-section">
-                        <h3 class="titulo-seccion-principal">📐 1. Geometría del Rotor</h3>
+                        <h3 class="titulo-seccion-principal">📐 2. Geometría del Rotor</h3>
                         <p style="font-size: 14px; color: #666; margin-top: -10px;">
                             Define las dimensiones principales del rotor y selecciona el panel solar para establecer la base geométrica y energética de tu motor.
                         </p>
@@ -183,6 +388,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <div class="form-group">
                             <label>Margen del marco (mm): <span>Borde de plástico a cada lado de la placa</span></label>
                             <input type="number" id="margen-placa" value="3" step="0.1" min="0" oninput="actualizarResumenPaso1()">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Diámetro del eje central (mm): <span>Grosor de la varilla</span></label>
+                            <input type="number" id="diametro-eje" value="8" step="0.1" min="1" oninput="actualizarResumenPaso1()">
                         </div>
 
                         <h4 class="subtitulo-seccion">Geometría de la Ranura</h4>
@@ -227,8 +437,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             donde \( w \) es la anchura de la boca exterior, \( h \) es la profundidad del vaciado, y \( w_{interna} \) es el ancho del fondo de la ranura mermado por el ángulo de las caras.
                         </div>
 
-                        <div class="nav-buttons nav-buttons-fin">
-                            <button class="btn-nav btn-next btn-nav-compacto" onclick="cambiarPaso(2)">Siguiente ⮞</button>
+                        <div class="nav-buttons">
+                            <button class="btn-nav btn-prev" onclick="cambiarPaso(1)">⮜ Anterior</button>
+                            <button class="btn-nav btn-next btn-nav-compacto" onclick="cambiarPaso(3)">Siguiente ⮞</button>
                         </div>
                     </div>
                     
@@ -254,7 +465,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 20px 0 15px 0;">
                         
                         <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Vista Superior de una Cara</h4>
-                        <svg id="panel-svg" xmlns="http://www.w3.org/2000/svg" style="max-width: 100%; height: auto; max-height: 140px;"></svg>
+                        <svg id="panel-svg" xmlns="http://www.w3.org/2000/svg" style="max-width: 100%; height: auto; max-height: 220px;"></svg>
                     </div>
 
 
@@ -282,9 +493,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                 </div>
 
-                <div id="step-2" class="step-container">
+                <div id="step-3" class="step-container">
                     <div class="form-section">
-                        <h3 style="margin-top:0; color: var(--primary-color);">🧵 1. Devanados eléctricos</h3>
+                        <h3 style="margin-top:0; color: var(--primary-color);">🧵 3. Devanados eléctricos</h3>
                         <p style="font-size: 14px; color: #666; margin-top: -10px;">
                             Configura el material y el diámetro del hilo para calcular la resistencia eléctrica necesaria para la <strong>máxima</strong> transferencia de potencia.
                         </p>
@@ -333,7 +544,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <input type="text" id="res-devanado" class="calculado" readonly>
                         </div>
 
-                        <h3 class="titulo-seccion-principal espacio-superior">📏 2. Encaje en la ranura</h3>
+                        <h3 class="titulo-seccion-principal espacio-superior">📏 3. Encaje en la ranura</h3>
                         <p style="font-size: 14px; color: #666; margin-top: -10px;">Ajusta aquí la calidad de bobinado para comprobar si el hilo cabe físicamente en la ranura.</p>
 
                         <div class="form-group">
@@ -358,8 +569,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         </div>
 
                         <div class="nav-buttons">
-                            <button class="btn-nav btn-prev" onclick="cambiarPaso(1)">⮜ Anterior</button>
-                            <button class="btn-nav btn-next" onclick="cambiarPaso(3)">Siguiente ⮞</button>
+                            <button class="btn-nav btn-prev" onclick="cambiarPaso(2)">⮜ Anterior</button>
+                            <button class="btn-nav btn-next" onclick="cambiarPaso(4)">Siguiente ⮞</button>
                         </div>
                     </div>
                     <div class="summary-section">
@@ -380,10 +591,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                 </span>
                             </div>
 
-                            <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 20px 0 15px 0;">
-                            
-                            <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Vista Superior de una Cara</h4>
-                            <svg id="panel-svg-step2" xmlns="http://www.w3.org/2000/svg" style="max-width: 100%; height: auto; max-height: 140px;"></svg>
+
                         </div>
 
                         <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 20px 0 15px 0;">
@@ -415,7 +623,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
                         <div class="summary-item" style="background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.2); border-radius: 6px; padding: 8px; margin-top: 10px;">
                             <span style="font-weight:bold; color: #27ae60;">PESO TOTAL REAL (g):</span>
-                            <input type="number" id="peso-total-real" step="0.1" value="0.0" style="width: 80px; padding: 4px; border-radius: 4px; border: 1px solid #27ae60; text-align: right; font-family: inherit; font-weight: bold; background: white;" oninput="actualizarResumenPesoManual()">
+                            <input type="number" id="peso-total-real" step="0.1" value="" placeholder="0.0" style="width: 80px; padding: 4px; border-radius: 4px; border: 1px solid #27ae60; text-align: right; font-family: inherit; font-weight: bold; background: white;" oninput="actualizarResumenPesoManual()">
                         </div>
 
                         <small style="color: #666; font-size: 11px; text-align: center; display: block;">* Introduce manualmente el peso medido en báscula de TODO el conjunto del rotor (hilo del bobinado + núcleo + imanes + placas + varilla del eje + coronas y estructura 3D + pegamento).</small>
@@ -446,9 +654,177 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
                 
-               <div id="step-3" class="step-container">
+               <div id="step-4" class="step-container" style="align-items: flex-start;">
+    <div class="form-section" style="flex: 1.2; min-width: 350px;">
+        <h3 class="titulo-seccion-principal">🧲 4. Levitación Magnética</h3>
+        <p style="font-size: 14px; color: #666;">
+            Configura la base y los imanes de levitación (sustentación) y empuje (inducción).
+        </p>
+
+        <div class="grupo-param">
+            <h4 style="margin: 0 0 10px 0; font-size: 1.1em; color: #1e293b;">Dimensiones de la Base <span style="color:#d97706; font-size:12px; font-weight:normal;">(Auto-calculado)</span></h4>
+            <div class="fila-formulario">
+                <div class="form-group">
+                    <label>Largo (X) [mm]</label>
+                    <input type="number" id="lev-base-x" value="150" disabled style="background:#f1f5f9; cursor:not-allowed;" title="Se calcula automáticamente dejando 10mm de margen desde los imanes y el apoyo.">
+                </div>
+                <div class="form-group">
+                    <label>Ancho (Y) [mm]</label>
+                    <input type="number" id="lev-base-y" value="80" disabled style="background:#f1f5f9; cursor:not-allowed;" title="Se calcula automáticamente dejando 10mm de margen desde los imanes.">
+                </div>
+            </div>
+        </div>
+
+        <div class="grupo-param">
+            <h4 style="margin: 0 0 10px 0; font-size: 1.1em; color: #1e293b;">Imanes de Sustentación (x4)</h4>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Seleccionar Imán del Catálogo</label>
+                <select id="lev-sust-iman" onchange="actualizarVistasLevitacion()" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;"></select>
+                <div id="info-lev-sust-iman" style="font-size: 12px; color: #64748b; margin-top: 5px;"></div>
+            </div>
+            
+            <div class="fila-formulario">
+                <div class="form-group">
+                    <label>Separación X [mm]<span>Distancia entre ejes</span></label>
+                    <input type="number" id="lev-sust-sep-x" value="100" step="1" oninput="actualizarVistasLevitacion()">
+                </div>
+                <div class="form-group">
+                    <label>Separación Y [mm]<span>Distancia transversal</span></label>
+                    <input type="number" id="lev-sust-sep-y" value="40" step="1" oninput="actualizarVistasLevitacion()">
+                </div>
+                <div class="form-group">
+                    <label>Inclinación (°)<span>Con respecto a vertical</span></label>
+                    <input type="number" id="lev-sust-inclinacion" value="0" step="5" min="-90" max="90" oninput="actualizarVistasLevitacion()">
+                </div>
+                <div class="form-group">
+                    <label>Elevación Z [mm]<span>Altura sobre base</span></label>
+                    <input type="number" id="lev-sust-z" value="0" step="1" oninput="actualizarVistasLevitacion()">
+                </div>
+            </div>
+            <div class="fila-formulario">
+                <div class="form-group">
+                    <label>Polos Izquierda (Eje X)</label>
+                    <select id="lev-sust-pol-izq" onchange="actualizarVistasLevitacion()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="1">Norte (+X) / Sur (-X)</option>
+                        <option value="-1">Sur (+X) / Norte (-X)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Polos Derecha (Eje X)</label>
+                    <select id="lev-sust-pol-der" onchange="actualizarVistasLevitacion()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="-1">Sur (+X) / Norte (-X)</option>
+                        <option value="1">Norte (+X) / Sur (-X)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="grupo-param">
+            <h4 style="margin: 0 0 10px 0; font-size: 1.1em; color: #1e293b;">Apoyo del Eje (Tope de Fricción)</h4>
+            <div class="fila-formulario">
+                <div class="form-group" style="flex:1;">
+                    <label>Distancia desde imán derecho [mm]<span>Separación en el eje X</span></label>
+                    <input type="number" id="lev-apoyo-dist" value="15" step="1" oninput="actualizarVistasLevitacion()">
+                </div>
+            </div>
+        </div>
+
+        <div class="grupo-param">
+            <h4 style="margin: 0 0 10px 0; font-size: 1.1em; color: #1e293b;">Imán del Rotor (Eje, x2)</h4>
+            <div class="form-group" style="margin-bottom: 5px;">
+                <label>Seleccionar Imán Anular del Catálogo</label>
+                <select id="lev-rotor-iman" onchange="actualizarVistasLevitacion()" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;"></select>
+                <div id="info-lev-rotor-iman" style="font-size: 12px; color: #64748b; margin-top: 5px;"></div>
+            </div>
+            
+            <div class="fila-formulario" style="margin-top: 15px;">
+                <div class="form-group">
+                    <label>Orientación Imán Izquierdo</label>
+                    <select id="lev-rotor-pol-izq" onchange="actualizarVistasLevitacion()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="1">Alineado a Sustentación (Repulsión)</option>
+                        <option value="-1">Invertido (Atracción)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Orientación Imán Derecho</label>
+                    <select id="lev-rotor-pol-der" onchange="actualizarVistasLevitacion()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="1">Alineado a Sustentación (Repulsión)</option>
+                        <option value="-1">Invertido (Atracción)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="fila-formulario">
+                <div class="form-group">
+                    <label>Desplazamiento Axial Izquierdo [mm]</label>
+                    <input type="number" id="lev-rotor-offset-izq" value="0" step="1" oninput="actualizarVistasLevitacion()">
+                </div>
+                <div class="form-group">
+                    <label>Desplazamiento Axial Derecho [mm]</label>
+                    <input type="number" id="lev-rotor-offset-der" value="0" step="1" oninput="actualizarVistasLevitacion()">
+                </div>
+            </div>
+        </div>
+
+        <div class="grupo-param">
+            <h4 style="margin: 0 0 10px 0; font-size: 1.1em; color: #1e293b;">Imán de Inducción (Centro)</h4>
+            <div style="padding: 10px; background: #fdfefe; border: 1px dashed #cbd5e1; border-radius: 6px; font-size: 13px; color: #64748b;">
+                💡 <strong>Vinculado al diseño:</strong> Las dimensiones y orientación del imán central se heredan automáticamente del <strong>Paso 4 (Magnetismo)</strong>.<br>
+                <span id="info-iman-induccion" style="display: block; margin-top: 5px; color: #1e293b; font-weight: 500;">Calculando dimensiones...</span>
+            </div>
+        </div>
+
+        <div class="form-group" style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 20px;">
+            <p style="font-size: 13px; color: #64748b; margin-top:0; margin-bottom: 10px;">
+                Calcula las fuerzas 3D y genera la gráfica interactiva en Plotly.
+            </p>
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 12px; font-weight: bold; color: #1e293b; display: block; margin-bottom: 4px;">Estilo de Líneas de Campo (2D):</label>
+                <select id="magpylib-style" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1;">
+                    <option value="scifi" selected>Sci-Fi (Modo Oscuro, Mapa de Calor)</option>
+                    <option value="classic">Clásico (Fondo Blanco, Líneas Plasma)</option>
+                    <option value="quiver">Vectores (Campo Quiver con Flechas)</option>
+                </select>
+            </div>
+            <button class="btn-animacion" onclick="ejecutarMagpylibLevitacion()" style="width:100%; height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius:5px; background:#e67e22; color:white; border:none; cursor:pointer; font-weight: bold; line-height: 1.2; padding: 0;">
+                ▶️ Simular Levitación 3D
+            </button>
+        </div>
+        
+        <div class="nav-buttons" style="margin-top: 30px;">
+            <button class="btn-nav btn-prev" onclick="cambiarPaso(3)">⮜ Anterior</button>
+            <button class="btn-nav btn-next" onclick="cambiarPaso(5)">Siguiente ⮞</button>
+        </div>
+    </div>
+
+    <div class="summary-section" style="flex: 1.5; min-width: 400px; display: flex; flex-direction: column; gap: 20px;">
+        <h3 style="margin-top:0; color:#1e293b; font-size: 1.2em; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Vistas de Disposición</h3>
+        
+        <!-- Vistas SVG 2D -->
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="background: white; border-radius: 8px; padding: 15px; border: 1px solid #e2e8f0; text-align: center;">
+                <h4 style="margin: 0 0 10px 0; font-size: 13px; color: #64748b;">Vista Superior (Top)</h4>
+                <svg id="svg-lev-top" style="width: 100%; height: auto; max-height: 400px; background: #fdfefe;"></svg>
+            </div>
+            <div style="background: white; border-radius: 8px; padding: 15px; border: 1px solid #e2e8f0; text-align: center;">
+                <h4 style="margin: 0 0 10px 0; font-size: 13px; color: #64748b;">Vista Frontal (Front)</h4>
+                <svg id="svg-lev-front" style="width: 100%; height: auto; max-height: 400px; background: #fdfefe;"></svg>
+            </div>
+        </div>
+
+        <!-- Vista 3D / Magpylib -->
+        <div style="background: white; border-radius: 8px; border: 1px solid #e2e8f0; flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 350px;">
+            <h4 style="margin: 0; padding: 10px 15px; font-size: 13px; color: #64748b; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">Vista 3D (Magpylib)</h4>
+            <div id="res-magpylib-levitacion" style="flex: 1; display: flex; align-items: center; justify-content: center; background: #fdfefe;">
+                <div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 14px;">
+                    Haz clic en "Simular Levitación 3D" para cargar el modelo de fuerzas interactivo.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="step-5" class="step-container">
     <div class="form-section">
-        <h3 style="margin-top:0; color: var(--primary-color);">🧲 1. Interacción magnética</h3>
+        <h3 style="margin-top:0; color: var(--primary-color);">🧲 5. Interacción magnética</h3>
         <p style="font-size: 14px; color: #666; margin-top: -10px;">
             Se reutilizan los datos eléctricos del devanado para estimar la fuerza magnetomotriz, la fuerza de Lorenz y el par ejercido.
         </p>
@@ -486,8 +862,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </select>
             </div>
             <div class="form-group" style="flex: 1;">
-                <label>Entrehierro (mm): <span>Distancia imán-rotor</span></label>
-                <input type="number" id="iman-distancia" value="2.0" step="0.5" min="0" oninput="actualizarResumenPaso1()">
+                <label>Polaridad (Superior):</label>
+                <select id="iman-polaridad" onchange="actualizarResumenPaso1()">
+                    <option value="1" selected>Norte (N)</option>
+                    <option value="-1">Sur (S)</option>
+                </select>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Entrehierro (mm): <span style="color:#d97706; font-weight:600;">Auto-calculado (Paso 9)</span></label>
+                <input type="number" id="iman-distancia" value="2.0" step="0.5" disabled style="background:#f1f5f9; cursor:not-allowed;" title="Este valor se calcula automáticamente desde la geometría de Levitación Magnética (Paso 9)">
             </div>
         </div>
 
@@ -495,18 +878,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <!-- Info dinámica del imán -->
         </div>
 
-        <h4 class="subtitulo-seccion">Parámetros del campo magnético resultante</h4>
-        <div class="mag-grid-3">
-            <div class="form-group">
-                <label>Campo magnético principal B [T] <small style="display:block; font-weight:normal; color:#666;">(Calculado automáticamente)</small></label>
-                <input type="number" id="campo-b" value="0.18" min="0" step="0.001" oninput="calcularPasoMagnetico()" class="calculado">
-            </div>
-
-            <div class="form-group">
-                <label>Radio efectivo [mm]</label>
-                <input type="number" id="radio-efectivo-mm" value="0" min="0" step="0.1" oninput="calcularPasoMagnetico()">
-            </div>
-        </div>
 
         <div class="teoria-nota">
             <strong>Fundamento de Interacción Magnética:</strong> El par motor se genera por la <strong>Fuerza de Lorentz</strong>. Cuando la corriente (\( I \)) fluye por las espiras enfrentadas al imán motriz, se genera un empuje perpendicular al campo magnético. 
@@ -518,8 +889,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
 
         <div class="nav-buttons">
-            <button class="btn-nav btn-prev" onclick="cambiarPaso(2)">⮜ Anterior</button>
-            <button class="btn-nav btn-next" onclick="cambiarPaso(4)">Siguiente ⮞</button>
+            <button class="btn-nav btn-prev" onclick="cambiarPaso(4)">⮜ Anterior</button>
+            <button class="btn-nav btn-next" onclick="cambiarPaso(6)">Siguiente ⮞</button>
         </div>
 
     </div>
@@ -532,7 +903,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <h3>Fuerza de Lorenz</h3>
         <div class="svg-illustration-container">
             <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Fuerza en el Conductor Inferior</h4>
-            <svg id="magnetismo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; max-height: 250px;"></svg>
+            <svg id="magnetismo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; max-height: 350px;"></svg>
             
             <div style="display: flex; gap: 12px; font-size: 12px; margin-top: 10px; flex-wrap: wrap; justify-content: center;">
                 <span style="display:flex; align-items:center; gap:4px;">
@@ -561,31 +932,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="summary-item"><span>Fuerza de Lorenz</span><span class="value" id="res-lorentz">0 N</span></div>
         <div class="summary-item"><span>Par ejercido</span><span class="value" id="res-par">0 N·m</span></div>
         <div class="summary-item"><span>Intensidad de campo B</span><span class="value" id="res-campo-b">0 T</span></div>
-        <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
-            <span>Lectura rápida</span><span class="value" id="res-lectura-magnetica">Pendiente</span>
-        </div>
-        <small style="color: #666; font-size: 11px; text-align: center; display: block;">
-            * Cálculo simplificado para comparar variantes del rotor. Más adelante podemos refinarlo con la geometría exacta del imán y la orientación del flujo.
-        </small>
+
 
     </div>
 </div>
 
 
-<div id="step-4" class="step-container">
+<div id="step-6" class="step-container">
     <div class="form-section">
-        <h3 class="titulo-seccion-principal">☀️ 1. Simulación Lumínica y Fotovoltaica</h3>
+        <h3 class="titulo-seccion-principal">☀️ 6. Simulación Lumínica y Fotovoltaica</h3>
         <p class="texto-ayuda">Estudia cómo el ángulo de la fuente de luz y el giro del rotor afectan al rendimiento energético que se le inyecta a la bobina actuadora.</p>
 
-        <div class="mag-grid-2">
+        <div class="mag-grid-2" style="align-items: end;">
             <div class="form-group">
                 <label>Ángulo del Rotor [°] (Giro manual)</label>
-                <input type="range" id="lum-giro" min="0" max="360" value="0" oninput="document.getElementById('lum-giro-val').textContent = this.value; calcularPasoLuminico()">
+                <input type="range" id="lum-giro" min="0" max="360" value="0" oninput="sincronizarGiroGlobal(this.value)">
                 <div style="text-align: right; font-size: 11px; margin-top:2px;">Valor: <span id="lum-giro-val">0</span>°</div>
             </div>
             <div class="form-group">
                 <label>Ángulo de la Fuente de Luz [°] (Cenit = 0°)</label>
-                <input type="range" id="lum-angulo-luz" min="-90" max="90" value="0" oninput="document.getElementById('lum-luz-val').textContent = this.value; calcularPasoLuminico()">
+                <input type="range" id="lum-angulo-luz" min="-90" max="90" value="0" oninput="sincronizarLuzGlobal(this.value)">
                 <div style="text-align: right; font-size: 11px; margin-top:2px;">Valor: <span id="lum-luz-val">0</span>°</div>
             </div>
         </div>
@@ -605,8 +971,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
 
         <div class="nav-buttons">
-            <button class="btn-nav btn-prev" onclick="cambiarPaso(3)">⮜ Anterior</button>
-            <button class="btn-nav btn-next" onclick="cambiarPaso(5)">Siguiente ⮞</button>
+            <button class="btn-nav btn-prev" onclick="cambiarPaso(5)">⮜ Anterior</button>
+            <button class="btn-nav btn-next" onclick="cambiarPaso(7)">Siguiente ⮞</button>
         </div>
     </div>
 
@@ -614,7 +980,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <h3>Interacción Lumínica y Eléctrica</h3>
         <div class="svg-illustration-container">
             <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Incidencia de Luz</h4>
-            <svg id="luminico-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; max-height: 250px;"></svg>
+            <svg id="luminico-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; max-height: 350px;"></svg>
         </div>
         <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 20px 0 15px 0;">
         <h3>Rendimiento General Instantáneo</h3>
@@ -624,9 +990,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 </div>
 
-<div id="step-5" class="step-container">
+<div id="step-7" class="step-container">
     <div class="form-section">
-        <h3 class="titulo-seccion-principal">⚡ 1. Fuerza Contraelectromotriz (FCEM)</h3>
+        <h3 class="titulo-seccion-principal">⚡ 7. Fuerza Contraelectromotriz (FCEM)</h3>
         <p class="texto-ayuda">Simula la velocidad de giro para ver cómo el voltaje generado por la bobina ($V_{fcem}$) aumenta hasta igualar al voltaje del panel de alimentación, limitando la velocidad máxima.</p>
 
         <div class="form-group">
@@ -655,8 +1021,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
 
         <div class="nav-buttons">
-            <button class="btn-nav btn-prev" onclick="cambiarPaso(4)">⮜ Anterior</button>
-            <button class="btn-nav btn-next" onclick="generarInformeAutomatico(); cambiarPaso(6);">Siguiente ⮞</button>
+            <button class="btn-nav btn-prev" onclick="cambiarPaso(6)">⮜ Anterior</button>
+            <button class="btn-nav btn-next" onclick="cambiarPaso(8)">Siguiente ⮞</button>
         </div>
     </div>
 
@@ -683,10 +1049,384 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <small style="color: #666; font-size: 11px; display: block; text-align: center; margin-top: 5px;">
             * El valor real incluye el factor de pérdidas (aerodinámicas, etc.) seleccionado.
         </small>
+        <div id="alerta-fcem-fuente" style="margin-top: 15px; padding: 10px; border-radius: 6px; font-size: 12px; text-align: center; font-weight: 500;">
+            <!-- Rellenado dinámicamente -->
+        </div>
     </div>
 </div>
 
-<div id="step-6" class="step-container">
+
+<!-- PASO 6: SIMULACIÓN MAGPYLIB -->
+<div id="step-8" class="step-container">
+    <div class="form-section">
+        <h3 class="titulo-seccion-principal">🧲 8. Simulación 3D Magpylib</h3>
+        <p>Esta simulación envía los parámetros al motor de física vectorial de Python (Magpylib) para calcular con precisión absoluta las fuerzas y los campos magnéticos en un entorno 3D realista.</p>
+        
+        <div class="grafica-box">
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 12px; font-weight: bold; color: #1e293b; display: block; margin-bottom: 4px;">Estilo de Representación 2D (Fuerzas):</label>
+                <select id="magpylib-style-forces" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1;">
+                    <option value="scifi" selected>Sci-Fi (Modo Oscuro, Mapa de Calor)</option>
+                    <option value="classic">Clásico (Fondo Blanco, Líneas Plasma)</option>
+                    <option value="quiver">Vectores (Campo Quiver con Flechas)</option>
+                </select>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; padding:15px; border-radius:8px;">
+                <label style="font-weight:bold; color:#1e40af;">Conexión con Servidor Magpylib:</label>
+                <button onclick="renderizarPasoMagpylib()" class="btn-primary" style="padding:10px 20px;">🚀 Calcular Fuerzas Magpylib</button>
+            </div>
+            
+            <div id="magpylib-resultados" style="margin-top: 20px; padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); min-height: 400px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div style="text-align:center; padding: 50px; color:#888;">Haz clic en "Calcular Fuerzas Magpylib" para conectar con el servidor 3D.</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: rgba(59, 130, 246, 0.05); border-left: 4px solid #3b82f6; border-radius: 4px;">
+            <h4 style="margin-top:0; color:#1e40af;">💡 Concepto Físico: Amperios-vuelta (Fuerza Magnetomotriz)</h4>
+            <p style="margin-bottom:0; font-size:14px; color:#334155;">
+                En electromagnetismo, la fuerza que impulsa tu rotor no depende únicamente de la corriente (I) o del número de espiras (N) por separado, sino de su producto (N × I). A este valor se le conoce como <strong>Amperios-vuelta</strong>.<br><br>
+                Magpylib integra la corriente multiplicada por el número de espiras a lo largo de toda la longitud del devanado de cobre, interactuando contra el campo magnético del imán permanente inferior para calcular la <strong>Fuerza de Lorentz</strong> real que genera el momento de rotación.
+            </p>
+        </div>
+        
+        <div class="nav-buttons">
+            <button class="btn-nav btn-prev" onclick="cambiarPaso(7)">⮜ Anterior</button>
+            <button class="btn-nav btn-next" onclick="cambiarPaso(9)">Siguiente ⮞</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- PASO 9: SIMULACION GLOBAL MAGPYLIB -->
+<div id="step-9" class="step-container">
+    <div class="form-section" style="flex: 1; max-width: 100%;">
+        <h3 class="titulo-seccion-principal">🌍 9. Simulación Global (Interferencias 3D)</h3>
+        <p>En la realidad, el campo magnético del imán inferior interactúa con los imanes del rotor generando un "Par de Engranaje" (freno magnético). Además, los imanes de levitación emiten campos que cruzan las cabezas de las bobinas, alterando la Fuerza de Lorentz total.</p>
+        <p>Esta simulación une TODOS los componentes magnéticos simultáneamente en Magpylib para calcular el Par Motriz Neto, incluyendo las interferencias parásitas.</p>
+        
+        <div class="grafica-box">
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 12px; font-weight: bold; color: #1e293b; display: block; margin-bottom: 4px;">Estilo de Representación 2D (Corte Central):</label>
+                <select id="magpylib-style-global" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1;">
+                    <option value="scifi" selected>Sci-Fi (Modo Oscuro, Mapa de Calor)</option>
+                    <option value="classic">Clásico (Fondo Blanco, Líneas Plasma)</option>
+                    <option value="quiver">Vectores (Campo Quiver con Flechas)</option>
+                </select>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; padding:15px; border-radius:8px;">
+                <label style="font-weight:bold; color:#1e40af;">Motor de Alta Precisión (Circuito Completo):</label>
+                <button onclick="renderizarPasoMagpylibGlobal()" class="btn-primary" style="padding:10px 20px; background:#9b59b6; border-color:#8e44ad;">🪐 Calcular Simulación Global</button>
+            </div>
+            
+            <div id="magpylib-resultados-global" style="margin-top: 20px; padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); min-height: 400px; display:flex; flex-direction:column; align-items:stretch; justify-content:center;">
+                <div style="text-align:center; padding: 50px; color:#888;">Haz clic en "Calcular Simulación Global" para enviar toda la topología al servidor 3D.<br><br><i>Nota: Puede tardar unos segundos debido a la complejidad de la integral vectorial.</i></div>
+            </div>
+        </div>
+        
+        <div class="nav-buttons">
+            <button class="btn-nav btn-prev" onclick="cambiarPaso(8)">⮜ Anterior</button>
+            <button class="btn-nav btn-next" onclick="cambiarPaso(10)">Siguiente ⮞</button>
+        </div>
+    </div>
+</div>
+
+<!-- PASO 10: CONEXIONADO -->
+                <div id="step-10" class="step-container">
+                    <div class="form-section">
+                        <h3 class="titulo-seccion-principal">⚡ 10. Conexionado Eléctrico</h3>
+                        <p style="font-size: 14px; color: #666; margin-top: -10px;">
+                            En un motor Mendocino clásico, los devanados se conectan en pares opuestos formando lo que se conoce como un <strong>conmutador óptico</strong>. Aunque la corriente en la bobina cambia de sentido eléctrico cuando se ilumina la placa opuesta (como se ve en el esquema inferior), debido a que el propio rotor ha girado 180°, el resultado físico es que <strong>el tramo de espira más cercano al campo magnético siempre lleva la corriente en la misma dirección</strong> espacial, garantizando un empuje continuo en el mismo sentido.
+                        </p>
+                        
+                        <div class="form-group">
+                            <label>Ver conexionado para el Par:</label>
+                            <div id="conexion-par-list" style="display: flex; flex-direction: column; gap: 8px;">
+                                <!-- Generado dinámicamente -->
+                            </div>
+                        </div>
+                        <div class="form-group" style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                            <label style="font-size: 1em; font-weight: bold; margin-bottom:10px; display:block;">Animación del Rotor</label>
+                            <button id="btn-anim-play-step8" onclick="toggleAnimacionGlobal()" class="btn-animacion" style="width:100%; height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius:5px; background:#2c3e50; color:white; border:none; cursor:pointer; margin-bottom:15px; font-weight: bold; line-height: 1.2; padding: 0;">⚡ Arrancar Motor</button>
+                            
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 5px;">
+                                <label style="font-size: 13px;">Velocidad de Animación:</label>
+                                <span style="font-size:11px; color:#7f8c8d;">Lento ⟷ Rápido</span>
+                            </div>
+                            <input type="range" id="anim-rpm-step8" min="5" max="300" value="60" oninput="if(document.getElementById('anim-rpm')) document.getElementById('anim-rpm').value=this.value;">
+                            
+                            <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
+                                <label style="font-size: 13px;">Giro Manual [°]:</label>
+                                <input type="range" id="anim-giro-step8" min="0" max="360" value="0" oninput="sincronizarGiroGlobal(this.value)">
+                                <div style="text-align: right; font-size: 11px; margin-top:2px;">Valor: <span id="val-anim-giro-step8">0</span>°</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Ángulo de la Fuente de Luz [°] (Mueve la luz para invertir la polaridad)</label>
+                            <input type="range" id="anim-luz-step8" min="-90" max="90" value="0" oninput="sincronizarLuzGlobal(this.value)">
+                            <div style="text-align: right; font-size: 11px; margin-top:2px;">Valor: <span id="val-anim-luz-step8">0</span>°</div>
+                        </div>
+                        
+                        <div class="teoria-nota" style="margin-top: 25px; margin-bottom: 20px;">
+                            <strong>💡 Justificación Técnica: Conmutador Óptico</strong><br>
+                            Dos placas solares ubicadas en caras opuestas (ej. C1 y C3) se conectan juntas a la misma bobina en <strong>antiparalelo</strong>. El polo Positivo de una se une al Negativo de la otra.<br><br>
+                            Físicamente, las placas solares actúan como <strong>diodos</strong>. Cuando la placa iluminada genera tensión, la corriente fluye a través de la bobina, pero no puede retornar ni circular "hacia atrás" a través de la placa opuesta que está en la sombra.
+                            Por eso, los cables del panel inactivo permanecen sin corriente. Al girar el rotor 180°, la placa inactiva pasa a ser iluminada y asume el control, invirtiendo el sentido de la corriente en la bobina para mantener el empuje (Par) constante.
+                        </div>
+                        
+                        <div class="nav-buttons" style="margin-top: 30px;">
+                            <button class="btn-nav btn-prev" onclick="cambiarPaso(9)">⮜ Anterior</button>
+                            <button class="btn-nav btn-next" onclick="cambiarPaso(11)">Siguiente ⮞</button>
+                        </div>
+                    </div>
+                    <div class="summary-section">
+                        <h3>Detalle de Conexionado Eléctrico</h3>
+                        <div class="svg-illustration-container" style="padding: 10px;">
+                            <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 13px; text-align: center;">Vista 3D del Rotor</h4>
+                            <svg id="rotor-3d-conexionado-svg" viewBox="30 -60 220 260" style="width: 100%; height: auto; max-height: 265px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 15px;"></svg>
+                            
+                            <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 13px; text-align: center;">Circuito del Par Seleccionado</h4>
+                            <svg id="conexionado-svg" viewBox="0 0 300 300" style="width: 100%; height: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);"></svg>
+                            
+                            <div style="display: flex; gap: 12px; font-size: 12px; margin-top: 15px; flex-wrap: wrap; justify-content: center;">
+                                <span style="display:flex; align-items:center; gap:4px;">
+                                    <span style="width:16px; height:3px; background-color:#e74c3c;"></span> Cable Positivo (+)
+                                </span>
+                                <span style="display:flex; align-items:center; gap:4px;">
+                                    <span style="width:16px; height:3px; background-color:#2c3e50;"></span> Cable Negativo (-)
+                                </span>
+                                <span style="display:flex; align-items:center; gap:4px;">
+                                    <span style="width:16px; height:8px; background-color:#d35400; border-radius: 4px;"></span> Bobina
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- PASO 9: LEVITACIÓN MAGNÉTICA -->
+<div id="step-11" class="step-container">
+    <div class="form-section">
+        <h3 class="titulo-seccion-principal">⚖️ 11. Equilibrado de Masas</h3>
+        <p>Analiza los desequilibrios causados por la diferencia de pesos en el rotor y cómo afectan a la vibración del motor. Introduce el peso extra acumulado por fallos de devanado o pegamento en cada cara.</p>
+        
+        <div class="grupo-param">
+            <label style="font-size: 1.1em; font-weight: bold; margin-bottom:10px; display:block;">Desequilibrio por Cara (gramos)</label>
+            <div id="contenedor-masas-caras" class="fila-formulario" style="flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                <!-- Generado dinámicamente según EstadoDiseno.numeroCaras -->
+            </div>
+            <div id="info-peso-espira" style="font-size: 12px; color: #64748b; margin-bottom: 15px; padding: 10px; background: #f8fafc; border-radius: 6px; border-left: 3px solid #3b82f6;">
+                💡 <strong>Referencia:</strong> Calculando peso de espira...
+            </div>
+        </div>
+
+        <div class="teoria-nota" style="margin-top: 25px;">
+            <strong>Dinámica del Sólido Rígido:</strong> Un rotor con asimetrías de peso sufre dos perturbaciones. Primero, el <strong>Desequilibrio Estático</strong>: el Centro de Masas ($CM$) no coincide con el eje de rotación, generando un par gravitatorio (\( \tau_g = r_{cm} \cdot m \cdot g \cdot \sin(\theta) \)) que actúa como un "péndulo", frenando el giro e impidiendo el arranque si supera al par magnético.
+            <br><br>
+            Segundo, el <strong>Desequilibrio Dinámico</strong>: alteraciones en la distribución de la masa modifican el <strong>Tensor de Inercia ($I$)</strong>. Si el <em>eje principal de inercia</em> se desvía del eje geométrico, la rotación induce fuerzas centrífugas no compensadas. Aunque no frenan el rotor, estas fuerzas obligan a los puntos de apoyo (levitación magnética) a absorber oscilaciones violentas, siendo el origen principal de las vibraciones en altas RPM.
+        </div>
+
+        <div class="form-group" style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 20px; margin-bottom: 20px;">
+            <label style="font-size: 1em; font-weight: bold; margin-bottom:10px; display:block;">Probar Efecto Péndulo</label>
+            <button id="btn-anim-play-step9" onclick="toggleAnimacionGlobal()" class="btn-animacion" style="width:100%; padding:10px; border-radius:5px; background:#2c3e50; color:white; border:none; cursor:pointer; margin-bottom:15px; font-weight: bold;">⚡ Arrancar Motor</button>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn-nav btn-prev" onclick="cambiarPaso(10)">⮜ Anterior</button>
+            <button class="btn-nav btn-next" onclick="cambiarPaso(12)">Siguiente ⮞</button>
+        </div>
+    </div>
+
+    <div class="summary-section">
+        <h3 style="margin-top:0; color:#1e293b; font-size: 1.2em; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Diagnóstico de Vibración</h3>
+        
+        <!-- Diagnóstico Rápido -->
+        <div id="diagnostico-equilibrado" style="width: 100%; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1em; margin-bottom: 15px; background-color: #f1f5f9; color: #64748b; margin-top: 15px;">
+            Introduce masas para analizar el equilibrado.
+        </div>
+
+        <!-- Ilustración del Rotor -->
+        <div class="svg-illustration-container" style="width: 100%; margin-bottom: 15px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; text-align: center;">Disposición de Masas en el Rotor</h4>
+            <svg id="rotor-equilibrado-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%;"></svg>
+            <div style="display: flex; gap: 15px; font-size: 12px; margin-top: 5px; flex-wrap: wrap; justify-content: center; color: #475569;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width:10px; height:10px; border-radius:50%; background:#ef4444;"></div>
+                    <span>Masa Extra</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width:10px; height:10px; border-radius:50%; background:#3b82f6;"></div>
+                    <span><strong>CM</strong> (Centro de Masas)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="resultados-panel" style="margin-bottom:20px; border: 1px dashed #cbd5e1; background: transparent; box-shadow: none;">
+            <h4 style="margin-top:0; color:#334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; font-size: 14px;">Centro de Masas Resultante</h4>
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span style="color:#64748b;">Masa Extra Neta:</span>
+                <strong style="color:#0f172a;" id="res-masa-neta">0.0 g</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span style="color:#64748b;">Desplazamiento (Rcm):</span>
+                <strong style="color:#0f172a;" id="res-masa-distancia">0.0 mm</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span style="color:#64748b;">Ángulo (θcm):</span>
+                <strong style="color:#0f172a;" id="res-masa-angulo">0°</strong>
+            </div>
+        </div>
+
+        <!-- Gráfica de Pares -->
+        <div id="grafica-equilibrado" style="width:100%; height:280px; background-color:#fff; border:1px solid #e2e8f0; border-radius:8px;"></div>
+        <div style="font-size:11px; color:#94a3b8; margin-top:5px; text-align: center;">Gráfica: Par Magnético vs Par Gravitatorio a lo largo de un giro (360°)</div>
+    </div>
+</div>
+
+<!-- PASO 11: SIMULACIÓN DINÁMICA -->
+<div id="step-12" class="step-container" style="align-items: flex-start;">
+    <div class="summary-section" style="flex: 2.5; min-width: 400px; padding: 25px; border-left: none; border-right: 4px solid #3b82f6;">
+        <h3 style="margin-top:0; color:#1e293b; font-size: 1.4em; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Vista Dinámica</h3>
+        
+        <div class="grafica-box info-box" style="margin-top: 15px; margin-bottom: 20px; background: #fdfefe; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;">
+            <div>
+                <strong style="font-size: 1.1em;">Estadísticas Instantáneas</strong>
+                <div style="font-size: 1em; color:#333; margin-top:5px;">
+                    Par Neto Actual: <strong id="anim-par-neto" style="color: #8e44ad; font-size: 1.1em;">0.00e+0 N·m</strong><br>
+                    Sentido: <strong id="anim-sentido" style="font-size: 1.1em;">Neutro</strong>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <button id="btn-anim-play" onclick="toggleAnimacionGlobal()" class="btn-animacion" style="width: 260px; height: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius:8px; background:#8e44ad; color:white; border:none; cursor:pointer; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 6px rgba(142, 68, 173, 0.2); transition: all 0.2s; line-height: 1.2; padding: 0;">⚡ Arrancar Motor</button>
+            </div>
+        </div>
+        
+        <div class="grafica-box" style="display:flex; justify-content:center; align-items:center; width: 100%; height: auto; min-height: 500px;">
+            <svg id="svg-simulacion-dinamica" width="100%" height="100%" viewBox="-200 -200 400 400" preserveAspectRatio="xMidYMid meet" style="background:white; border-radius:8px; max-height: 75vh;"></svg>
+        </div>
+        
+        <div class="nav-buttons" style="margin-top: 30px;">
+            <button class="btn-nav btn-prev" onclick="cambiarPaso(11)">⮜ Anterior</button>
+            <button class="btn-nav btn-next" onclick="generarInformeAutomatico(); cambiarPaso(13);">Generar Informe ⮞</button>
+        </div>
+    </div>
+
+    <div class="form-section" style="flex: 1; min-width: 320px; padding: 20px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; max-height: 85vh; overflow-y: auto;">
+        <h3 class="titulo-seccion-principal" style="margin-top: 0; font-size: 1.3em; color: #1e293b;">🛠️ Sandbox Interactivo</h3>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Modifica los parámetros en vivo sin detener el motor.</p>
+        
+        <!-- SECCIÓN: ANIMACIÓN -->
+        <div class="grupo-param" style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+            <label style="font-size: 1em; font-weight: bold; margin-bottom:10px; display:block; color: #8e44ad;">⏱️ Control de Tiempo</label>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 5px;">
+                <label style="font-size: 13px;">Velocidad Animación:</label>
+            </div>
+            <input type="range" id="anim-rpm" min="5" max="300" value="60" style="width: 100%; margin-top: 5px;">
+            
+            <div style="margin-top: 15px;">
+                <label style="font-size: 13px; display: flex; justify-content: space-between;">Giro Manual [°]: <span id="val-anim-giro" style="font-weight: bold; color: #0f172a;">0</span></label>
+                <input type="range" id="anim-giro" min="0" max="360" value="0" oninput="sincronizarGiroGlobal(this.value)" style="width: 100%; margin-top: 5px;">
+            </div>
+        </div>
+
+        <!-- SECCIÓN: GEOMETRÍA -->
+        <div class="grupo-param" style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+            <label style="font-size: 1em; font-weight: bold; margin-bottom:10px; display:block; color: #2980b9;">📐 Geometría del Rotor</label>
+            
+            <label style="font-size: 13px; display: flex; justify-content: space-between;">Nº de Caras:</label>
+            <select id="anim-geo-caras" onchange="syncSandbox('anim-geo-caras', 'caras');" style="width: 100%; padding: 6px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                <option value="4" selected>4 Caras</option>
+                <option value="6">6 Caras</option>
+                <option value="8">8 Caras</option>
+                <option value="10">10 Caras</option>
+                <option value="12">12 Caras</option>
+                <option value="14">14 Caras</option>
+                <option value="16">16 Caras</option>
+                <option value="18">18 Caras</option>
+                <option value="20">20 Caras</option>
+                <option value="22">22 Caras</option>
+            </select>
+            
+            <label style="margin-top: 10px; font-size: 13px; display: flex; justify-content: space-between;">Diámetro Ext Calculado [mm]:</label>
+            <div style="font-size: 18px; font-weight: bold; color: #2980b9; margin-top: 5px; text-align: center; background: #f8fafc; border-radius: 4px; padding: 5px; border: 1px dashed #cbd5e1;" id="anim-geo-diam-readout">0</div>
+
+            <label style="margin-top: 10px; font-size: 13px; display: flex; justify-content: space-between;">Diámetro Eje [mm]: <span id="val-anim-geo-eje" style="font-weight: bold; color: #0f172a;">8</span></label>
+            <input type="range" id="anim-geo-eje" min="2" max="20" step="1" value="8" oninput="syncSandbox('anim-geo-eje', 'diametro-eje');" style="width: 100%; margin-top: 5px;">
+            
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <div style="flex:1;">
+                    <label style="font-size: 12px; display: flex; justify-content: space-between;">Ranura W: <span id="val-anim-geo-ranura-w">6.5</span></label>
+                    <input type="range" id="anim-geo-ranura-w" min="2" max="20" step="0.5" value="6.5" oninput="syncSandbox('anim-geo-ranura-w', 'ranura-ancho');" style="width: 100%; margin-top: 5px;">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size: 12px; display: flex; justify-content: space-between;">Ranura H: <span id="val-anim-geo-ranura-h">3.5</span></label>
+                    <input type="range" id="anim-geo-ranura-h" min="2" max="30" step="0.5" value="3.5" oninput="syncSandbox('anim-geo-ranura-h', 'ranura-alto');" style="width: 100%; margin-top: 5px;">
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: ELECTRICIDAD Y BOBINADO -->
+        <div class="grupo-param" style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+            <label style="font-size: 1em; font-weight: bold; margin-bottom:10px; display:block; color: #d35400;">⚡ Electricidad</label>
+            
+            <label style="font-size: 13px; display: flex; justify-content: space-between;">Espiras Calculadas:</label>
+            <div style="font-size: 18px; font-weight: bold; color: #8e44ad; margin-top: 5px; text-align: center; background: #f8fafc; border-radius: 4px; padding: 5px; border: 1px dashed #cbd5e1;" id="anim-bob-espiras-readout">0</div>
+            
+            <label style="margin-top: 10px; font-size: 13px; display: flex; justify-content: space-between;">Ø Hilo [mm]:</label>
+            <select id="anim-bob-hilo" onchange="syncSandbox('anim-bob-hilo', 'dia-hilo-select');" style="width: 100%; padding: 6px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                <!-- Opciones añadidas por JS al inicio para coincidir con la base de datos de hilos -->
+            </select>
+            
+            <label style="margin-top: 10px; font-size: 13px; display: flex; justify-content: space-between;">Material del Hilo:</label>
+            <select id="anim-bob-material" onchange="syncSandbox('anim-bob-material', 'material-hilo');" style="width: 100%; padding: 6px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                <option value="cobre" selected>Cobre (Resistividad Baja)</option>
+                <option value="aluminio">Aluminio (Más ligero)</option>
+            </select>
+            
+            <label style="margin-top: 10px; font-size: 13px; display: flex; justify-content: space-between;">Conexionado (Desfase):</label>
+            <select id="anim-lum-conexion" onchange="syncSandbox('anim-lum-conexion', 'lum-conexion');" style="width: 100%; padding: 6px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                <option value="0">Opuestos (N-S)</option>
+                <option value="-1" selected>Adyacentes (Rotación)</option>
+            </select>
+        </div>
+
+        <!-- SECCIÓN: ENTORNO Y VECTORES -->
+        <div class="grupo-param" style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+            <label style="font-size: 1em; font-weight: bold; margin-bottom:10px; display:block; color: #16a085;">🌍 Entorno y Visualización</label>
+            
+            <label style="font-size: 13px; display: flex; justify-content: space-between;">Ángulo de Luz [°]: <span id="val-anim-luz" style="font-weight: bold; color: #0f172a;">45</span></label>
+            <input type="range" id="anim-luz" min="-90" max="90" value="45" oninput="sincronizarLuzGlobal(this.value)" style="width: 100%; margin-top: 5px;">
+            
+            <label style="margin-top: 10px; font-size: 13px; display: flex; justify-content: space-between;">Distancia Imán [mm]: <span id="val-anim-dist" style="font-weight: bold; color: #0f172a;">15</span></label>
+            <input type="range" id="anim-dist" min="5" max="60" value="15" oninput="document.getElementById('val-anim-dist').innerText=this.value; syncSandbox('anim-dist', 'iman-distancia'); actualizarAnimacionManual();" style="width: 100%; margin-top: 5px;">
+            
+            <label style="margin-top: 10px; font-size: 13px; display: flex; justify-content: space-between;">Polaridad Base (N/S):</label>
+            <select id="anim-iman-polaridad" onchange="syncSandbox('anim-iman-polaridad', 'iman-polaridad');" style="width: 100%; padding: 6px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                <option value="1" selected>Norte Arriba</option>
+                <option value="-1">Sur Arriba</option>
+            </select>
+            
+            <label style="margin-top: 10px; font-size: 13px; display: flex; justify-content: space-between;">Zoom Vectores: <span id="val-anim-escala" style="font-weight: bold; color: #0f172a;">1.0x</span></label>
+            <input type="range" id="anim-escala-fuerza" min="1" max="100" value="10" oninput="document.getElementById('val-anim-escala').innerText=(this.value/10).toFixed(1)+'x'; actualizarAnimacionManual();" style="width: 100%; margin-top: 5px;">
+        </div>
+
+        <!-- SECCIÓN: FÍSICA Y MECÁNICA -->
+        <div class="grupo-param" style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+            <label style="font-size: 1em; font-weight: bold; margin-bottom:10px; display:block; color: #c0392b;">⚖️ Física y Pérdidas</label>
+            
+            <label style="font-size: 13px; display: flex; justify-content: space-between;">Desequilibrio Neto [g]: <span id="val-anim-fis-masa" style="font-weight: bold; color: #0f172a;">0</span></label>
+            <input type="range" id="anim-fis-masa" min="0" max="50" step="1" value="0" oninput="document.getElementById('val-anim-fis-masa').innerText=this.value; window.EstadoDiseno.masaExtra_kg = parseFloat(this.value)/1000;" style="width: 100%; margin-top: 5px;">
+            
+            <label style="margin-top: 10px; font-size: 13px; display: flex; justify-content: space-between;">Fricción Aerodinámica:</label>
+            <input type="range" id="anim-fis-aero" min="0.01" max="0.5" step="0.01" value="0.08" style="width: 100%; margin-top: 5px;">
+            
+            <label style="margin-top: 10px; font-size: 13px; display: flex; justify-content: space-between;">Fricción Mecánica (Rodamiento):</label>
+            <input type="range" id="anim-fis-mec" min="0" max="0.2" step="0.01" value="0.02" style="width: 100%; margin-top: 5px;">
+        </div>
+    </div>
+</div>
+
+<!-- PASO 12: INFORME -->
+<div id="step-13" class="step-container">
+
 
 
                     <div class="informe-header">
@@ -733,7 +1473,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
 
                     <div class="nav-buttons nav-buttons-informe">
-                        <button class="btn-nav btn-prev btn-prev-informe" onclick="cambiarPaso(5)">⮜ Anterior</button>
+                        <button class="btn-nav btn-prev btn-prev-informe" onclick="cambiarPaso(12)">⮜ Anterior</button>
                     </div>
 
                 </div>
@@ -755,23 +1495,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="db-card">
                         <h3>☀️ Paneles Solares</h3>
                         <ul class="db-list" id="lista-paneles"></ul>
-                        <h4>Añadir nuevo panel:</h4>
-                        <div class="form-group">
-                            <input type="text" id="db-panel-nombre" placeholder="Nombre (Ej: Mono 40x20)">
+                        <div style="margin-top: 15px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; text-align: center; color: #475569; font-size: 13px;">
+                            💡 Para dar de alta un nuevo panel, dirígete al <strong>Paso 1 (Ensayo Placas Solares)</strong> en la Calculadora. Allí podrás registrar sus medidas, ensayar su curva I-V y guardarlo automáticamente en tu base de datos.
                         </div>
-                        <div style="display:flex; gap:5px;" class="form-group">
-                            <input type="text" inputmode="decimal" id="db-panel-l" placeholder="Largo (mm)">
-                            <input type="text" inputmode="decimal" id="db-panel-a" placeholder="Ancho (mm)">
-                        </div>
-                        <div style="display:flex; gap:5px;" class="form-group">
-                            <input type="text" inputmode="decimal" id="db-panel-voc" placeholder="Voc (V)">
-                            <input type="text" inputmode="decimal" id="db-panel-isc" placeholder="Isc (mA)">
-                        </div>
-                        <div style="display:flex; gap:5px;" class="form-group">
-                            <input type="text" inputmode="decimal" id="db-panel-v" placeholder="V. Medida (V)">
-                            <input type="text" inputmode="decimal" id="db-panel-i" placeholder="I. Medida (mA)">
-                        </div>
-                        <button class="btn-action" onclick="añadirPanel()">+ Añadir Panel</button>
                     </div>
 
                     <div class="db-card">
@@ -809,7 +1535,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
 
                 </div>
-                <button class="btn-action btn-danger" onclick="resetearBaseDatos()">⚠️ Restaurar Base de Datos por Defecto</button>
             </div>
         </div>
     </div>
@@ -850,6 +1575,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
         </div>
     </div>
+    </main>
+</div>
 
 
 
@@ -888,6 +1615,79 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
-    <script src="app-main-v35.js?v=35.63"></script>
+    <script src="app-main-v35.js?v=37.35"></script>
+    <script>
+        window.sincronizarGiroGlobal = function(valor, isAuto = false) {
+            const els = [
+                { input: 'lum-giro', val: 'lum-giro-val' },
+                { input: 'anim-giro', val: 'val-anim-giro' },
+                { input: 'anim-giro-step8', val: 'val-anim-giro-step8' }
+            ];
+            els.forEach(el => {
+                const inputEl = document.getElementById(el.input);
+                const valEl = document.getElementById(el.val);
+                if (inputEl && inputEl.value !== valor.toString()) inputEl.value = valor;
+                if (valEl) valEl.textContent = valor;
+            });
+            
+            const svgEquilibrado = document.getElementById('rotor-equilibrado-svg');
+            if (svgEquilibrado) {
+                // Rotar el SVG completo desde su centro (100, 100)
+                svgEquilibrado.style.transform = `rotate(${valor}deg)`;
+                svgEquilibrado.style.transformOrigin = "50% 50%";
+            }
+            
+            if (typeof calcularPasoLuminico === 'function') calcularPasoLuminico();
+            if (typeof dibujarConexionado === 'function') dibujarConexionado();
+            
+            if (typeof window.renderizarAnimacionDinamica === 'function') {
+                if (!isAuto && window.animacionCorriendo && typeof window.toggleAnimacionGlobal === 'function') {
+                    window.toggleAnimacionGlobal(); // Detener si es manual
+                }
+                window.animacionAnguloRotor = parseFloat(valor) || 0;
+                window.renderizarAnimacionDinamica();
+            }
+        };
+
+        window.sincronizarLuzGlobal = function(valor) {
+            const els = [
+                { input: 'lum-angulo-luz', val: 'lum-luz-val' },
+                { input: 'anim-luz', val: 'val-anim-luz' },
+                { input: 'anim-luz-step8', val: 'val-anim-luz-step8' }
+            ];
+            els.forEach(el => {
+                const inputEl = document.getElementById(el.input);
+                const valEl = document.getElementById(el.val);
+                if (inputEl && inputEl.value !== valor) inputEl.value = valor;
+                if (valEl) valEl.textContent = valor;
+            });
+
+            if (typeof calcularPasoLuminico === 'function') calcularPasoLuminico();
+            if (typeof actualizarAnimacionManual === 'function') actualizarAnimacionManual();
+            if (typeof dibujarConexionado === 'function') dibujarConexionado();
+        };
+
+        window.syncSandbox = function(origenId, destinoId) {
+            const origenVal = document.getElementById(origenId).value;
+            const dest = document.getElementById(destinoId);
+            if (dest) dest.value = origenVal;
+            
+            const lblOrigen = document.getElementById('val-' + origenId);
+            if(lblOrigen) lblOrigen.innerText = origenVal;
+            
+            const lblDest = document.getElementById('val-' + destinoId);
+            if(lblDest) lblDest.innerText = origenVal;
+            
+            // Forzamos actualización de todo el pipeline físico
+            if (typeof window.actualizarCalculos === 'function') {
+                window.actualizarCalculos(); 
+            }
+            
+            // Si la animación está detenida, forzamos un repintado de la simulación
+            if (typeof window.renderizarAnimacionDinamica === 'function' && !window.animacionCorriendo) {
+                window.renderizarAnimacionDinamica();
+            }
+        };
+    </script>
 </body>
 </html>

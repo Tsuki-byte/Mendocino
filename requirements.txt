@@ -1,0 +1,7 @@
+Flask==3.0.0
+flask-cors==4.0.0
+magpylib==4.3.3
+numpy==1.26.4
+matplotlib==3.8.2
+plotly==5.18.0
+gunicorn==21.2.0

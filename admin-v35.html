@@ -374,6 +374,25 @@
                         <input type="text" id="search-users" placeholder="Buscar por nombre o email..." onkeyup="filtrarUsuarios()" style="padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px; width: 300px;">
                         <span id="contador-usuarios" style="font-weight: 600; color: #64748b;">Cargando...</span>
                     </div>
+                    <div style="background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155;">
+                        <strong style="color:#1e293b; display: block; margin-bottom: 10px; font-size: 14px;">📖 Leyenda de Fases del Diseño:</strong>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+                            <span><b style="color: #3b82f6;">1.</b> Ensayo Solares</span>
+                            <span><b style="color: #3b82f6;">2.</b> Geometría</span>
+                            <span><b style="color: #3b82f6;">3.</b> Devanados</span>
+                            <span><b style="color: #3b82f6;">4.</b> Magnetismo</span>
+                            
+                            <span><b style="color: #3b82f6;">5.</b> Lumínica</span>
+                            <span><b style="color: #3b82f6;">6.</b> FCEM</span>
+                            <span><b style="color: #3b82f6;">7.</b> Simulación 3D</span>
+                            <span><b style="color: #3b82f6;">8.</b> Conexionado</span>
+                            
+                            <span><b style="color: #3b82f6;">9.</b> Levitación</span>
+                            <span><b style="color: #3b82f6;">10.</b> Equilibrado</span>
+                            <span><b style="color: #3b82f6;">11.</b> Sim. Dinámica</span>
+                            <span><b style="color: #3b82f6;">12.</b> Informe</span>
+                        </div>
+                    </div>
                     <div id="contenedor-lista-usuarios"></div>
                 </div>
             </div>
@@ -401,7 +420,7 @@
     <!-- Cliente de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=20"></script>
-    <script src="app-main-v35.js?v=35.31.1"></script>
+    <script src="app-main-v35.js?v=36.51"></script>
 
     <script>
         let fullUsuarios = [];
@@ -558,7 +577,7 @@
                                                  style="cursor:default; margin-left:auto; opacity:0.5; font-size:9px;" title="Configuración Personalizada">P</div>
                                         </div>
                                         <div class="step-toggles">
-                                            ${[1, 2, 3, 4, 5, 6].map(step => {
+                                            ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(step => {
                                                 const listaPasos = (u.permisos_pasos || '').split(',').filter(x => x);
                                                 let permitido = false;
                                                 
@@ -567,12 +586,12 @@
                                                     permitido = listaPasos.includes(String(step));
                                                 } else {
                                                     // Si no hay, fallamos al nivel
-                                                    const limitePaso = (u.nivel === 'avanzado' ? 4 : (u.nivel === 'experto' ? 6 : 2));
+                                                    const limitePaso = (u.nivel === 'avanzado' ? 7 : (u.nivel === 'experto' ? 12 : 4));
                                                     permitido = step <= limitePaso;
                                                 }
                                                 
-                                                const labels = ['G', 'D', 'M', 'L', 'F', 'I'];
-                                                const titles = ['Geometría', 'Devanados', 'Magnetismo', 'Lumínica', 'FCEM / Vel.', 'Informe'];
+                                                const labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+                                                const titles = ['Ensayo', 'Geometría', 'Devanados', 'Magnetismo', 'Lumínica', 'FCEM', 'Simul. 3D', 'Conexionado', 'Levitación', 'Equilibrado', 'Dinámica', 'Informe'];
                                                 return `<div class="step-toggle ${permitido ? 'active' : ''}" 
                                                              title="${titles[step-1]}"
                                                              onclick="togglePasoDesdePanel('${u.id}', ${step}, '${u.permisos_pasos || ''}', '${u.nivel}')">
@@ -636,9 +655,9 @@
             
             // Si estaba vacío, primero poblamos con los defaults del nivel actual para poder añadir/quitar
             if (lista.length === 0) {
-                if (nivelActual === 'basico') lista = ['1','2'];
-                else if (nivelActual === 'avanzado') lista = ['1','2','3','4'];
-                else if (nivelActual === 'experto') lista = ['1','2','3','4','5','6'];
+                if (nivelActual === 'basico') lista = ['1','2','3','4'];
+                else if (nivelActual === 'avanzado') lista = ['1','2','3','4','5','6','7'];
+                else if (nivelActual === 'experto') lista = ['1','2','3','4','5','6','7','8','9','10','11','12'];
             }
 
             const sPaso = String(paso);
@@ -655,13 +674,13 @@
             // Si no coinciden, mantenemos el nivel actual pero guardamos los permisos_pasos
             let updates = { permisos_pasos: nuevosPermisos };
             
-            if (nuevosPermisos === '1,2') {
+            if (nuevosPermisos === '1,2,3,4') {
                 updates.nivel = 'basico';
                 updates.permisos_pasos = null;
-            } else if (nuevosPermisos === '1,2,3,4') {
+            } else if (nuevosPermisos === '1,2,3,4,5,6,7') {
                 updates.nivel = 'avanzado';
                 updates.permisos_pasos = null;
-            } else if (nuevosPermisos === '1,2,3,4,5,6') {
+            } else if (nuevosPermisos === '1,2,3,4,5,6,7,8,9,10,11,12') {
                 updates.nivel = 'experto';
                 updates.permisos_pasos = null;
             }
