@@ -523,10 +523,7 @@ def calculate_forces():
                 
                 fig_plotly.update_layout(
                     scene=dict(
-                        aspectmode='data'
-                    ),
-                    scene_camera=dict(
-                        projection=dict(type='orthographic')
+                        aspectmode='auto'
                     ),
                     margin=dict(l=0, r=0, b=0, t=0),
                     showlegend=False
@@ -700,10 +697,9 @@ def calculate_levitation():
                 f_p.update_layout(
                     scene_camera=dict(
                         eye=dict(x=1.8, y=-1.2, z=0.8), 
-                        up=dict(x=0, y=0, z=1),
-                        projection=dict(type='orthographic')
+                        up=dict(x=0, y=0, z=1)
                     ), 
-                    scene=dict(aspectmode='data'), 
+                    scene=dict(aspectmode='auto'), 
                     margin=dict(l=0,r=0,b=0,t=0), 
                     showlegend=False
                 )
@@ -1102,10 +1098,9 @@ def calculate_global_forces():
             f_p.update_layout(
                 scene_camera=dict(
                     eye=dict(x=1.8, y=-1.2, z=0.8), 
-                    up=dict(x=0, y=0, z=1),
-                    projection=dict(type='orthographic')
+                    up=dict(x=0, y=0, z=1)
                 ), 
-                scene=dict(aspectmode='data'), 
+                scene=dict(aspectmode='auto'), 
                 margin=dict(l=0,r=0,b=0,t=0), 
                 showlegend=False
             )
