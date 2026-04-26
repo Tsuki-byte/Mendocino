@@ -1115,57 +1115,58 @@ def calculate_global_forces():
             import io
             import base64
             
-            y_min, y_max = -80, 80
-            z_min, z_max = -40, 80
+            x_min, x_max = -120, 120
+            z_min, z_max = -30, 50
             
-            ts_y_mm = np.linspace(y_min, y_max, 80)
-            ts_z_mm = np.linspace(z_min, z_max, 80)
+            ts_x_mm = np.linspace(x_min, x_max, 100)
+            ts_z_mm = np.linspace(z_min, z_max, 60)
             
-            grid_m = np.array([[(0, y/1000.0, z/1000.0) for y in ts_y_mm] for z in ts_z_mm])
+            grid_m = np.array([[(x/1000.0, 0, z/1000.0) for x in ts_x_mm] for z in ts_z_mm])
             B_grid = col_imanes.getB(grid_m)
-            Y_grid_mm, Z_grid_mm = np.meshgrid(ts_y_mm, ts_z_mm)
-            By = B_grid[:,:,1]
+            X_grid_mm, Z_grid_mm = np.meshgrid(ts_x_mm, ts_z_mm)
+            Bx = B_grid[:,:,0]
             Bz = B_grid[:,:,2]
-            B_mag_2d = np.linalg.norm(B_grid[:,:,1:], axis=2)
+            # Usar X y Z para calcular la magnitud en este plano
+            B_mag_2d = np.linalg.norm(B_grid[:,:,(0,2)], axis=2)
             B_mag_2d[B_mag_2d == 0] = 1e-10
             
             if style_2d == 'scifi':
-                fig2, ax2 = plt.subplots(figsize=(7, 6))
+                fig2, ax2 = plt.subplots(figsize=(9, 5))
                 fig2.patch.set_facecolor('#0f172a')
                 ax2.set_facecolor('#0f172a')
-                ax2.set_title('Intensidad de Campo y Líneas (Corte Central)', color='white', pad=15)
+                ax2.set_title('Vista Lateral: Intensidad y Líneas de Campo (Plano X-Z)', color='white', pad=15)
                 
-                contour = ax2.contourf(Y_grid_mm, Z_grid_mm, np.log10(B_mag_2d), levels=100, cmap='magma', alpha=0.9)
+                contour = ax2.contourf(X_grid_mm, Z_grid_mm, np.log10(B_mag_2d), levels=100, cmap='magma', alpha=0.9)
                 cbar = plt.colorbar(contour, ax=ax2, fraction=0.046, pad=0.04)
                 cbar.set_label('Log10(B) [mT]', color='#cbd5e1')
                 cbar.ax.yaxis.set_tick_params(color='#cbd5e1')
                 plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='#cbd5e1')
                 
                 lw = 0.5 + 1.5 * (np.log10(B_mag_2d) - np.log10(B_mag_2d).min()) / (np.log10(B_mag_2d).max() - np.log10(B_mag_2d).min() + 1e-10)
-                strm = ax2.streamplot(Y_grid_mm, Z_grid_mm, By, Bz, color='#ffffff88', density=1.4, linewidth=lw, arrowsize=1.2)
+                strm = ax2.streamplot(X_grid_mm, Z_grid_mm, Bx, Bz, color='#ffffff88', density=1.4, linewidth=lw, arrowsize=1.2)
                 
-                ax2.set_xlabel('Y (Ancho mm)', color='#cbd5e1')
+                ax2.set_xlabel('X (Longitud mm)', color='#cbd5e1')
                 ax2.set_ylabel('Z (Altura mm)', color='#cbd5e1')
                 ax2.tick_params(colors='#cbd5e1')
                 for spine in ax2.spines.values():
                     spine.set_color('#334155')
             elif style_2d == 'quiver':
-                fig2, ax2 = plt.subplots(figsize=(7, 6))
-                ax2.set_title('Vectores de Campo (Corte Central)', pad=15)
-                By_norm = By / B_mag_2d
+                fig2, ax2 = plt.subplots(figsize=(9, 5))
+                ax2.set_title('Vista Lateral: Vectores de Campo (Plano X-Z)', pad=15)
+                Bx_norm = Bx / B_mag_2d
                 Bz_norm = Bz / B_mag_2d
                 skip = (slice(None, None, 2), slice(None, None, 2))
-                q = ax2.quiver(Y_grid_mm[skip], Z_grid_mm[skip], By_norm[skip], Bz_norm[skip], np.log10(B_mag_2d)[skip], 
+                q = ax2.quiver(X_grid_mm[skip], Z_grid_mm[skip], Bx_norm[skip], Bz_norm[skip], np.log10(B_mag_2d)[skip], 
                                cmap='turbo', pivot='mid', scale=30, alpha=0.8, width=0.004)
                 cbar = plt.colorbar(q, ax=ax2, fraction=0.046, pad=0.04)
                 cbar.set_label('Log10(B) [mT]')
-                ax2.set_xlabel('Y (Ancho mm)')
+                ax2.set_xlabel('X (Longitud mm)')
                 ax2.set_ylabel('Z (Altura mm)')
             else:
-                fig2, ax2 = plt.subplots(figsize=(7, 6))
-                ax2.set_title('Líneas de Campo Magnético', pad=15)
-                strm = ax2.streamplot(Y_grid_mm, Z_grid_mm, By, Bz, color=np.log10(B_mag_2d), density=1.5, cmap='plasma')
-                ax2.set_xlabel('Y (Ancho mm)')
+                fig2, ax2 = plt.subplots(figsize=(9, 5))
+                ax2.set_title('Vista Lateral: Líneas de Campo Magnético', pad=15)
+                strm = ax2.streamplot(X_grid_mm, Z_grid_mm, Bx, Bz, color=np.log10(B_mag_2d), density=1.5, cmap='plasma')
+                ax2.set_xlabel('X (Longitud mm)')
                 ax2.set_ylabel('Z (Altura mm)')
                 
             ax2.set_aspect('equal')
