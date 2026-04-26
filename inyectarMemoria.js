@@ -390,8 +390,8 @@ function inyectarMemoriaTecnica() {
 
 <h3>Fase 8: Par Motriz y Fuerza de Lorentz (Imán Central)</h3>
 <p>El centro de gravedad computacional para entender qué hace girar al motor: el cálculo exhaustivo de elementos finitos aplicado exclusivamente a la interacción motriz.</p>
-<p><strong>Cálculos Exactos con Magpylib:</strong> En lugar de aproximaciones genéricas, el simulador se apoya en la potencia matemática de la librería científica <code>Magpylib</code>. Esta herramienta resuelve las ecuaciones de Maxwell para geometrías magnéticas complejas, ofreciéndonos el valor exacto del Campo Magnético (vector $\vec{B}$, en Teslas) en cualquier coordenada 3D del espacio que rodea al imán central de la base (Estator).</p>
-<p><strong>La Regla de la Mano Derecha:</strong> El simulador segmenta virtualmente cada espira de cobre del rotor en diminutos microvectores espaciales. En cada punto, cruza la corriente eléctrica inyectada por el panel solar ($I$) con el campo magnético del imán ($\vec{B}$) calculado por Magpylib para hallar la <strong>Fuerza de Lorentz</strong>. Esta interacción geométrica es dictada universalmente por la <em>Regla de la Mano Derecha</em>: si alineas el dedo índice en la dirección en la que viaja la corriente eléctrica y el dedo medio en la dirección de las líneas del campo magnético (saliendo del Polo Norte del imán), el pulgar extendido te apuntará la dirección exacta de la fuerza de repulsión resultante.</p>
+<p><strong>Cálculos Exactos con Magpylib:</strong> En lugar de aproximaciones genéricas, el simulador se apoya en la potencia matemática de la librería científica <code>Magpylib</code>. Esta herramienta resuelve las ecuaciones de Maxwell para geometrías magnéticas complejas, ofreciéndonos el valor exacto del Campo Magnético (vector <b>B</b>, en Teslas) en cualquier coordenada 3D del espacio que rodea al imán central de la base (Estator).</p>
+<p><strong>La Regla de la Mano Derecha:</strong> El simulador segmenta virtualmente cada espira de cobre del rotor en diminutos microvectores espaciales. En cada punto, cruza la corriente eléctrica inyectada por el panel solar (<i>I</i>) con el campo magnético del imán (<b>B</b>) calculado por Magpylib para hallar la <strong>Fuerza de Lorentz</strong>. Esta interacción geométrica es dictada universalmente por la <em>Regla de la Mano Derecha</em>: si alineas el dedo índice en la dirección en la que viaja la corriente eléctrica y el dedo medio en la dirección de las líneas del campo magnético (saliendo del Polo Norte del imán), el pulgar extendido te apuntará la dirección exacta de la fuerza de repulsión resultante.</p>
 <p><strong>Descomposición Vectorial y Espiras Inclinadas:</strong> Un desafío fundamental en este motor es que no todas las bobinas están en la misma posición geométrica ni a la misma distancia. A medida que el rotor gira, las espiras adoptan distintas inclinaciones espaciales. Dado que la fuerza resultante es vectorial, su empuje rara vez es 100% "útil" para el giro. Magpylib asume el inmenso cálculo de computar el vector de fuerza bruto y <strong>descomponerlo trigonométricamente en sus componentes cartesianas (ejes X, Y, Z)</strong>. Con precisión microscópica, el sistema discrimina las fuerzas radiales inútiles (que empujan al eje tratando de doblarlo) y suma exclusivamente la componente tangencial que contribuye al <strong>Par Motriz (Torque)</strong> total de la máquina.</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -531,7 +531,7 @@ function inyectarMemoriaTecnica() {
   <mn>${FF.toFixed(3)}</mn>
 </math>
 </div>
-<p><strong>Eficiencia (&eta;):</strong> Comparando la potencia eléctrica extraída contra la potencia lumínica teórica incidente (asumiendo irradiancia estándar AM1.5 de 1000 W/m², lo que supone $\approx 10 \text{ mW/cm}^2$ sobre el área de ${(area_cm2).toFixed(2)} \text{ cm}^2$ del panel), deducimos el rendimiento neto de conversión:</p>
+<p><strong>Eficiencia (&eta;):</strong> Comparando la potencia eléctrica extraída contra la potencia lumínica teórica incidente (asumiendo irradiancia estándar AM1.5 de 1000 W/m², lo que supone &approx; 10 mW/cm&sup2; sobre el área de ${(area_cm2).toFixed(2)} cm&sup2; del panel), deducimos el rendimiento neto de conversión:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <mi>&eta;</mi>
@@ -556,7 +556,7 @@ function inyectarMemoriaTecnica() {
 </div>
 
 <h3>3.3. Interacción Lumínica según Inclinación (Ley del Coseno)</h3>
-<p>La posición del rotor respecto a la fuente de luz es crucial, ya que un panel solar no produce su máxima energía a menos que los rayos incidan totalmente perpendiculares a su superficie. Cuando el motor gira, el ángulo de incidencia ($\theta$) cambia constantemente. La reducción de la corriente ($I$) inducida por este desalineamiento obedece numéricamente a la Ley del Coseno (Lambert). Para un ángulo ilustrativo de $\theta = 45^\circ$:</p>
+<p>La posición del rotor respecto a la fuente de luz es crucial, ya que un panel solar no produce su máxima energía a menos que los rayos incidan totalmente perpendiculares a su superficie. Cuando el motor gira, el ángulo de incidencia (&theta;) cambia constantemente. La reducción de la corriente (<i>I</i>) inducida por este desalineamiento obedece numéricamente a la Ley del Coseno (Lambert). Para un ángulo ilustrativo de &theta; = 45&deg;:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>I</mi><mi>activa</mi></msub>
@@ -635,7 +635,7 @@ function inyectarMemoriaTecnica() {
 <h3>3.5. Análisis Volumétrico (Encaje del Hilo en la Ranura)</h3>
 <p>Una vez resuelta la geometría poligonal y determinada la resistencia objetivo que demanda el panel solar, es imperativo comprobar si la cantidad resultante de hilo de cobre cabe físicamente dentro del armazón estructural.</p>
 <p><strong>Superficie Útil de la Ranura (A<sub>ranura</sub>):</strong> Es el espacio geométrico transversal disponible bajo los paneles para alojar el bobinado. Matemáticamente, se determina evaluando el área del segmento interno del polígono y restando el volumen ocupado por el eje central pasante.</p>
-<p><strong>Sección Total de Cobre (A<sub>cobre</sub>):</strong> Es la suma del área transversal de todas las espiras necesarias. Depende directamente del diámetro del hilo ($d = ${diametroHilo.toFixed(3)} \text{ mm}$) y del número total de vueltas ($N_{vueltas}$) requeridas para alcanzar el equilibrio eléctrico:</p>
+<p><strong>Sección Total de Cobre (A<sub>cobre</sub>):</strong> Es la suma del área transversal de todas las espiras necesarias. Depende directamente del diámetro del hilo (<i>d</i> = ${diametroHilo.toFixed(3)} mm) y del número total de vueltas (<i>N<sub>vueltas</sub></i>) requeridas para alcanzar el equilibrio eléctrico:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>A</mi><mi>cobre</mi></msub>
@@ -679,7 +679,7 @@ function inyectarMemoriaTecnica() {
         </div>
     </li>
     <li><strong>Densidad de Corriente (<i>J</i>)</strong>:
-        <p style="margin-top: 5px; margin-bottom: 10px; color: #475569; line-height: 1.5;">Este parámetro evalúa la viabilidad térmica calculando cuánta corriente atraviesa la sección del conductor. Constituye un factor de seguridad frente al Efecto Joule para evitar que el esmalte se derrita. Se deduce dividiendo la corriente de trabajo óptima del panel ($I_{mp}$) entre la sección. Para motores Mendocino refrigerados por aire en rotación libre, se admiten densidades nominales de entre 4 y 6 A/mm².</p>
+        <p style="margin-top: 5px; margin-bottom: 10px; color: #475569; line-height: 1.5;">Este parámetro evalúa la viabilidad térmica calculando cuánta corriente atraviesa la sección del conductor. Constituye un factor de seguridad frente al Efecto Joule para evitar que el esmalte se derrita. Se deduce dividiendo la corriente de trabajo óptima del panel (<i>I<sub>mp</sub></i>) entre la sección. Para motores Mendocino refrigerados por aire en rotación libre, se admiten densidades nominales de entre 4 y 6 A/mm².</p>
         <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <mi>J</mi>
@@ -719,7 +719,7 @@ function inyectarMemoriaTecnica() {
         </div>
     </li>
     <li><strong>Longitud Media de Espira (<i>L<sub>m</sub></i>) y Deducción del Bobinado</strong>:
-        <p style="margin-top: 5px; margin-bottom: 10px; color: #475569; line-height: 1.5;">Para conocer cuántas vueltas caben en cierta longitud de hilo, primero debemos definir el perímetro de una sola vuelta (espira). Una bobina diametral viaja a lo largo del panel solar (distancia $L$), cruza transversalmente el polígono por su diámetro exterior ($D_{ext}$) para alcanzar la cara opuesta, regresa por el otro panel (distancia $L$), y vuelve a cruzar el diámetro ($D_{ext}$) para cerrar el circuito. Por tanto, la longitud media de una espira se aproxima al perímetro de un rectángulo de $L \times D_{ext}$:</p>
+        <p style="margin-top: 5px; margin-bottom: 10px; color: #475569; line-height: 1.5;">Para conocer cuántas vueltas caben en cierta longitud de hilo, primero debemos definir el perímetro de una sola vuelta (espira). Una bobina diametral viaja a lo largo del panel solar (distancia <i>L</i>), cruza transversalmente el polígono por su diámetro exterior (<i>D<sub>ext</sub></i>) para alcanzar la cara opuesta, regresa por el otro panel (distancia <i>L</i>), y vuelve a cruzar el diámetro (<i>D<sub>ext</sub></i>) para cerrar el circuito. Por tanto, la longitud media de una espira se aproxima al perímetro de un rectángulo de <i>L</i> &times; <i>D<sub>ext</sub></i>:</p>
         <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>L</mi><mi>m</mi></msub>
@@ -740,7 +740,7 @@ function inyectarMemoriaTecnica() {
   <mtext>&nbsp;mm</mtext>
 </math>
         </div>
-        <p style="margin-top: 10px; margin-bottom: 5px; color: #475569;">Conocida la Longitud Media de una sola espira ($L_m$), la calculadora puede deducir analíticamente el <strong>Número de Vueltas</strong> necesarias simplemente dividiendo la longitud total de cable requerida (para que su resistencia alcance el punto de máxima potencia del panel) entre este valor $L_m$.</p>
+        <p style="margin-top: 10px; margin-bottom: 5px; color: #475569;">Conocida la Longitud Media de una sola espira (<i>L<sub>m</sub></i>), la calculadora puede deducir analíticamente el <strong>Número de Vueltas</strong> necesarias simplemente dividiendo la longitud total de cable requerida (para que su resistencia alcance el punto de máxima potencia del panel) entre este valor <i>L<sub>m</sub></i>.</p>
     </li>
 </ul>
 
