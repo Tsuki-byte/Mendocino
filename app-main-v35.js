@@ -4404,7 +4404,7 @@ function aplicarNivelUsuario() {
         selectorNivel.value = usuarioActual.nivel;
     }
 
-    const pasos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    const pasos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
     pasos.forEach((numPaso) => {
         const indicador = document.getElementById(`ind-${numPaso}`);
@@ -4416,8 +4416,10 @@ function aplicarNivelUsuario() {
         indicador.style.pointerEvents = permitido ? 'auto' : 'none';
         indicador.title = permitido ? '' : 'Bloqueado para tu configuración actual';
         
-        // Mostrar siempre todas las pestañas, pero atenuadas si no están permitidas
-        indicador.style.display = 'flex';
+        if (numPaso !== 13) {
+            // Mostrar siempre todas las pestañas, pero atenuadas si no están permitidas
+            indicador.style.display = 'flex';
+        }
     });
 
     aplicarVisibilidadPorNivel();
@@ -4442,6 +4444,7 @@ function obtenerPasoActual() {
 function aplicarVisibilidadPorNivel() {
     const config = obtenerConfigNivel();
     const nivel = usuarioActual.nivel;
+    const esRealAdmin = esAdmin || (sessionActiva && EMAILS_ADMIN_FALLBACK.includes(sessionActiva.user.email));
 
     document.querySelectorAll('.solo-experto-paso3').forEach(el => {
         el.style.display = config.puedeVerPasoFCEM ? '' : 'none';
@@ -4458,6 +4461,11 @@ function aplicarVisibilidadPorNivel() {
     document.querySelectorAll('.oculto-basico').forEach(el => {
         el.style.display = (config.pasosPermitidos.length > 2 || nivel !== 'basico') ? '' : 'none';
     });
+    
+    const ind13 = document.getElementById('ind-13');
+    if (ind13) {
+        ind13.style.display = esRealAdmin ? 'flex' : 'none';
+    }
 }
 
 function abrirPanelAdmin() {
