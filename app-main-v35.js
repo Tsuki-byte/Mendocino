@@ -4454,10 +4454,8 @@ function aplicarNivelUsuario() {
         indicador.style.pointerEvents = permitido ? 'auto' : 'none';
         indicador.title = permitido ? '' : 'Bloqueado para tu configuración actual';
         
-        if (numPaso !== 13) {
-            // Mostrar siempre todas las pestañas, pero atenuadas si no están permitidas
-            indicador.style.display = 'flex';
-        }
+        // Mostrar siempre todas las pestañas, pero atenuadas si no están permitidas
+        indicador.style.display = 'flex';
     });
 
     aplicarVisibilidadPorNivel();
@@ -4499,11 +4497,6 @@ function aplicarVisibilidadPorNivel() {
     document.querySelectorAll('.oculto-basico').forEach(el => {
         el.style.display = (config.pasosPermitidos.length > 2 || nivel !== 'basico') ? '' : 'none';
     });
-    
-    const ind13 = document.getElementById('ind-13');
-    if (ind13) {
-        ind13.style.display = esRealAdmin ? 'flex' : 'none';
-    }
 }
 
 function abrirPanelAdmin() {
