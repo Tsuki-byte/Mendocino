@@ -263,15 +263,12 @@ function inyectarMemoriaTecnica() {
 
 <h3>Fase 4 y 5: Levitación e Interacción Magnética (Estática)</h3>
 <p>Para un giro ultra-eficiente se suprime el rozamiento convencional usando campos magnéticos estacionarios.</p>
-<p><strong>Concepto Teórico:</strong> Se emplea la ley de repulsión dipolar magnética. El simulador asimila los imanes a dipolos de Neodimio. La altura Z de levitación estable se alcanza cuando la fuerza de repulsión iguala al peso gravitatorio:</p>
+<p><strong>Concepto Físico:</strong> En lugar de apoyarse sobre rodamientos mecánicos que generan fricción, el motor "flota" en el aire gracias a la repulsión de imanes de Neodimio enfrentados por polos iguales. Funciona como una balanza invisible: el rotor cae empujado por la gravedad hasta acercarse a los imanes de la base. Cuanto más se acerca, más fuerte es el "colchón magnético" que lo rechaza. Cuando este empuje hacia arriba iguala exactamente al peso total del bloque, el sistema se detiene y levita de forma estable a una altura <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mi>Z</mi></math>:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-  <msub><mi>F</mi><mi>z</mi></msub>
+  <mtext>Fuerza Magnética Repulsiva (&#8593;)</mtext>
   <mo>=</mo>
-  <mo>&int;</mo>
-  <mo>(</mo><mi>m</mi><mo>&sdot;</mo><mo>&nabla;</mo><mo>)</mo><mi>B</mi>
-  <mo>=</mo>
-  <mi>M</mi><mo>&sdot;</mo><mi>g</mi>
+  <mtext>Peso Total del Rotor (&#8595;)</mtext>
 </math>
 </div>
 
