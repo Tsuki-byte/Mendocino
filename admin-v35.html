@@ -380,17 +380,19 @@
                             <span><b style="color: #3b82f6;">1.</b> Ensayo Solares</span>
                             <span><b style="color: #3b82f6;">2.</b> Geometría</span>
                             <span><b style="color: #3b82f6;">3.</b> Devanados</span>
-                            <span><b style="color: #3b82f6;">4.</b> Magnetismo</span>
+                            <span><b style="color: #3b82f6;">4.</b> Levitación</span>
                             
-                            <span><b style="color: #3b82f6;">5.</b> Lumínica</span>
-                            <span><b style="color: #3b82f6;">6.</b> FCEM</span>
-                            <span><b style="color: #3b82f6;">7.</b> Simulación 3D</span>
-                            <span><b style="color: #3b82f6;">8.</b> Conexionado</span>
+                            <span><b style="color: #3b82f6;">5.</b> Int. Magnética</span>
+                            <span><b style="color: #3b82f6;">6.</b> Lumínica</span>
+                            <span><b style="color: #3b82f6;">7.</b> FCEM</span>
+                            <span><b style="color: #3b82f6;">8.</b> Par Motriz</span>
                             
-                            <span><b style="color: #3b82f6;">9.</b> Levitación</span>
-                            <span><b style="color: #3b82f6;">10.</b> Equilibrado</span>
-                            <span><b style="color: #3b82f6;">11.</b> Sim. Dinámica</span>
-                            <span><b style="color: #3b82f6;">12.</b> Informe</span>
+                            <span><b style="color: #3b82f6;">9.</b> Sim. Global</span>
+                            <span><b style="color: #3b82f6;">10.</b> Conexionado</span>
+                            <span><b style="color: #3b82f6;">11.</b> Equilibrado</span>
+                            <span><b style="color: #3b82f6;">12.</b> Dinámica</span>
+                            
+                            <span><b style="color: #3b82f6;">13.</b> Informe</span>
                         </div>
                     </div>
                     <div id="contenedor-lista-usuarios"></div>
@@ -420,7 +422,7 @@
     <!-- Cliente de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=20"></script>
-    <script src="app-main-v35.js?v=36.51"></script>
+    <script src="app-main-v35.js?v=37.47"></script>
 
     <script>
         let fullUsuarios = [];
@@ -577,7 +579,7 @@
                                                  style="cursor:default; margin-left:auto; opacity:0.5; font-size:9px;" title="Configuración Personalizada">P</div>
                                         </div>
                                         <div class="step-toggles">
-                                            ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(step => {
+                                            ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(step => {
                                                 const listaPasos = (u.permisos_pasos || '').split(',').filter(x => x);
                                                 let permitido = false;
                                                 
@@ -586,12 +588,12 @@
                                                     permitido = listaPasos.includes(String(step));
                                                 } else {
                                                     // Si no hay, fallamos al nivel
-                                                    const limitePaso = (u.nivel === 'avanzado' ? 7 : (u.nivel === 'experto' ? 12 : 4));
+                                                    const limitePaso = (u.nivel === 'avanzado' ? 7 : (u.nivel === 'experto' ? 13 : 4));
                                                     permitido = step <= limitePaso;
                                                 }
                                                 
-                                                const labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-                                                const titles = ['Ensayo', 'Geometría', 'Devanados', 'Magnetismo', 'Lumínica', 'FCEM', 'Simul. 3D', 'Conexionado', 'Levitación', 'Equilibrado', 'Dinámica', 'Informe'];
+                                                const labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'];
+                                                const titles = ['Ensayo', 'Geometría', 'Devanados', 'Levitación', 'Int. Magnética', 'Lumínica', 'FCEM', 'Par Motriz', 'Sim. Global', 'Conexionado', 'Equilibrado', 'Dinámica', 'Informe'];
                                                 return `<div class="step-toggle ${permitido ? 'active' : ''}" 
                                                              title="${titles[step-1]}"
                                                              onclick="togglePasoDesdePanel('${u.id}', ${step}, '${u.permisos_pasos || ''}', '${u.nivel}')">
@@ -657,7 +659,7 @@
             if (lista.length === 0) {
                 if (nivelActual === 'basico') lista = ['1','2','3','4'];
                 else if (nivelActual === 'avanzado') lista = ['1','2','3','4','5','6','7'];
-                else if (nivelActual === 'experto') lista = ['1','2','3','4','5','6','7','8','9','10','11','12'];
+                else if (nivelActual === 'experto') lista = ['1','2','3','4','5','6','7','8','9','10','11','12','13'];
             }
 
             const sPaso = String(paso);
@@ -680,7 +682,7 @@
             } else if (nuevosPermisos === '1,2,3,4,5,6,7') {
                 updates.nivel = 'avanzado';
                 updates.permisos_pasos = null;
-            } else if (nuevosPermisos === '1,2,3,4,5,6,7,8,9,10,11,12') {
+            } else if (nuevosPermisos === '1,2,3,4,5,6,7,8,9,10,11,12,13') {
                 updates.nivel = 'experto';
                 updates.permisos_pasos = null;
             }
