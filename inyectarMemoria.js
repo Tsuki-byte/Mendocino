@@ -545,68 +545,20 @@ function inyectarMemoriaTecnica() {
 </div>
 <p>Si el eje de acero tiene 6 mm de diámetro (radio 3 mm), la <strong>profundidad de la ventana de bobinado</strong> disponible por cara es ${Apotema.toFixed(2)} - 3 = ${(Apotema-3).toFixed(2)} mm.</p>
 
-<h3>3.3. Estudio de Masas (Gravitatorio)</h3>
-<p><strong>Volumen geométrico de una placa:</strong></p>
+<h3>3.3. Análisis Volumétrico (Encaje del Hilo en la Ranura)</h3>
+<p>Una vez resuelta la geometría poligonal y determinada la resistencia objetivo que demanda el panel solar, es imperativo comprobar si la cantidad resultante de hilo de cobre cabe físicamente dentro del armazón estructural.</p>
+<p><strong>Superficie Útil de la Ranura (A<sub>ranura</sub>):</strong> Es el espacio geométrico transversal disponible bajo los paneles para alojar el bobinado. Matemáticamente, se determina evaluando el área del segmento interno del polígono y restando el volumen ocupado por el eje central pasante.</p>
+<p><strong>Sección Total de Cobre (A<sub>cobre</sub>):</strong> Es la suma del área transversal de todas las espiras necesarias. Depende directamente del diámetro del hilo ($d = ${diametroHilo.toFixed(3)} \text{ mm}$) y del número total de vueltas ($N_{vueltas}$) requeridas para alcanzar el equilibrio eléctrico:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-  <msub><mi>V</mi><mi>placa</mi></msub>
+  <msub><mi>A</mi><mi>cobre</mi></msub>
   <mo>=</mo>
-  <mi>L</mi><mo>&sdot;</mo><mi>W</mi><mo>&sdot;</mo><mi>T</mi>
-</math>
-<br>
-<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-  <msub><mi>V</mi><mi>placa</mi></msub>
-  <mo>=</mo>
-  <mn>${L.toFixed(1)}</mn><mo>&sdot;</mo><mn>${W.toFixed(1)}</mn><mo>&sdot;</mo><mn>${T.toFixed(1)}</mn>
-  <mo>=</mo>
-  <mn>${V_placa.toFixed(1)}</mn>
-  <mtext>&nbsp;</mtext><msup><mi>mm</mi><mn>3</mn></msup>
+  <msub><mi>N</mi><mi>vueltas</mi></msub>
+  <mo>&sdot;</mo>
+  <mi>&pi;</mi><mo>&sdot;</mo><msup><mrow><mo>(</mo><mfrac><mi>d</mi><mn>2</mn></mfrac><mo>)</mo></mrow><mn>2</mn></msup>
 </math>
 </div>
-
-<p><strong>Masa de los paneles solares</strong> (asumiendo densidad del silicio y cristal &rho; &approx; 0.0025 g/mm³):</p>
-<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
-<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-  <msub><mi>M</mi><mi>paneles</mi></msub>
-  <mo>=</mo>
-  <mi>N</mi><mo>&sdot;</mo><mo>(</mo><msub><mi>V</mi><mi>placa</mi></msub><mo>&sdot;</mo><msub><mi>&rho;</mi><mi>silicio</mi></msub><mo>)</mo>
-</math>
-<br>
-<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-  <msub><mi>M</mi><mi>paneles</mi></msub>
-  <mo>=</mo>
-  <mn>${N}</mn><mo>&sdot;</mo><mo>(</mo><mn>${V_placa.toFixed(1)}</mn><mo>&sdot;</mo><mn>0.0025</mn><mo>)</mo>
-  <mo>&approx;</mo>
-  <mn>${M_paneles.toFixed(1)}</mn>
-  <mtext>&nbsp;g</mtext>
-</math>
-</div>
-
-<p><strong>Masa Estructural Base</strong> (sumando la masa de un eje de acero y las tapas plásticas impresas):</p>
-<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
-<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-  <msub><mi>M</mi><mi>base</mi></msub>
-  <mo>=</mo>
-  <msub><mi>M</mi><mi>paneles</mi></msub>
-  <mo>+</mo>
-  <msub><mi>M</mi><mi>eje</mi></msub>
-  <mo>+</mo>
-  <msub><mi>M</mi><mi>carcasa</mi></msub>
-</math>
-<br>
-<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-  <msub><mi>M</mi><mi>base</mi></msub>
-  <mo>=</mo>
-  <mn>${M_paneles.toFixed(1)}</mn>
-  <mo>+</mo>
-  <mn>11.0</mn>
-  <mo>+</mo>
-  <mn>10.0</mn>
-  <mo>&approx;</mo>
-  <mn>${M_base.toFixed(1)}</mn>
-  <mtext>&nbsp;g</mtext>
-</math>
-</div>
+<p><strong>Porcentaje de Ocupación:</strong> La viabilidad constructiva depende de este indicador crítico. Si el ratio entre el área total del cobre a introducir y el área libre de la ranura supera el límite de empaquetamiento práctico (alrededor del 70% o 80%, debido al espacio muerto entre hilos cilíndricos), la bobina desbordará su compartimento y resultará físicamente imposible cerrar y pegar los paneles solares sobre el chasis de resina.</p>
 
 <h3>3.4. Electromagnetismo (Devanados y Resistencia)</h3>
 <ul>
@@ -657,7 +609,8 @@ function inyectarMemoriaTecnica() {
 </math>
         </div>
     </li>
-    <li><strong>Longitud Media de Espira (<i>L<sub>m</sub></i>)</strong>:
+    <li><strong>Longitud Media de Espira (<i>L<sub>m</sub></i>) y Deducción del Bobinado</strong>:
+        <p style="margin-top: 5px; margin-bottom: 10px; color: #475569; line-height: 1.5;">Para conocer cuántas vueltas caben en cierta longitud de hilo, primero debemos definir el perímetro de una sola vuelta (espira). Una bobina diametral viaja a lo largo del panel solar (distancia $L$), cruza transversalmente el polígono por su diámetro exterior ($D_{ext}$) para alcanzar la cara opuesta, regresa por el otro panel (distancia $L$), y vuelve a cruzar el diámetro ($D_{ext}$) para cerrar el circuito. Por tanto, la longitud media de una espira se aproxima al perímetro de un rectángulo de $L \times D_{ext}$:</p>
         <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>L</mi><mi>m</mi></msub>
@@ -670,79 +623,17 @@ function inyectarMemoriaTecnica() {
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>L</mi><mi>m</mi></msub>
   <mo>=</mo>
-  <mn>2</mn><mo>(</mo><mn>53</mn><mo>)</mo>
+  <mn>2</mn><mo>(</mo><mn>${L.toFixed(1)}</mn><mo>)</mo>
   <mo>+</mo>
-  <mn>2</mn><mo>(</mo><mn>36</mn><mo>)</mo>
-  <mo>=</mo>
-  <mn>178</mn>
+  <mn>2</mn><mo>(</mo><mn>${(R_circ*2).toFixed(1)}</mn><mo>)</mo>
+  <mo>&approx;</mo>
+  <mn>${(2*L + 4*R_circ).toFixed(1)}</mn>
   <mtext>&nbsp;mm</mtext>
 </math>
         </div>
-    </li>
-    <li>Si el espacio volumétrico de la Fase 2 admite <strong>100 espiras</strong> encajadas por bobina diametral:
-        <ul>
-            <li>Longitud total = 100 × 0.178 = 17.8 metros de hilo.</li>
-            <li><strong>Resistencia de la Bobina</strong> = 17.8 m × 0.219 Ω/m = 3.9 Ω.</li>
-        </ul>
+        <p style="margin-top: 10px; margin-bottom: 5px; color: #475569;">Conocida la Longitud Media de una sola espira ($L_m$), la calculadora puede deducir analíticamente el <strong>Número de Vueltas</strong> necesarias simplemente dividiendo la longitud total de cable requerida (para que su resistencia alcance el punto de máxima potencia del panel) entre este valor $L_m$.</p>
     </li>
 </ul>
-
-<h3>3.5. Generación de Par Motriz Teórico (Fuerza de Lorentz)</h3>
-<p>Asumimos que el ensayo de la Fase 1 demostró que el panel bajo luz inyecta <strong>200 mA (0.2 A)</strong> a la bobina debido a los 3.9 Ω. Si el imán inductor genera un campo intenso perpendicular de <strong>0.15 Teslas</strong> frente a la cara activa (50 mm):</p>
-<ul>
-    <li>Corriente total del paquete: 100 espiras × 0.2 A = 20 Amperios·vuelta.</li>
-</ul>
-<p>Fuerza de Lorentz empujando tangencialmente:</p>
-<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 20px 0;">
-<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-  <msub><mi>F</mi><mi>L</mi></msub>
-  <mo>=</mo>
-  <msub><mi>I</mi><mi>total</mi></msub>
-  <mo>&sdot;</mo>
-  <msub><mi>L</mi><mi>activa</mi></msub>
-  <mo>&sdot;</mo>
-  <mi>B</mi>
-</math>
-<br>
-<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-  <msub><mi>F</mi><mi>L</mi></msub>
-  <mo>=</mo>
-  <mn>20</mn><mtext>&nbsp;A</mtext>
-  <mo>&sdot;</mo>
-  <mn>0.05</mn><mtext>&nbsp;m</mtext>
-  <mo>&sdot;</mo>
-  <mn>0.15</mn><mtext>&nbsp;T</mtext>
-  <mo>=</mo>
-  <mn>0.15</mn>
-  <mtext>&nbsp;N</mtext>
-</math>
-</div>
-<p>El Par Motriz (Torque) a un radio exterior de 18 mm (0.018 m) será:</p>
-<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 20px 0;">
-<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-  <mi>&tau;</mi>
-  <mo>=</mo>
-  <msub><mi>F</mi><mi>L</mi></msub>
-  <mo>&sdot;</mo>
-  <msub><mi>R</mi><mi>ext</mi></msub>
-</math>
-<br>
-<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-  <mi>&tau;</mi>
-  <mo>=</mo>
-  <mn>0.15</mn><mtext>&nbsp;N</mtext>
-  <mo>&sdot;</mo>
-  <mn>0.018</mn><mtext>&nbsp;m</mtext>
-  <mo>=</mo>
-  <mn>0.0027</mn>
-  <mtext>&nbsp;N&middot;m</mtext>
-</math>
-</div>
-<p>Este par motriz inicial de 2.7 mN·m acelerará el motor desde el reposo hasta que la fuerza contraelectromotriz (Fase 7) y la fricción aerodinámica equilibren el sistema termodinámico.</p>
-
-<div style="text-align:center; margin: 40px 0;">
-    <img src="Imagenes_informe/Fase_13.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 13">
-</div>
 
 <div class="nota">
     <strong>Nota Final de Uso en MS Word:</strong> Para migrar este documento manteniendo la estética intacta, simplemente selecciona todo (<code>Ctrl+A</code>), cópialo (<code>Ctrl+C</code>) y pégalo directamente en un documento de <strong>Microsoft Word</strong> o en un PDF. Las imágenes insertadas se mantendrán automáticamente.
