@@ -231,7 +231,7 @@ function inyectarMemoriaTecnica() {
 
 <h3>Fase 3: Devanados (Electromagnetismo Circuital)</h3>
 <p>El motor basa su empuje en la Fuerza de Lorentz, la cual requiere corriente eléctrica viajando por espiras conductoras.</p>
-<p><strong>Concepto Teórico:</strong> El espacio físico delimita la "ventana de bobinado". El compromiso entre el diámetro del hilo y el número de espiras viene regido por la Ley de Pouillet para la resistencia eléctrica del conductor. Este cálculo es el corazón del diseño eléctrico porque, según el <strong>Teorema de Máxima Transferencia de Potencia</strong> (Teorema de Jacobi), el motor solo conseguirá extraer el 100% de la energía disponible del sol si conseguimos que la resistencia final de esta bobina iguale exactamente la "resistencia óptima" del panel calculada en la Fase 1:</p>
+<p><strong>Concepto Teórico:</strong> El espacio físico delimita la "ventana de bobinado". El compromiso entre el diámetro del hilo y el número de espiras viene regido por la Ley de Pouillet para la resistencia eléctrica del conductor. Este cálculo es el corazón del diseño eléctrico porque, según el <strong>Teorema de Máxima Transferencia de Potencia</strong> (Teorema de Jacobi), el motor solo conseguirá extraer el 100% de la energía disponible de la fuente de luz si conseguimos que la resistencia final de esta bobina iguale exactamente la "resistencia óptima" del panel calculada en la Fase 1:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <mi>R</mi>
