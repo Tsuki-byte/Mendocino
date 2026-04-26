@@ -118,9 +118,9 @@ function inyectarMemoriaTecnica() {
     #informe-automatico-html .io-out::before { content: '✔️ '; }
 </style>
 
-<h1>Manual de Usuario Avanzado y Fundamentos Teóricos: Simulador de Motores Mendocino</h1>
+<h1>Memoria Técnica y Cálculos de Diseño: Motor Mendocino</h1>
 
-<p>Este manual constituye la guía definitiva para comprender no solo el manejo del <strong>Simulador de Motores Mendocino</strong>, sino también los profundos principios físicos y matemáticos que rigen cada uno de sus cálculos. Está diseñado para estudiantes, ingenieros y entusiastas que deseen profundizar en la electrodinámica, la mecánica y la geometría aplicada a este fascinante motor solar levitado.</p>
+<p>Este documento constituye la memoria técnica definitiva que desglosa el diseño, la parametrización geométrica y los cálculos físicos del prototipo de motor Mendocino que ha configurado. Sirve como registro de ingeniería detallado sobre la viabilidad, el equilibrio de masas, y las fuerzas electrodinámicas de levitación y rotación de este modelo específico.</p>
 
 <hr>
 
