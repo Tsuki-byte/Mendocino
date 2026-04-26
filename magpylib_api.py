@@ -696,7 +696,7 @@ def calculate_levitation():
                 # Vista isométrica ortográfica para evitar distorsión de perspectiva
                 f_p.update_layout(
                     scene_camera=dict(
-                        eye=dict(x=1.8, y=-1.2, z=0.8), 
+                        eye=dict(x=0.8, y=-2.2, z=1.0), 
                         up=dict(x=0, y=0, z=1)
                     ), 
                     scene=dict(aspectmode='data'), 
@@ -1097,7 +1097,7 @@ def calculate_global_forces():
             f_p = magpy.show(col_imanes, return_fig=True, backend='plotly')
             f_p.update_layout(
                 scene_camera=dict(
-                    eye=dict(x=1.8, y=-1.2, z=0.8), 
+                    eye=dict(x=0.8, y=-2.2, z=1.0), 
                     up=dict(x=0, y=0, z=1)
                 ), 
                 scene=dict(aspectmode='data'), 
