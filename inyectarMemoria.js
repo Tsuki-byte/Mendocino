@@ -23,12 +23,8 @@ function inyectarMemoriaTecnica() {
     const M_carcasa = 10.0;
     const M_base = M_paneles + M_eje + M_carcasa;
 
-    const htmlString = `<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<style>
-    body {
+    const htmlString = `<style>
+    #informe-automatico-html {
         font-family: 'Segoe UI', Arial, sans-serif;
         line-height: 1.6;
         color: #333;
@@ -36,34 +32,34 @@ function inyectarMemoriaTecnica() {
         margin: 40px auto;
         padding: 0 20px;
     }
-    h1 {
+    #informe-automatico-html h1 {
         color: #2c3e50;
         border-bottom: 2px solid #3498db;
         padding-bottom: 10px;
         font-size: 28px;
     }
-    h2 {
+    #informe-automatico-html h2 {
         color: #2980b9;
         margin-top: 40px;
         font-size: 22px;
     }
-    h3 {
+    #informe-automatico-html h3 {
         color: #16a085;
         margin-top: 30px;
         font-size: 18px;
     }
-    p {
+    #informe-automatico-html p {
         margin-bottom: 15px;
         text-align: justify;
     }
-    ul {
+    #informe-automatico-html ul {
         margin-bottom: 20px;
         padding-left: 20px;
     }
-    li {
+    #informe-automatico-html li {
         margin-bottom: 8px;
     }
-    .imagen-placeholder {
+    #informe-automatico-html .imagen-placeholder {
         background-color: #f1f5f9;
         border: 2px dashed #94a3b8;
         padding: 20px;
@@ -73,7 +69,7 @@ function inyectarMemoriaTecnica() {
         margin: 20px 0;
         border-radius: 8px;
     }
-    .math {
+    #informe-automatico-html .math {
         background-color: #f8f9fa;
         padding: 15px 20px;
         border-left: 4px solid #2c3e50;
@@ -82,23 +78,23 @@ function inyectarMemoriaTecnica() {
         margin: 20px 0;
         color: #1a202c;
     }
-    .math-line {
+    #informe-automatico-html .math-line {
         margin-bottom: 6px;
     }
         margin: 15px 0;
     }
-    hr {
+    #informe-automatico-html hr {
         border: 0;
         border-top: 1px solid #eee;
         margin: 40px 0;
     }
-    .nota {
+    #informe-automatico-html .nota {
         background-color: #fff3cd;
         border-left: 4px solid #ffc107;
         padding: 15px;
         margin: 20px 0;
     }
-    .io-box {
+    #informe-automatico-html .io-box {
         background-color: #eef2f5;
         border: 1px solid #d1d5db;
         border-radius: 6px;
@@ -106,7 +102,7 @@ function inyectarMemoriaTecnica() {
         margin-top: 15px;
         margin-bottom: 25px;
     }
-    .io-title {
+    #informe-automatico-html .io-title {
         font-weight: bold;
         color: #374151;
         margin-bottom: 8px;
@@ -114,15 +110,13 @@ function inyectarMemoriaTecnica() {
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    .io-entry {
+    #informe-automatico-html .io-entry {
         margin-bottom: 6px;
         font-size: 15px;
     }
-    .io-in::before { content: '➡️ '; }
-    .io-out::before { content: '✔️ '; }
+    #informe-automatico-html .io-in::before { content: '➡️ '; }
+    #informe-automatico-html .io-out::before { content: '✔️ '; }
 </style>
-</head>
-<body>
 
 <h1>Manual de Usuario Avanzado y Fundamentos Teóricos: Simulador de Motores Mendocino</h1>
 
@@ -623,8 +617,7 @@ function inyectarMemoriaTecnica() {
     <strong>Nota Final de Uso en MS Word:</strong> Para migrar este documento manteniendo la estética intacta (tablas, negritas, subrayados), simplemente haz clic en la página, presiona <code>Ctrl+A</code> (o <code>Cmd+A</code> en Mac) para seleccionar todo, luego "Copiar" (<code>Ctrl+C</code>) y finalmente pégalo directamente en un documento en blanco de <strong>Microsoft Word</strong>. Luego inserta tus capturas donde corresponda.
 </div>
 
-</body>
-</html>
+
 `;
     
     contenedor.innerHTML = htmlString;
