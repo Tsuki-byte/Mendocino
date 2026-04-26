@@ -340,22 +340,24 @@ function cargarMotor(config, id_unico = null, titulo = null) {
     const diametroEje = document.getElementById('diametro-eje');
     if (diametroEje) diametroEje.value = config.diametroEje ?? 8;
     if (materialHilo) materialHilo.value = config.material ?? 'cobre';
-    if (diaHilo) {
+    if (diaHilo && config.hilo !== undefined) {
         // Buscamos el valor exacto del hilo en el select
         const diaBuscado = parseFloat(config.hilo);
-        let encontrado = false;
-        for (let i = 0; i < diaHilo.options.length; i++) {
-            if (Math.abs(parseFloat(diaHilo.options[i].value) - diaBuscado) < 0.001) {
-                diaHilo.selectedIndex = i;
-                encontrado = true;
-                break;
+        if (!isNaN(diaBuscado)) {
+            let encontrado = false;
+            for (let i = 0; i < diaHilo.options.length; i++) {
+                if (Math.abs(parseFloat(diaHilo.options[i].value) - diaBuscado) < 0.001) {
+                    diaHilo.selectedIndex = i;
+                    encontrado = true;
+                    break;
+                }
             }
-        }
-        // Si no está, lo añadimos temporalmente para que el motor cargue bien los cálculos
-        if (!encontrado) {
-            const nuevaOp = new Option(`${diaBuscado.toFixed(3)} mm (Proyecto)`, diaBuscado);
-            diaHilo.add(nuevaOp);
-            diaHilo.value = diaBuscado;
+            // Si no está, lo añadimos temporalmente para que el motor cargue bien los cálculos
+            if (!encontrado) {
+                const nuevaOp = new Option(`${diaBuscado.toFixed(3)} mm (Proyecto)`, diaBuscado);
+                diaHilo.add(nuevaOp);
+                diaHilo.value = diaBuscado;
+            }
         }
     }
 
