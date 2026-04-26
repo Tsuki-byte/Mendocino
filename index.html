@@ -164,7 +164,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div id="page-calc" class="page-container active">
                 <div class="card">
                     <div class="header">
-                        <h1>Diseño de Motor Mendocino <span style="font-size: 0.5em; color: #94a3b8;">v37.44</span></h1>
+                        <h1>Diseño de Motor Mendocino <span style="font-size: 0.5em; color: #94a3b8;">v37.45</span></h1>
                         <p>Calculadora y simulador de parámetros</p>
                     </div>
 
@@ -1453,7 +1453,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <label class="informe-label" for="informe-automatico-html">Memoria Técnica del Proyecto</label>
                             <textarea id="informe-automatico" style="display:none;"></textarea>
                             <div id="informe-automatico-html" class="informe-textarea" style="background: white; padding: 40px; overflow-y: auto; height: 60vh; font-family: 'Segoe UI', sans-serif; cursor: text; text-align: left; border: 1px solid #cbd5e1; border-radius: 8px;">
-                                <!-- Se inyectará dinámicamente -->
+                                <div style="text-align:center; padding-top: 100px; color: #94a3b8; font-size: 18px;">
+                                    <span style="font-size: 40px; display: block; margin-bottom: 20px;">📄</span>
+                                    El informe técnico aún no se ha generado.<br><br>
+                                    Haz clic en el botón azul <strong>"Generar Memoria"</strong> para compilar el documento.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1601,7 +1605,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
-    <script src="app-main-v35.js?v=37.44"></script>
+    <script src="app-main-v35.js?v=37.45"></script>
     <script>
         window.sincronizarGiroGlobal = function(valor, isAuto = false) {
             const els = [

@@ -4017,10 +4017,10 @@ function generarInformeAutomatico() {
 
     if (nivel) nivel.textContent = nivelTecnico;
     
-    // Inyectar el informe HTML rico basado en la plantilla y los datos
-    if (typeof inyectarMemoriaTecnica === 'function') {
-        inyectarMemoriaTecnica();
-    }
+    // Se comenta la inyeccion automatica para que aparezca vacio inicialmente y requiera boton
+    // if (typeof inyectarMemoriaTecnica === 'function') {
+    //     inyectarMemoriaTecnica();
+    // }
 }
 
 
