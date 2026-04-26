@@ -2,9 +2,27 @@
 function inyectarMemoriaTecnica() {
     const contenedor = document.getElementById("informe-automatico-html");
     if (!contenedor) return;
+
+    // --- 1. Extracción de variables reales del simulador ---
+    const N = parseInt(document.getElementById("caras")?.value) || window.EstadoDiseno?.numeroCaras || 6;
     
-    // Aquí puedes acceder a window.motorData y reemplazar valores en el HTML
-    // Por ahora inyectamos el manual tal cual
+    let L = 53, W = 18;
+    if (window.EstadoDiseno?.longitudPanel) L = window.EstadoDiseno.longitudPanel;
+    if (window.EstadoDiseno?.anchoPanel) W = window.EstadoDiseno.anchoPanel;
+    const T = 2; // Grosor
+    
+    const diametroHilo = window.EstadoDiseno?.diametroHilo_mm || parseFloat(document.getElementById("diametro-hilo")?.value) || 0.315;
+    
+    // --- 2. Cálculos físicos en tiempo real ---
+    const R_circ = W / (2 * Math.sin(Math.PI / N));
+    const Apotema = R_circ * Math.cos(Math.PI / N);
+    
+    const V_placa = L * W * T;
+    const M_paneles = N * (V_placa * 0.0025);
+    const M_eje = 11.0;
+    const M_carcasa = 10.0;
+    const M_base = M_paneles + M_eje + M_carcasa;
+
     const htmlString = `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -177,7 +195,7 @@ function inyectarMemoriaTecnica() {
     <div class="io-entry io-out"><strong>Salida:</strong> Modelo transversal en vista SVG 2D.</div>
 </div>
 
-<div class="imagen-placeholder">[IMAGEN: Captura de la geometría del rotor generada (Ej. polígono de 6 caras)]</div>
+<div class="imagen-placeholder">[IMAGEN: Captura de la geometría del rotor generada (Ej. polígono de ${N} caras)]</div>
 
 <h3>Fase 3: Devanados (Electromagnetismo Circuital)</h3>
 <p>El motor basa su empuje en la Fuerza de Lorentz, la cual requiere corriente eléctrica viajando por espiras conductoras.</p>
@@ -342,19 +360,19 @@ function inyectarMemoriaTecnica() {
 
 <hr>
 
-<h2>3. ESTUDIO ANALÍTICO DESARROLLADO: "6 Caras - Placas 53x18x2 - Hilo 0,315"</h2>
+<h2>3. ESTUDIO ANALÍTICO DESARROLLADO: "${N} Caras - Placas ${L.toFixed(1)}x${W.toFixed(1)}x${T.toFixed(1)} - Hilo ${diametroHilo.toFixed(3)}"</h2>
 
 <p>A petición del usuario, desarrollaremos paso a paso los números detrás de un diseño característico alojado en la base de datos pública del simulador.</p>
 
 <h3>3.1. Especificaciones del Modelo Físico</h3>
 <ul>
-    <li><strong>Rotor (N)</strong>: 6 caras (Hexagonal).</li>
-    <li><strong>Paneles Solares</strong>: Longitud L = 53 mm, Anchura W = 18 mm, Grosor T = 2 mm.</li>
-    <li><strong>Hilo Conductor</strong>: Diámetro d = 0.315 mm.</li>
+    <li><strong>Rotor (N)</strong>: ${N} caras.</li>
+    <li><strong>Paneles Solares</strong>: Longitud L = ${L.toFixed(1)} mm, Anchura W = ${W.toFixed(1)} mm, Grosor T = ${T.toFixed(1)} mm.</li>
+    <li><strong>Hilo Conductor</strong>: Diámetro d = ${diametroHilo.toFixed(3)} mm.</li>
 </ul>
 
 <h3>3.2. Geometría Hexagonal (Cálculo Espacial)</h3>
-<p>Para un polígono de 6 caras, el ángulo central subtendido por cada lado es 360º / 6 = 60º.</p>
+<p>Para un polígono de ${N} caras, el ángulo central subtendido por cada lado es 360º / ${N} = ${(360/N).toFixed(1)}º.</p>
 <p>El circunradio (distancia del centro a los vértices) se calcula con la fórmula:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 20px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -372,22 +390,17 @@ function inyectarMemoriaTecnica() {
   <msub><mi>R</mi><mi>circ</mi></msub>
   <mo>=</mo>
   <mfrac>
-    <mn>18</mn>
+    <mn>${W.toFixed(1)}</mn>
     <mrow>
-      <mn>2</mn><mo>&sdot;</mo><mi>sin</mi><mo>(</mo><mn>30</mn><mo>&deg;</mo><mo>)</mo>
+      <mn>2</mn><mo>&sdot;</mo><mi>sin</mi><mo>(</mo>${(180/N).toFixed(1)}<mo>&deg;</mo><mo>)</mo>
     </mrow>
   </mfrac>
   <mo>=</mo>
-  <mfrac>
-    <mn>18</mn>
-    <mn>1</mn>
-  </mfrac>
-  <mo>=</mo>
-  <mn>18</mn>
+  <mn>${R_circ.toFixed(2)}</mn>
   <mtext>&nbsp;mm</mtext>
 </math>
 </div>
-<p>Por tanto, el <strong>diámetro exterior máximo de las placas será de 36 mm</strong>.</p>
+<p>Por tanto, el <strong>diámetro exterior máximo de las placas será de ${(R_circ*2).toFixed(1)} mm</strong>.</p>
 <p>La apotema (distancia del centro a la placa) se calcula con la fórmula:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 20px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -401,15 +414,15 @@ function inyectarMemoriaTecnica() {
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <mi>Apotema</mi>
   <mo>=</mo>
-  <mn>18</mn>
+  <mn>${R_circ.toFixed(2)}</mn>
   <mo>&sdot;</mo>
-  <mi>cos</mi><mo>(</mo><mn>30</mn><mo>&deg;</mo><mo>)</mo>
+  <mi>cos</mi><mo>(</mo>${(180/N).toFixed(1)}<mo>&deg;</mo><mo>)</mo>
   <mo>&approx;</mo>
-  <mn>15.58</mn>
+  <mn>${Apotema.toFixed(2)}</mn>
   <mtext>&nbsp;mm</mtext>
 </math>
 </div>
-<p>Si el eje de acero tiene 6 mm de diámetro (radio 3 mm), la <strong>profundidad de la ventana de bobinado</strong> disponible por cara es 15.58 - 3 = 12.58 mm.</p>
+<p>Si el eje de acero tiene 6 mm de diámetro (radio 3 mm), la <strong>profundidad de la ventana de bobinado</strong> disponible por cara es ${Apotema.toFixed(2)} - 3 = ${(Apotema-3).toFixed(2)} mm.</p>
 
 <h3>3.3. Estudio de Masas (Gravitatorio)</h3>
 <p><strong>Volumen geométrico de una placa:</strong></p>
@@ -423,9 +436,9 @@ function inyectarMemoriaTecnica() {
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>V</mi><mi>placa</mi></msub>
   <mo>=</mo>
-  <mn>53</mn><mo>&sdot;</mo><mn>18</mn><mo>&sdot;</mo><mn>2</mn>
+  <mn>${L.toFixed(1)}</mn><mo>&sdot;</mo><mn>${W.toFixed(1)}</mn><mo>&sdot;</mo><mn>${T.toFixed(1)}</mn>
   <mo>=</mo>
-  <mn>1908</mn>
+  <mn>${V_placa.toFixed(1)}</mn>
   <mtext>&nbsp;</mtext><msup><mi>mm</mi><mn>3</mn></msup>
 </math>
 </div>
@@ -441,9 +454,9 @@ function inyectarMemoriaTecnica() {
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>M</mi><mi>paneles</mi></msub>
   <mo>=</mo>
-  <mn>6</mn><mo>&sdot;</mo><mo>(</mo><mn>1908</mn><mo>&sdot;</mo><mn>0.0025</mn><mo>)</mo>
+  <mn>${N}</mn><mo>&sdot;</mo><mo>(</mo><mn>${V_placa.toFixed(1)}</mn><mo>&sdot;</mo><mn>0.0025</mn><mo>)</mo>
   <mo>&approx;</mo>
-  <mn>28.6</mn>
+  <mn>${M_paneles.toFixed(1)}</mn>
   <mtext>&nbsp;g</mtext>
 </math>
 </div>
@@ -463,13 +476,13 @@ function inyectarMemoriaTecnica() {
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>M</mi><mi>base</mi></msub>
   <mo>=</mo>
-  <mn>28.6</mn>
+  <mn>${M_paneles.toFixed(1)}</mn>
   <mo>+</mo>
   <mn>11.0</mn>
   <mo>+</mo>
   <mn>10.0</mn>
   <mo>&approx;</mo>
-  <mn>49.6</mn>
+  <mn>${M_base.toFixed(1)}</mn>
   <mtext>&nbsp;g</mtext>
 </math>
 </div>
