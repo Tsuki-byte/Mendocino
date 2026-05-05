@@ -4026,7 +4026,7 @@ function generarInformeAutomatico() {
         La energía luminosa se convierte en energía eléctrica mediante el panel solar.
         La corriente circula por las bobinas generando interacción con el campo magnético.
         Esto produce el par que hace girar el rotor.
-        La FCEM (Fuerza Contraelectromotriz) se genera cuando las bobinas cortan el flujo magnético en movimiento; este voltaje se opone al del panel y es lo que finalmente estabiliza y limita la velocidad máxima del motor.
+        La FCEM (Fuerza Contraelectromotriz) se genera cuando las bobinas cortan el flujo magnético en movimiento; esta tensión se opone a la del panel y es lo que finalmente estabiliza y limita la velocidad máxima del motor.
 
         ──────────────────────────────────────────────
         [ 9. CONCLUSIÓN ]
@@ -4109,7 +4109,7 @@ function calcularPasoFCEM() {
     const idPanel = selPanel?.value || localStorage.getItem('mendocino_panel_last');
     const panel = dbPaneles[idPanel];
     
-    // Voltaje nominal del panel (Vmp)
+    // Tensión nominal del panel (Vmp)
     const vmp = panel ? (panel.v || panel.vmp || 0.5) : 0.5; 
     
     // Si no hay panel cargado, intentamos usar el del estado persistido
@@ -4151,7 +4151,7 @@ function calcularPasoFCEM() {
     // Un factor empírico del ~15-20% refleja mejor esta caída brusca en comparación con el 63% (2/pi) de un motor ideal.
     const factorK_promedio = factorK_pico * 0.18;
     
-    // Voltaje en vacío (Voc) de una célula solar suele ser el que delimita el techo de velocidad.
+    // Tensión en vacío (Voc) de una célula solar suele ser la que delimita el techo de velocidad.
     // Usamos el Vmp proporcionado por el usuario y estimamos el Voc (+20%).
     const voc_estimado = vmp * 1.2;
 
@@ -4240,8 +4240,8 @@ function dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim) {
     const rpmMaxEje = Math.max(100, Math.round((rpmMaxReal || 0) * 1.5 / 10) * 10, rpmSim);
     
     // Escala del Eje Y autoajustable a la placa:
-    // El eje Y subirá hasta 1.8 veces el voltaje de la placa (vmp) para que la línea roja sea muy visible.
-    // Si la simulación dispara la FCEM muy por encima del voltaje del panel, el eje Y crecerá para mostrar el punto azul.
+    // El eje Y subirá hasta 1.8 veces la tensión de la placa (vmp) para que la línea roja sea muy visible.
+    // Si la simulación dispara la FCEM muy por encima de la tensión del panel, el eje Y crecerá para mostrar el punto azul.
     const vMaxEje = Math.max(vmp * 1.8, vfcemSim * 1.15, 0.5);
     
     const toX = (val) => margin + (val / rpmMaxEje) * (w - margin * 1.5);
@@ -4252,7 +4252,7 @@ function dibujarGraficaFCEM(vmp, factorK, rpmMaxReal, rpmSim, vfcemSim) {
         <line x1="${margin}" y1="${h-margin}" x2="${w-10}" y2="${h-margin}" stroke="#333" stroke-width="1.5"/>
         <line x1="${margin}" y1="${h-margin}" x2="${margin}" y2="10" stroke="#333" stroke-width="1.5"/>
         <text x="${w-10}" y="${h-15}" font-size="9" text-anchor="end" font-weight="bold">Velocidad (RPM)</text>
-        <text x="${margin-10}" y="20" font-size="9" text-anchor="middle" font-weight="bold" transform="rotate(-90 ${margin-10},20)">Voltaje (V)</text>
+        <text x="${margin-10}" y="20" font-size="9" text-anchor="middle" font-weight="bold" transform="rotate(-90 ${margin-10},20)">Tensión (V)</text>
         
         <!-- Línea V. Panel (Roja) -->
         <line x1="${margin}" y1="${toY(vmp)}" x2="${w-margin}" y2="${toY(vmp)}" stroke="#e74c3c" stroke-width="2" stroke-dasharray="4,2"/>
@@ -5142,7 +5142,7 @@ async function renderizarPasoMagpylib() {
         const distancia = parseFloat(document.getElementById('iman-distancia')?.value || 2.0);
         
         // Calcular corriente por la bobina activa
-        // El voltaje depende del área del panel iluminado, usamos el amperaje ya estimado
+        // La tensión depende del área del panel iluminado, usamos el amperaje ya estimado
         const corrienteTotal = (EstadoDiseno.intensidadPanel_mA || 1000) / 1000;
         const vueltas = EstadoDiseno.espirasPorDevanado || 100;
         
@@ -7071,7 +7071,7 @@ function dibujarGraficaEnsayo() {
         <line x1="${margin}" y1="${h-margin}" x2="${w-10}" y2="${h-margin}" stroke="#94a3b8" stroke-width="1"/>
         <line x1="${margin}" y1="${h-margin}" x2="${margin}" y2="10" stroke="#94a3b8" stroke-width="1"/>
         
-        <text x="${w-10}" y="${h-15}" font-size="9" fill="#64748b" text-anchor="end">Voltaje [mV]</text>
+        <text x="${w-10}" y="${h-15}" font-size="9" fill="#64748b" text-anchor="end">Tensión [mV]</text>
         <text x="${margin-10}" y="40" font-size="9" fill="#64748b" text-anchor="middle" transform="rotate(-90 ${margin-10},40)">Potencia [mW]</text>
         
         <!-- Línea Potencia Teórica Ideal (Voc x Isc) -->

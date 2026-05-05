@@ -174,7 +174,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="form-section">
                         <h3 class="titulo-seccion-principal">☀️ 1. Ensayo Placas Solares</h3>
                         <p style="font-size: 14px; color: #666; margin-top: -10px;">
-                            Introduce los datos experimentales de voltaje y corriente para trazar la curva I-V y determinar el punto de máxima potencia.
+                            Introduce los datos experimentales de tensión y corriente para trazar la curva I-V y determinar el punto de máxima potencia.
                         </p>
 
                         <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; margin-bottom: 15px;">
@@ -320,13 +320,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <div style="margin-top: 25px; padding: 15px; background: rgba(59, 130, 246, 0.05); border-left: 4px solid #3b82f6; border-radius: 4px;">
                             <h4 style="margin-top:0; color:#1e40af; font-size: 15px;">💡 Conceptos Físicos: PMP, FF y Eficiencia STC</h4>
                             <p style="margin-bottom:8px; font-size:13px; color:#334155; line-height: 1.5;">
-                                El <strong>Punto de Máxima Potencia</strong> es el lugar exacto en la curva I-V (Corriente vs Voltaje) donde la celda solar entrega la mayor cantidad de energía útil al circuito.
+                                El <strong>Punto de Máxima Potencia</strong> es el lugar exacto en la curva I-V (Corriente vs Tensión) donde la celda solar entrega la mayor cantidad de energía útil al circuito.
                             </p>
                             <p style="margin-bottom:8px; font-size:13px; color:#334155; line-height: 1.5;">
                                 En los extremos no hay potencia: si cortocircuitamos la celda ($V=0$) o si dejamos el circuito abierto ($I=0$), la multiplicación matemática ($P = V \times I$) es nula. Al variar la resistencia con nuestro potenciómetro, encontramos el equilibrio óptimo de resistencia ($R_{opt} = V_{mp} / I_{mp}$) donde el rectángulo bajo la gráfica logra su área máxima, determinando el potencial real de nuestra placa para alimentar el motor Mendocino.
                             </p>
                             <p style="margin-bottom:8px; font-size:13px; color:#334155; line-height: 1.5;">
-                                El <strong>Factor de Forma (Fill Factor, FF)</strong> es un indicador de la calidad de la placa. Se define como el cociente entre la potencia máxima real que consigue darte (tu PMP) y la "Potencia Teórica Ideal", que sería la caja perfecta multiplicando el máximo voltaje (Voc) por la máxima corriente (Isc). Un FF cercano al 80% indica una celda de muy alta calidad con mínimas pérdidas internas.
+                                El <strong>Factor de Forma (Fill Factor, FF)</strong> es un indicador de la calidad de la placa. Se define como el cociente entre la potencia máxima real que consigue darte (tu PMP) y la "Potencia Teórica Ideal", que sería la caja perfecta multiplicando la máxima tensión (Voc) por la máxima corriente (Isc). Un FF cercano al 80% indica una celda de muy alta calidad con mínimas pérdidas internas.
                             </p>
                             <p style="margin-bottom:8px; font-size:13px; color:#334155; line-height: 1.5;">
                                 La <strong>Eficiencia ($\eta$)</strong> calculada asume el estándar industrial STC (pleno sol de verano a $1000 \text{ W/m}^2$, equivalente a $1 \text{ mW/mm}^2$). En nuestros ensayos de laboratorio bajo nuestra fuente de luz artificial, la irradiación lumínica real que recibe la placa es muchísimo más débil que la del sol. Como la fórmula sigue asumiendo el estándar de insolación perfecta, la eficiencia de nuestra placa parecerá artificialmente baja (del orden del 1-3%).
@@ -996,7 +996,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="step-7" class="step-container">
     <div class="form-section">
         <h3 class="titulo-seccion-principal">⚡ 7. Fuerza Contraelectromotriz (FCEM)</h3>
-        <p class="texto-ayuda">Simula la velocidad de giro para ver cómo el voltaje generado por la bobina ($V_{fcem}$) aumenta hasta igualar al voltaje del panel de alimentación, limitando la velocidad máxima.</p>
+        <p class="texto-ayuda">Simula la velocidad de giro para ver cómo la tensión generada por la bobina ($V_{fcem}$) aumenta hasta igualar a la tensión del panel de alimentación, limitando la velocidad máxima.</p>
 
         <div class="form-group">
             <label>Simulación de velocidad manual [RPM]</label>
@@ -1020,7 +1020,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="teoria-nota">
             <strong>Ley de Faraday y FCEM:</strong> Según la <strong>Ley de Faraday-Lenz</strong>, el movimiento de las espiras dentro del campo magnético induce en ellas una tensión eléctrica denominada Fuerza Contraelectromotriz (\( V_{fcem} \)), que aumenta con la velocidad de giro:
             \[ V_{fcem} = N \cdot B \cdot L_{activa} \cdot v \]
-            El motor acelera mientras el voltaje de las placas es superior a esta fuerza inducida (\( V_{panel} > V_{fcem} \)). Cuando ambos valores se igualan (restando fricciones), el motor alcanza su equilibrio de velocidad máxima.
+            El motor acelera mientras la tensión de las placas es superior a esta fuerza inducida (\( V_{panel} > V_{fcem} \)). Cuando ambos valores se igualan (restando fricciones), el motor alcanza su equilibrio de velocidad máxima.
         </div>
 
         <div class="nav-buttons">
@@ -1043,7 +1043,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 20px 0 15px 0;">
 
         <h3>Resultados del análisis</h3>
-        <div class="summary-item"><span>Voltaje Inducido (Vfcem)</span><span class="value" id="res-fcem-v">-</span></div>
+        <div class="summary-item"><span>Tensión Inducida (Vfcem)</span><span class="value" id="res-fcem-v">-</span></div>
         <div class="summary-item"><span>Velocidad Máx. Teórica</span><span class="value" id="res-fcem-rpm-teo">-</span></div>
         <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
             <span style="font-weight: bold;">Velocidad Máx. Real (est.)</span>
