@@ -7078,7 +7078,7 @@ function dibujarGraficaEnsayo() {
         ${pIdeal > 0 ? `
             <line x1="${margin}" y1="${toY(pIdeal)}" x2="${w-10}" y2="${toY(pIdeal)}" stroke="#10b981" stroke-width="1" stroke-dasharray="4,4" opacity="0.6"/>
             <text x="${w-10}" y="${toY(pIdeal) - 4}" font-size="9" fill="#059669" text-anchor="end">P. Teórica (Voc×Isc)</text>
-            <text x="${w-10}" y="${toY(pIdeal) + 10}" font-size="9" fill="#059669" text-anchor="end" font-weight="bold">FF: ${(ff * 100).toFixed(1)}%</text>
+            <text x="${w-10}" y="${toY(pIdeal) + 10}" font-size="9" fill="#059669" text-anchor="end" font-weight="bold">FF: ${ff.toFixed(2)}</text>
         ` : ''}
 
         <!-- Líneas guía PMP -->
