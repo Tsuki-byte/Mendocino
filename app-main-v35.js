@@ -7602,7 +7602,7 @@ function cargarEnsayoDesdeHistorial() {
             if (selectLuz && itemParaCargar.luz) { selectLuz.value = itemParaCargar.luz; selectLuz.dispatchEvent(new Event('change')); }
             if (inputDist && itemParaCargar.distancia) { inputDist.value = itemParaCargar.distancia; inputDist.dispatchEvent(new Event('input')); }
             if (inputLux && itemParaCargar.lux !== undefined) { inputLux.value = itemParaCargar.lux; inputLux.dispatchEvent(new Event('input')); }
-            if (inputVoc && itemParaCargar.voc !== undefined) { inputVoc.value = itemParaCargar.voc; inputVoc.dispatchEvent(new Event('input')); }
+            if (inputVoc && itemParaCargar.voc !== undefined) { inputVoc.value = (itemParaCargar.voc * 1000).toFixed(0); inputVoc.dispatchEvent(new Event('input')); }
             if (inputIsc && itemParaCargar.isc !== undefined) { inputIsc.value = itemParaCargar.isc; inputIsc.dispatchEvent(new Event('input')); }
             if (inputProveedor && itemParaCargar.proveedor !== undefined) { inputProveedor.value = itemParaCargar.proveedor; inputProveedor.dispatchEvent(new Event('input')); }
             if (inputPrecio && itemParaCargar.precio !== undefined) { inputPrecio.value = itemParaCargar.precio; inputPrecio.dispatchEvent(new Event('input')); }
