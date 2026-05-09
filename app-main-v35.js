@@ -4755,7 +4755,37 @@ window.cambiarPasoMarx = function(paso) {
     document.querySelectorAll('#sidebar-context-marx .step-indicator').forEach(ind => ind.classList.remove('active'));
     const activo = document.getElementById(`ind-marx-${paso}`);
     if(activo) activo.classList.add('active');
+    
+    document.querySelectorAll('#page-calc-marx .step-container').forEach(container => container.classList.remove('active'));
+    const contenedorActivo = document.getElementById(`step-marx-${paso}`);
+    if (contenedorActivo) contenedorActivo.classList.add('active');
+
     console.log("Cambiando al paso Marx:", paso);
+    
+    if (window.renderMathInElement) {
+        window.renderMathInElement(document.getElementById('page-calc-marx'), {
+            delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "\\[", right: "\\]", display: true},
+                {left: "$", right: "$", display: false},
+                {left: "\\(", right: "\\)", display: false}
+            ]
+        });
+    }
+};
+
+window.calcularMarxPaso1 = function() {
+    const C_nf = parseFloat(document.getElementById('marx-cap-nf').value) || 0;
+    const V_kv = parseFloat(document.getElementById('marx-volt-kv').value) || 0;
+    
+    // C en faradios: C_nf * 1e-9
+    // V en voltios: V_kv * 1000
+    const E_joules = 0.5 * (C_nf * 1e-9) * Math.pow(V_kv * 1000, 2);
+    const Q_coulombs = (C_nf * 1e-9) * (V_kv * 1000);
+    const Q_microcoulombs = Q_coulombs * 1e6;
+    
+    document.getElementById('res-marx-energia-etapa').innerText = E_joules.toFixed(2) + " J";
+    document.getElementById('res-marx-carga-etapa').innerText = Q_microcoulombs.toFixed(2) + " µC";
 };
 
 async function cerrarSesion() {

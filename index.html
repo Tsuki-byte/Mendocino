@@ -235,10 +235,111 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <p>Calculadora y simulador de Alta Tensión</p>
                     </div>
                     <div class="content">
-                        <div id="step-marx-1" class="step-container active" style="padding: 40px; text-align: center;">
-                            <h2 style="color: #2c3e50;">⚡ Entorno de Simulación Marx</h2>
-                            <p style="color: #64748b; font-size: 16px; margin-top: 15px;">Bienvenido al nuevo simulador del Generador de Marx. Las herramientas de cálculo se están instalando...</p>
-                            <div style="margin-top: 30px; font-size: 48px; animation: pulse 2s infinite;">🚧</div>
+                        <!-- Paso 1 -->
+                        <div id="step-marx-1" class="step-container active">
+                            <div class="form-section">
+                                <h2 class="titulo-seccion-principal">⚡ 1. Fundamentos y Condensadores</h2>
+                                
+                                <div class="teoria-nota" style="margin-top: 0;">
+                                    <strong>¿Qué es un Generador de Marx?</strong><br>
+                                    Un generador de Marx es un circuito eléctrico diseñado para generar pulsos de muy alta tensión. Fue inventado por el ingeniero alemán Erwin Otto Marx en 1924. 
+                                    <br><br>
+                                    <strong>¿Para qué sirve?</strong><br>
+                                    Se utiliza principalmente en laboratorios de investigación y en la industria para simular los efectos de los rayos en equipos eléctricos (como aisladores o transformadores), y en física avanzada para generar rayos X duros, haces de electrones y pulsos electromagnéticos (EMP).
+                                    <br><br>
+                                    <strong>Principio de funcionamiento:</strong><br>
+                                    El circuito carga un grupo de <strong>condensadores en paralelo</strong> utilizando una fuente de alimentación de corriente continua de alta tensión. Una vez cargados, una serie de interruptores (llamados <i>spark gaps</i> o explosores) se activan casi simultáneamente, conectando todos los condensadores <strong>en serie</strong>. Esto hace que las tensiones individuales de cada condensador se sumen, liberando un pulso de tensión gigantesco en la salida.
+                                </div>
+
+                                <h3 class="subtitulo-seccion">Parámetros del Condensador Base</h3>
+                                <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Define las características de un único condensador. La agrupación de estos formará las "etapas" del generador.</p>
+
+                                <div class="fila-formulario">
+                                    <div class="form-group">
+                                        <label>Capacidad (C) <span>En nanoFaradios (nF)</span></label>
+                                        <input type="number" id="marx-cap-nf" value="2" step="0.1" min="0.1" oninput="calcularMarxPaso1()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tensión Nominal (V) <span>En kiloVoltios (kV)</span></label>
+                                        <input type="number" id="marx-volt-kv" value="40" step="1" min="1" oninput="calcularMarxPaso1()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Precio Unitario <span>En Euros (€)</span></label>
+                                        <input type="number" id="marx-precio" value="1.50" step="0.1" min="0">
+                                    </div>
+                                </div>
+                                
+                                <div class="nav-buttons">
+                                    <div></div>
+                                    <button class="btn-nav btn-next" onclick="cambiarPasoMarx(2)">Siguiente: Resistencias ➔</button>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-section">
+                                <h3 style="margin-top: 0; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📊 Datos por Etapa</h3>
+                                <div class="summary-item">
+                                    <span>Energía almacenada (E):</span>
+                                    <span class="value" id="res-marx-energia-etapa">1.60 J</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Carga eléctrica (Q):</span>
+                                    <span class="value" id="res-marx-carga-etapa">80.00 µC</span>
+                                </div>
+                                
+                                <div class="teoria-nota" style="background-color: #f1f5f9; border-left-color: #94a3b8; font-size: 13px; margin-top: 25px;">
+                                    <strong>Fórmulas aplicadas:</strong><br><br>
+                                    Energía: \( E = \frac{1}{2} C V^2 \)<br><br>
+                                    Carga: \( Q = C \times V \)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paso 2 -->
+                        <div id="step-marx-2" class="step-container">
+                            <div class="form-section">
+                                <h2 class="titulo-seccion-principal">⚡ 2. Red de Resistencias</h2>
+                                <p style="color: #64748b;">En construcción...</p>
+                                <div class="nav-buttons">
+                                    <button class="btn-nav btn-prev" onclick="cambiarPasoMarx(1)">⬅ Anterior</button>
+                                    <button class="btn-nav btn-next" onclick="cambiarPasoMarx(3)">Siguiente ➔</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Paso 3 -->
+                        <div id="step-marx-3" class="step-container">
+                            <div class="form-section">
+                                <h2 class="titulo-seccion-principal">⚡ 3. Explosores (Spark Gaps)</h2>
+                                <p style="color: #64748b;">En construcción...</p>
+                                <div class="nav-buttons">
+                                    <button class="btn-nav btn-prev" onclick="cambiarPasoMarx(2)">⬅ Anterior</button>
+                                    <button class="btn-nav btn-next" onclick="cambiarPasoMarx(4)">Siguiente ➔</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paso 4 -->
+                        <div id="step-marx-4" class="step-container">
+                            <div class="form-section">
+                                <h2 class="titulo-seccion-principal">⚡ 4. Fuente de Alta Tensión</h2>
+                                <p style="color: #64748b;">En construcción...</p>
+                                <div class="nav-buttons">
+                                    <button class="btn-nav btn-prev" onclick="cambiarPasoMarx(3)">⬅ Anterior</button>
+                                    <button class="btn-nav btn-next" onclick="cambiarPasoMarx(5)">Siguiente ➔</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paso 5 -->
+                        <div id="step-marx-5" class="step-container">
+                            <div class="form-section">
+                                <h2 class="titulo-seccion-principal">⚡ 5. Simulación Global</h2>
+                                <p style="color: #64748b;">En construcción...</p>
+                                <div class="nav-buttons">
+                                    <button class="btn-nav btn-prev" onclick="cambiarPasoMarx(4)">⬅ Anterior</button>
+                                    <div></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1689,7 +1790,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
-    <script src="app-main-v35.js?v=37.52"></script>
+    <script src="app-main-v35.js?v=37.53"></script>
     <script>
         window.sincronizarGiroGlobal = function(valor, isAuto = false) {
             const els = [
