@@ -1206,9 +1206,23 @@ window.actualizarResumenPesoManual = function() {
 
         // --- NAVEGACIÓN ---
         function cambiarPagina(pagina) {
-            document.querySelectorAll('.page-container').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.page-container').forEach(el => {
+                el.classList.remove('active');
+                el.style.display = ''; // Limpiar estilos inline
+            });
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-            document.getElementById('page-' + pagina).classList.add('active');
+            
+            if (pagina === 'calc') {
+                const selectorMaquina = document.getElementById('selector-maquina');
+                if (selectorMaquina && selectorMaquina.value === 'marx') {
+                    document.getElementById('page-calc-marx').classList.add('active');
+                    document.getElementById('page-calc-marx').style.display = 'block';
+                } else {
+                    document.getElementById('page-calc').classList.add('active');
+                }
+            } else {
+                document.getElementById('page-' + pagina).classList.add('active');
+            }
             document.getElementById('tab-' + pagina).classList.add('active');
         }
 
@@ -4777,6 +4791,7 @@ window.cambiarPasoMarx = function(paso) {
 window.calcularMarxPaso1 = function() {
     const C_nf = parseFloat(document.getElementById('marx-cap-nf').value) || 0;
     const V_kv = parseFloat(document.getElementById('marx-volt-kv').value) || 0;
+    const R_mohm = parseFloat(document.getElementById('marx-res-mohm').value) || 0;
     
     // C en faradios: C_nf * 1e-9
     // V en voltios: V_kv * 1000
@@ -4786,6 +4801,13 @@ window.calcularMarxPaso1 = function() {
     
     document.getElementById('res-marx-energia-etapa').innerText = E_joules.toFixed(2) + " J";
     document.getElementById('res-marx-carga-etapa').innerText = Q_microcoulombs.toFixed(2) + " µC";
+    
+    if (document.getElementById('svg-marx-c')) {
+        document.getElementById('svg-marx-c').textContent = C_nf + " nF";
+    }
+    if (document.getElementById('svg-marx-r')) {
+        document.getElementById('svg-marx-r').textContent = R_mohm + " MΩ";
+    }
 };
 
 async function cerrarSesion() {
