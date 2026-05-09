@@ -509,9 +509,9 @@ function inyectarMemoriaTecnica() {
 <h3>3.2. Análisis Fotovoltaico (Factor de Forma y Eficiencia)</h3>
 <p>La capacidad mecánica del motor para arrancar depende fundamentalmente de la calidad de sus células solares. En base al ensayo experimental, caracterizamos matemáticamente el panel:</p>
 <ul>
-    <li><strong>Tensión de Vacío (<span class="notranslate">V<sub>oc</sub></span>):</strong> ${pVoc.toFixed(2)} V</li>
-    <li><strong>Corriente de Corto (<span class="notranslate">I<sub>sc</sub></span>):</strong> ${pIsc.toFixed(1)} mA</li>
-    <li><strong>Punto Máx. Potencia (<span class="notranslate">P<sub>max</sub></span>):</strong> ${pPmax.toFixed(2)} mW (a ${pVmp.toFixed(2)} V y ${pImp.toFixed(1)} mA)</li>
+    <li><strong>Tensión de Vacío (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>V</mi><mi>oc</mi></msub></math>):</strong> ${pVoc.toFixed(2)} V</li>
+    <li><strong>Corriente de Corto (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>I</mi><mi>sc</mi></msub></math>):</strong> ${pIsc.toFixed(1)} mA</li>
+    <li><strong>Punto Máx. Potencia (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>P</mi><mi>max</mi></msub></math>):</strong> ${pPmax.toFixed(2)} mW (a ${pVmp.toFixed(2)} V y ${pImp.toFixed(1)} mA)</li>
 </ul>
 <p><strong>Factor de Forma (Fill Factor, FF):</strong> Es el indicador maestro de la calidad eléctrica de la celda. Mide la "cuadratura" de la curva I-V. Cuanto más cerca de 1, menor es la resistencia interna parásita de la celda, permitiendo extraer casi toda su potencia teórica.</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -634,8 +634,8 @@ function inyectarMemoriaTecnica() {
 
 <h3>3.5. Análisis Volumétrico (Encaje del Hilo en la Ranura)</h3>
 <p>Una vez resuelta la geometría poligonal y determinada la resistencia objetivo que demanda el panel solar, es imperativo comprobar si la cantidad resultante de hilo de cobre cabe físicamente dentro del armazón estructural.</p>
-<p><strong>Superficie Útil de la Ranura (A<sub>ranura</sub>):</strong> Es el espacio geométrico transversal disponible bajo los paneles para alojar el bobinado. Matemáticamente, se determina evaluando el área del segmento interno del polígono y restando el volumen ocupado por el eje central pasante.</p>
-<p><strong>Sección Total de Cobre (<span class="notranslate">A<sub>cobre</sub></span>):</strong> Es la suma del área transversal de todas las espiras necesarias. Depende directamente del diámetro del hilo (<i>d</i> = ${diametroHilo.toFixed(3)} mm) y del número total de vueltas (<span class="notranslate"><i>N<sub>vueltas</sub></i></span>) requeridas para alcanzar el equilibrio eléctrico:</p>
+<p><strong>Superficie Útil de la Ranura (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>A</mi><mi>ranura</mi></msub></math>):</strong> Es el espacio geométrico transversal disponible bajo los paneles para alojar el bobinado. Matemáticamente, se determina evaluando el área del segmento interno del polígono y restando el volumen ocupado por el eje central pasante.</p>
+<p><strong>Sección Total de Cobre (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>A</mi><mi>cobre</mi></msub></math>):</strong> Es la suma del área transversal de todas las espiras necesarias. Depende directamente del diámetro del hilo (<i>d</i> = ${diametroHilo.toFixed(3)} mm) y del número total de vueltas (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>N</mi><mi>vueltas</mi></msub></math>) requeridas para alcanzar el equilibrio eléctrico:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>A</mi><mi>cobre</mi></msub>
@@ -679,7 +679,7 @@ function inyectarMemoriaTecnica() {
         </div>
     </li>
     <li><strong>Densidad de Corriente (<i>J</i>)</strong>:
-        <p style="margin-top: 5px; margin-bottom: 10px; color: #475569; line-height: 1.5;">Este parámetro evalúa la viabilidad térmica calculando cuánta corriente atraviesa la sección del conductor. Constituye un factor de seguridad frente al Efecto Joule para evitar que el esmalte se derrita. Se deduce dividiendo la corriente de trabajo óptima del panel (<span class="notranslate"><i>I<sub>mp</sub></i></span>) entre la sección. Para motores Mendocino refrigerados por aire en rotación libre, se admiten densidades nominales de entre 4 y 6 A/mm².</p>
+        <p style="margin-top: 5px; margin-bottom: 10px; color: #475569; line-height: 1.5;">Este parámetro evalúa la viabilidad térmica calculando cuánta corriente atraviesa la sección del conductor. Constituye un factor de seguridad frente al Efecto Joule para evitar que el esmalte se derrita. Se deduce dividiendo la corriente de trabajo óptima del panel (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>I</mi><mi>mp</mi></msub></math>) entre la sección. Para motores Mendocino refrigerados por aire en rotación libre, se admiten densidades nominales de entre 4 y 6 A/mm².</p>
         <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <mi>J</mi>
@@ -700,7 +700,7 @@ function inyectarMemoriaTecnica() {
 </math>
         </div>
     </li>
-    <li><strong>Resistencia por Metro Lineal (<span class="notranslate"><i>R<sub>L</sub></i></span>)</strong> (Resistividad Cobre = 0.0171 Ω·mm²/m):
+    <li><strong>Resistencia por Metro Lineal (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>R</mi><mi>L</mi></msub></math>)</strong> (Resistividad Cobre = 0.0171 Ω·mm²/m):
         <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>R</mi><mi>L</mi></msub>
@@ -718,8 +718,8 @@ function inyectarMemoriaTecnica() {
 </math>
         </div>
     </li>
-    <li><strong>Longitud Media de Espira (<span class="notranslate"><i>L<sub>m</sub></i></span>) y Deducción del Bobinado</strong>:
-        <p style="margin-top: 5px; margin-bottom: 10px; color: #475569; line-height: 1.5;">Para conocer cuántas vueltas caben en cierta longitud de hilo, primero debemos definir el perímetro de una sola vuelta (espira). Una bobina diametral viaja a lo largo del panel solar (distancia <i>L</i>), cruza transversalmente el polígono por su diámetro exterior (<span class="notranslate"><i>D<sub>ext</sub></i></span>) para alcanzar la cara opuesta, regresa por el otro panel (distancia <i>L</i>), y vuelve a cruzar el diámetro (<span class="notranslate"><i>D<sub>ext</sub></i></span>) para cerrar el circuito. Por tanto, la longitud media de una espira se aproxima al perímetro de un rectángulo de <i>L</i> &times; <span class="notranslate"><i>D<sub>ext</sub></i></span>:</p>
+    <li><strong>Longitud Media de Espira (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>L</mi><mi>m</mi></msub></math>) y Deducción del Bobinado</strong>:
+        <p style="margin-top: 5px; margin-bottom: 10px; color: #475569; line-height: 1.5;">Para conocer cuántas vueltas caben en cierta longitud de hilo, primero debemos definir el perímetro de una sola vuelta (espira). Una bobina diametral viaja a lo largo del panel solar (distancia <i>L</i>), cruza transversalmente el polígono por su diámetro exterior (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>D</mi><mi>ext</mi></msub></math>) para alcanzar la cara opuesta, regresa por el otro panel (distancia <i>L</i>), y vuelve a cruzar el diámetro (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>D</mi><mi>ext</mi></msub></math>) para cerrar el circuito. Por tanto, la longitud media de una espira se aproxima al perímetro de un rectángulo de <i>L</i> &times; <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>D</mi><mi>ext</mi></msub></math>:</p>
         <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <msub><mi>L</mi><mi>m</mi></msub>
@@ -740,7 +740,7 @@ function inyectarMemoriaTecnica() {
   <mtext>&nbsp;mm</mtext>
 </math>
         </div>
-        <p style="margin-top: 10px; margin-bottom: 5px; color: #475569;">Conocida la Longitud Media de una sola espira (<span class="notranslate"><i>L<sub>m</sub></i></span>), la calculadora puede deducir analíticamente el <strong>Número de Vueltas</strong> necesarias simplemente dividiendo la longitud total de cable requerida (para que su resistencia alcance el punto de máxima potencia del panel) entre este valor <span class="notranslate"><i>L<sub>m</sub></i></span>.</p>
+        <p style="margin-top: 10px; margin-bottom: 5px; color: #475569;">Conocida la Longitud Media de una sola espira (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>L</mi><mi>m</mi></msub></math>), la calculadora puede deducir analíticamente el <strong>Número de Vueltas</strong> necesarias simplemente dividiendo la longitud total de cable requerida (para que su resistencia alcance el punto de máxima potencia del panel) entre este valor <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>L</mi><mi>m</mi></msub></math>.</p>
     </li>
 </ul>
 
