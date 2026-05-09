@@ -29,6 +29,52 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+<!-- Script de Traducción -->
+<style>
+    /* Ocultar la barra superior de Google Translate */
+    .skiptranslate iframe { display: none !important; }
+    body { top: 0px !important; }
+    .goog-te-banner-frame.skiptranslate { display: none !important; }
+</style>
+<div id="google_translate_element" style="display:none;"></div>
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'es', includedLanguages: 'en,es', autoDisplay: false}, 'google_translate_element');
+}
+</script>
+<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<script>
+function toggleIdioma() {
+    const match = document.cookie.match(/(?:^|;)\s*googtrans=([^;]*)/);
+    let currentLang = match ? match[1] : '';
+    
+    if (currentLang === '/es/en' || currentLang === '/auto/en') {
+        document.cookie = 'googtrans=/es/es; path=/';
+        document.cookie = 'googtrans=/es/es; domain=' + window.location.hostname + '; path=/';
+    } else {
+        document.cookie = 'googtrans=/es/en; path=/';
+        document.cookie = 'googtrans=/es/en; domain=' + window.location.hostname + '; path=/';
+    }
+    window.location.reload();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const match = document.cookie.match(/(?:^|;)\s*googtrans=([^;]*)/);
+    let currentLang = match ? match[1] : '';
+    const btnIcon = document.getElementById('idioma-icono');
+    const btnText = document.getElementById('idioma-texto');
+    if (btnIcon && btnText) {
+        if (currentLang === '/es/en' || currentLang === '/auto/en') {
+            btnIcon.textContent = '🇪🇸';
+            btnText.textContent = 'ES';
+        } else {
+            btnIcon.textContent = '🇬🇧';
+            btnText.textContent = 'EN';
+        }
+    }
+});
+</script>
 
 </head>
 
@@ -123,6 +169,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
                 <div id="mensaje-nivel" class="estado-usuario" style="margin-right: 5px;">Cargando...</div>
                 <div id="proyecto-activo-display" class="estado-usuario" style="margin-right: 15px; color: #10b981; font-weight: bold; border-left: 1px solid #444; padding-left: 15px; display:none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;"></div>
+
+                <button class="btn-toolbar-nav" id="btn-idioma" type="button" onclick="toggleIdioma()" style="background: rgba(241, 196, 15, 0.2); border-color: rgba(241, 196, 15, 0.3); margin-right: 10px;" title="Cambiar Idioma / Change Language">
+                    <span id="idioma-icono">🇬🇧</span> <span id="idioma-texto">EN</span>
+                </button>
 
                 <button class="btn-toolbar-nav" style="background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.3);" type="button" onclick="cerrarSesion()">
                     Salir

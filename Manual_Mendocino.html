@@ -96,8 +96,63 @@
     .io-in::before { content: '➡️ '; }
     .io-out::before { content: '✔️ '; }
 </style>
+</style>
+
+<!-- Script de Traducción -->
+<style>
+    /* Ocultar la barra superior de Google Translate */
+    .skiptranslate iframe { display: none !important; }
+    body { top: 0px !important; }
+    .goog-te-banner-frame.skiptranslate { display: none !important; }
+</style>
+<div id="google_translate_element" style="display:none;"></div>
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'es', includedLanguages: 'en,es', autoDisplay: false}, 'google_translate_element');
+}
+</script>
+<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<script>
+function toggleIdioma() {
+    const match = document.cookie.match(/(?:^|;)\s*googtrans=([^;]*)/);
+    let currentLang = match ? match[1] : '';
+    
+    if (currentLang === '/es/en' || currentLang === '/auto/en') {
+        document.cookie = 'googtrans=/es/es; path=/';
+        document.cookie = 'googtrans=/es/es; domain=' + window.location.hostname + '; path=/';
+    } else {
+        document.cookie = 'googtrans=/es/en; path=/';
+        document.cookie = 'googtrans=/es/en; domain=' + window.location.hostname + '; path=/';
+    }
+    window.location.reload();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const match = document.cookie.match(/(?:^|;)\s*googtrans=([^;]*)/);
+    let currentLang = match ? match[1] : '';
+    const btnIcon = document.getElementById('idioma-icono');
+    const btnText = document.getElementById('idioma-texto');
+    if (btnIcon && btnText) {
+        if (currentLang === '/es/en' || currentLang === '/auto/en') {
+            btnIcon.textContent = '🇪🇸';
+            btnText.textContent = 'ES';
+        } else {
+            btnIcon.textContent = '🇬🇧';
+            btnText.textContent = 'EN';
+        }
+    }
+});
+</script>
+
 </head>
 <body>
+
+<div style="text-align: right; margin-bottom: 20px;">
+    <button id="btn-idioma" type="button" onclick="toggleIdioma()" style="background: rgba(241, 196, 15, 0.2); border: 1px solid rgba(241, 196, 15, 0.3); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; color: #333;" title="Cambiar Idioma / Change Language">
+        <span id="idioma-icono">🇬🇧</span> <span id="idioma-texto">EN</span>
+    </button>
+</div>
 
 <h1>Manual de Usuario Avanzado y Fundamentos Teóricos: Simulador de Motores Mendocino</h1>
 
