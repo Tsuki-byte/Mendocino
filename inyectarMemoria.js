@@ -151,7 +151,13 @@ function inyectarMemoriaTecnica() {
 
 <p>A continuación, se describe cada una de las fases de la herramienta, detallando la base teórica y diferenciando exactamente qué información requiere la aplicación (<strong>Entradas</strong>) y qué información resuelve (<strong>Salidas</strong>). Cabe destacar que, de forma complementaria a este informe final, la propia interfaz de la calculadora incluye un pequeño panel de resumen técnico en cada uno de sus pasos para guiar el proceso de diseño en tiempo real.</p>
 
-<h3>Fase 1: Ensayo de Placas Solares (Fuente de Energía)</h3>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 1: Ensayo de Placas Solares (Fuente de Energía)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>El motor no se conecta a una red; su única fuente de energía son las células fotovoltaicas. Las células solares no son fuentes de tensión ni de corriente ideales, sino que operan bajo una <strong>curva característica I-V</strong> no lineal.</p>
 <p><strong>Concepto Físico:</strong> En esta fase, se procesan datos empíricos obtenidos iluminando la placa y variando su resistencia de carga (desde circuito abierto a cortocircuito). Del análisis de la curva se extraen los siguientes parámetros fundamentales:</p>
 <ul>
@@ -210,7 +216,16 @@ function inyectarMemoriaTecnica() {
     </div>
 </div>
 
-<h3>Fase 2: Geometría del Motor (Mecánica Estructural)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 2: Geometría del Motor (Mecánica Estructural)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>El rotor de un motor Mendocino tiene forma de prisma poligonal regular, dictado por el número de paneles solares (N).</p>
 <p><strong>Concepto Teórico:</strong> Un diseño de 4 caras (cuadrado) es común, pero configuraciones de 6 caras (hexágono) u 8 caras ofrecen un par motriz más suave a expensas de mayor peso. Adicionalmente, al modelar la geometría de cada panel, el simulador distingue rigurosamente entre su <strong>área total física</strong> y su <strong>área efectiva de silicio</strong> (representada visualmente en los esquemas con un patrón rayado). El borde exterior del panel constituye un margen estructural de resina o plástico, el cual es una zona muerta no sensible a la luz, pero que resulta fundamental para calcular el encaje mecánico real de las piezas. Con todas estas dimensiones, el simulador recurre a la trigonometría de polígonos regulares para resolver el radio del rotor:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -241,7 +256,16 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_2.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 2">
 </div>
 
-<h3>Fase 3: Devanados (Electromagnetismo Circuital)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 3: Devanados (Electromagnetismo Circuital)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>El motor basa su empuje en la Fuerza de Lorentz, la cual requiere corriente eléctrica viajando por espiras conductoras.</p>
 <p><strong>Concepto Teórico:</strong> El espacio físico delimita la "ventana de bobinado". El compromiso entre el diámetro del hilo y el número de espiras viene regido por la Ley de Pouillet para la resistencia eléctrica del conductor. Este cálculo es el corazón del diseño eléctrico porque, según el <strong>Teorema de Máxima Transferencia de Potencia</strong> (Teorema de Jacobi), el motor solo conseguirá extraer el 100% de la energía disponible de la fuente de luz si conseguimos que la resistencia final de esta bobina iguale exactamente la "resistencia óptima" del panel calculada en la Fase 1:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -273,7 +297,16 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_3.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 3">
 </div>
 
-<h3>Fase 4: Levitación Magnética y Modelado de Elementos Finitos (Eje Z)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 4: Levitación Magnética y Modelado de Elementos Finitos (Eje Z)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>Para lograr un giro ultra-eficiente, el motor suprime el rozamiento convencional "flotando" en el aire. Sin embargo, para simular este fenómeno, esta fase constituye el núcleo geométrico del simulador, donde se define por completo la topología magnética del sistema.</p>
 <p><strong>Definición Espacial y Geométrica:</strong> En esta etapa se introducen meticulosamente todas las dimensiones físicas (diámetro, longitud), formas, grados de potencia coercitiva (ej. N42, N52) y la polaridad exacta tanto de los imanes de la bancada base como de los imanes insertados en los extremos del rotor. Además, se establece la colocación espacial milimétrica (como la distancia entre los pilares de la base) para recrear digitalmente la estructura física idéntica al modelo real. Toda esta configuración espacial es crítica, ya que servirá como bloque de cimientos para los cálculos de las fases posteriores.</p>
 <p><strong>Simulación Computacional (Magpylib):</strong> Una vez definida la geometría, la calculadora procesa esta matriz de datos mediante un potente motor de cálculo de campos magnéticos. Este programa evalúa la interacción tridimensional y calcula el punto de equilibrio. Conceptualmente, funciona como una balanza invisible: el rotor cae empujado por la gravedad hasta acercarse a los imanes de la base. Cuanto más se acerca, más se comprime el "colchón magnético" repulsivo. Cuando el empuje hacia arriba iguala exactamente al peso total del bloque, el sistema se detiene y levita de forma estable a una altura <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mi>Z</mi></math>:</p>
@@ -305,7 +338,16 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_4.png" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 4">
 </div>
 
-<h3>Fase 5: Campo Estator y Fuerza de Lorentz (Dinámica Motriz)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 5: Campo Estator y Fuerza de Lorentz (Dinámica Motriz)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>Una vez que el motor está levitando sin fricción, necesita un impulso constante para comenzar a rotar y mantener la inercia. Este empuje rotacional nace puramente de la interacción electromagnética central.</p>
 <p><strong>Concepto Físico:</strong> En el centro de la base del motor se sitúa un imán adicional, comúnmente llamado "estator", cuya única misión es irradiar un campo magnético permanente hacia arriba (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mi>B</mi></math>), atravesando el espacio por donde giran las bobinas. Cuando la fuente de luz incide en un panel solar superior (Fase 1), se inyecta una corriente eléctrica intensa (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mi>I</mi></math>) a través del hilo de cobre enrollado en la parte inferior del rotor (Fase 3). Al cruzarse esta corriente eléctrica perpendicularmente con el flujo magnético del estator, la física fundamental interviene generando una fuerza perpendicular a ambas variables, conocida como la <strong>Fuerza de Lorentz</strong>. Esta fuerza "fantasmal" empuja los cables de cobre de forma lateral. Como los cables están fuertemente solidarios a la estructura, este empuje lineal se convierte de inmediato en un par de torsión (torque) que fuerza a todo el motor Mendocino a girar de forma limpia e inagotable mientras reciba energía lumínica.</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -334,7 +376,16 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_5.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 5">
 </div>
 
-<h3>Fase 6: Interacción Lumínica (Conmutación Óptica)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 6: Interacción Lumínica (Conmutación Óptica)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>El sol (o la fuente de luz artificial) y la geometría poliédrica de la carcasa actúan como un sistema de conmutación óptica pasiva, haciendo el trabajo que en otros motores realizarían unas escobillas mecánicas.</p>
 <p><strong>Dinámica Interactiva del Simulador:</strong> En esta fase, la calculadora permite interactuar dinámicamente tanto con el <strong>ángulo de rotación del motor</strong> como con la <strong>posición cenital de la fuente de luz</strong>. Al arrastrar los controles y hacer girar manualmente el rotor virtual en pantalla, se puede observar en tiempo real cómo fluye la corriente eléctrica a través de los distintos devanados. El diagrama reacciona de forma visual: las bobinas dibujadas adoptan un <strong>color rojo más intenso</strong> conforme la corriente inyectada por su panel solar asociado se hace más fuerte (alcanzando su máximo cuando la placa se alinea de forma perpendicular a la luz).</p>
 <p>Esta simulación paso a paso resulta reveladora para comprender el rendimiento del motor, ya que permite detectar a simple vista qué bobina tiene los "efectos más directos". Quedará patente que el par motriz óptimo ocurre cuando la bobina que recibe la corriente más intensa coincide exactamente con su paso por la parte inferior de la estructura, es decir, cuando transita a milímetros del imán central de la base (Estator) cortando sus líneas de campo magnético perpendicularmente.</p>
@@ -360,7 +411,16 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_6.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 6">
 </div>
 
-<h3>Fase 7: FCEM y Velocidad</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 7: FCEM y Velocidad</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p><strong>El Límite Físico de la Velocidad:</strong> Todo motor eléctrico al girar actúa simultáneamente como un generador. Al moverse las bobinas por el campo magnético del imán central, la Ley de Faraday-Lenz entra en juego induciendo una tensión en dirección opuesta a la corriente de alimentación. A esta tensión "freno" se le conoce como <strong>Fuerza Contraelectromotriz (FCEM)</strong>. Cuanto más rápido gira el rotor, mayor es la FCEM generada, hasta que llega un punto en el que iguala por completo a la tensión suministrada por la placa solar. En ese exacto momento de equilibrio, el motor no puede acelerar más y alcanza su <strong>límite asintótico de velocidad máxima (RPM)</strong>. Sin este fenómeno, el rotor se aceleraría indefinidamente hasta alcanzar velocidades irreales que excederían los límites de la física clásica.</p>
 <p><strong>La Paradoja del Campo Magnético:</strong> La calculadora permite explorar una casuística matemática contraintuitiva. Si reducimos drásticamente el flujo magnético (por ejemplo, alejando el imán estator de la base), el cálculo teórico de RPM <em>aumentará</em> de forma vertiginosa. Esto ocurre porque, al debilitarse el campo magnético transversal, las bobinas tienen una capacidad casi nula de inducir tensión de frenado (FCEM). Sin embargo, hay que tener presente que este es un <strong>límite teórico en vacío</strong>: en el mundo real, alejar demasiado el imán también debilita la Fuerza de Lorentz (Fase 5), por lo que el motor sencillamente se pararía al no generar fuerza motriz suficiente para vencer su propia fricción aerodinámica.</p>
 <p><strong>Ecuación Fundamental:</strong> La formulación matemática que rige esta inducción eléctrica y actúa como freno asintótico es la Ley de inducción electromagnética:</p>
@@ -388,7 +448,16 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_7.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 7">
 </div>
 
-<h3>Fase 8: Par Motriz y Fuerza de Lorentz (Imán Central)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 8: Par Motriz y Fuerza de Lorentz (Imán Central)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>El centro de gravedad computacional para entender qué hace girar al motor: el cálculo exhaustivo de elementos finitos aplicado exclusivamente a la interacción motriz.</p>
 <p><strong>Cálculos Exactos con Magpylib:</strong> En lugar de aproximaciones genéricas, el simulador se apoya en la potencia matemática de la librería científica <code>Magpylib</code>. Esta herramienta resuelve las ecuaciones de Maxwell para geometrías magnéticas complejas, ofreciéndonos el valor exacto del Campo Magnético (vector <b>B</b>, en Teslas) en cualquier coordenada 3D del espacio que rodea al imán central de la base (Estator).</p>
 <p><strong>La Regla de la Mano Derecha:</strong> El simulador segmenta virtualmente cada espira de cobre del rotor en diminutos microvectores espaciales. En cada punto, cruza la corriente eléctrica inyectada por el panel solar (<i>I</i>) con el campo magnético del imán (<b>B</b>) calculado por Magpylib para hallar la <strong>Fuerza de Lorentz</strong>. Esta interacción geométrica es dictada universalmente por la <em>Regla de la Mano Derecha</em>: si alineas el dedo índice en la dirección en la que viaja la corriente eléctrica y el dedo medio en la dirección de las líneas del campo magnético (saliendo del Polo Norte del imán), el pulgar extendido te apuntará la dirección exacta de la fuerza de repulsión resultante.</p>
@@ -417,7 +486,16 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_8.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 8">
 </div>
 
-<h3>Fase 9: Simulación Global Magnética (Estator + Levitación)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 9: Simulación Global Magnética (Estator + Levitación)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>La culminación del modelado físico avanzado. Es un error común y simplista asumir que la Fuerza de Lorentz (la fuerza que induce el giro) proviene <em>únicamente</em> del imán central estator. En la realidad física, los <strong>imanes de levitación</strong> situados en los extremos de la base irradian campos magnéticos igualmente potentes que, por proximidad, también alcanzan y atraviesan los devanados de cobre de las bobinas.</p>
 <p><strong>Concepto Físico y Superposición:</strong> En esta Fase 9, el simulador integra <strong>todo el sistema electromagnético en conjunto</strong> (Imán central + Imanes de sustentación de la base + Imanes cilíndricos del rotor). Se ejecuta un cálculo matricial para determinar la superposición tensorial completa de todos los campos magnéticos interactuando de forma simultánea. Este análisis riguroso revela cómo las líneas de campo "parásitas" o residuales de los pilares de levitación interactúan con las bobinas energizadas, induciendo vectores de Lorentz adicionales que frecuentemente actúan como un <strong>frenado magnético transversal</strong>, penalizando y mermando la eficiencia del par motriz "puro" previamente aislado en la Fase 8.</p>
 <p><strong>Análisis Multi-Vista (Plotly):</strong> Para desentrañar esta compleja y densa topología de campos cruzados, la interfaz renderiza la interacción global utilizando una matriz de <strong>cuatro vistas analíticas interactivas</strong>:</p>
@@ -437,7 +515,16 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_9.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 9">
 </div>
 
-<h3>Fase 10: Esquema y Conexionado Eléctrico (El Corazón del Motor)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 10: Esquema y Conexionado Eléctrico (El Corazón del Motor)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>Esta fase representa la síntesis definitiva de todos los fenómenos físicos calculados en los pasos previos. Aquí se desvela la verdadera esencia del funcionamiento del motor Mendocino: cómo se orquesta la energía captada para generar un giro mecánico continuo, el cual se mantendrá inagotable siempre y cuando persista la fuente de luz que lo alimenta.</p>
 <p><strong>Correspondencia Físico-Eléctrica:</strong> La calculadora despliega un esquema eléctrico bidimensional interactivo que está estrictamente vinculado al montaje tridimensional del rotor. A través de la interfaz, el usuario puede seleccionar manualmente distintos pares de placas solares enfrentadas. Al hacerlo y variar la posición de la fuente de luz o girar el rotor, el simulador muestra dinámicamente en pantalla <strong>cuánta corriente eléctrica circula y en qué dirección</strong> lo hace por el interior de cada devanado. Visualmente, el vigor de este flujo de electrones se manifiesta de forma muy intuitiva: las flechas indicadoras en el esquema eléctrico se engrosan y adquieren un <strong>color rojo mucho más intenso</strong> conforme la placa asociada captura más luz directa.</p>
 <p><strong>El Secreto de la Conmutación Espacial:</strong> Analizar la electrónica del motor Mendocino revela un fenómeno cinemático maravillosamente poco intuitivo. Si observamos el esquema eléctrico aislado, veremos que la polaridad y la dirección de la corriente en cada bobina se invierten constantemente (corriente alterna) conforme el motor gira y diferentes placas se iluminan o entran en la sombra. Podría parecer que esto haría vibrar al motor hacia adelante y hacia atrás. Sin embargo, al trasladar este flujo eléctrico a la topología cilíndrica del rotor físico, ocurre la "magia" geométrica: justo cuando la corriente eléctrica invierte su sentido en el hilo de cobre, resulta que físicamente esa bobina entera ha rotado y ahora está del revés (180 grados). La inversión eléctrica se cancela exactamente con la inversión espacial mecánica. El resultado es extraordinario: <strong>la porción de cable de cobre que pasa por la parte inferior, enfrentándose directamente al poderoso campo magnético del imán central, ve fluir SIEMPRE la corriente en la misma dirección útil</strong>. Esto garantiza que el vector de la Fuerza de Lorentz impulse de forma unánime y continua al rotor en el mismo sentido de rotación, sin requerir microchips, transistores ni escobillas mecánicas de ningún tipo.</p>
@@ -452,7 +539,16 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_10.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 10">
 </div>
 
-<h3>Fase 11: Equilibrado de Masas (Tolerancias de Bobinado)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 11: Equilibrado de Masas (Tolerancias de Bobinado)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>A diferencia de las fases anteriores, el propósito aquí no es realizar un cálculo electromagnético riguroso, sino proporcionar una demostración visual e interactiva de un problema constructivo clásico. En el entorno teórico, el rotor es perfectamente simétrico; sin embargo, en el mundo real, cualquier mínima asimetría en el peso desplazará el centro de gravedad.</p>
 <p><strong>El Problema de la "Media Espira":</strong> Para simular esta imperfección, la calculadora ofrece como referencia añadir el peso de "media espira" de hilo de cobre en una de las caras. La justificación técnica es clave: si añadiéramos una espira entera, el hilo rodearía de nuevo todo el polígono y el rotor se mantendría equilibrado. Sin embargo, en el montaje físico, al soldar los terminales positivo y negativo desde la placa solar hasta el inicio de su bobina correspondiente, queda inevitablemente un sobrante de cable asimétrico acumulado en un solo flanco. Esta disposición (equivalente en peso a media espira) rompe la simetría perfecta del rotor.</p>
 <p><strong>Bamboleo e Interacción:</strong> A través de la interfaz podemos accionar manualmente el rotor y girarlo. Al soltarlo, el simulador nos permite ver de forma clara cómo esta inercia desequilibrada influye en el comportamiento. Si el Par Motriz electromagnético (que empuja el motor) es débil y no consigue superar el par gravitatorio en contra que genera esa cara más pesada al intentar "subir", el rotor será incapaz de dar la vuelta completa. Presa de la gravedad, caerá hacia atrás y exhibirá un característico efecto de "bamboleo", oscilando como un péndulo de un lado a otro hasta detenerse por completo con el flanco pesado apuntando hacia el suelo.</p>
@@ -469,7 +565,16 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_11.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 11">
 </div>
 
-<h3>Fase 12: Simulación Dinámica y Animación Global</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 12: Simulación Dinámica y Animación Global</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>Esta es la prueba del algodón final. Integra todos los modelos (ópticos, eléctricos, magnéticos y mecánicos) en una simulación unificada en tiempo real, resolviendo la ecuación de movimiento oscilatorio y rotacional amortiguado:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -493,20 +598,38 @@ function inyectarMemoriaTecnica() {
     <img src="Imagenes_informe/Fase_12.jpg" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Fase 12">
 </div>
 
+
+    </div>
+</details>
 <hr>
 
 <h2>3. ESTUDIO ANALÍTICO DESARROLLADO: "${N} Caras - Placas ${L.toFixed(1)}x${W.toFixed(1)}x${T.toFixed(1)} - Hilo ${diametroHilo.toFixed(3)}"</h2>
 
 <p>A petición del usuario, desarrollaremos paso a paso los números detrás de un diseño característico alojado en la base de datos pública del simulador.</p>
 
-<h3>3.1. Especificaciones del Modelo Físico</h3>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>3.1. Especificaciones del Modelo Físico</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <ul>
     <li><strong>Rotor (N)</strong>: ${N} caras.</li>
     <li><strong>Paneles Solares</strong>: Longitud L = ${L.toFixed(1)} mm, Anchura W = ${W.toFixed(1)} mm, Grosor T = ${T.toFixed(1)} mm.</li>
     <li><strong>Hilo Conductor</strong>: Diámetro d = ${diametroHilo.toFixed(3)} mm.</li>
 </ul>
 
-<h3>3.2. Análisis Fotovoltaico (Factor de Forma y Eficiencia)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>3.2. Análisis Fotovoltaico (Factor de Forma y Eficiencia)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>La capacidad mecánica del motor para arrancar depende fundamentalmente de la calidad de sus células solares. En base al ensayo experimental, caracterizamos matemáticamente el panel:</p>
 <ul>
     <li><strong>Tensión de Vacío (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>V</mi><mi>oc</mi></msub></math>):</strong> ${pVoc.toFixed(2)} V</li>
@@ -555,7 +678,16 @@ function inyectarMemoriaTecnica() {
 </math>
 </div>
 
-<h3>3.3. Interacción Lumínica según Inclinación (Ley del Coseno)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>3.3. Interacción Lumínica según Inclinación (Ley del Coseno)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>La posición del rotor respecto a la fuente de luz es crucial, ya que un panel solar no produce su máxima energía a menos que los rayos incidan totalmente perpendiculares a su superficie. Cuando el motor gira, el ángulo de incidencia (&theta;) cambia constantemente. La reducción de la corriente (<i>I</i>) inducida por este desalineamiento obedece numéricamente a la Ley del Coseno (Lambert). Para un ángulo ilustrativo de &theta; = 45&deg;:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -579,7 +711,16 @@ function inyectarMemoriaTecnica() {
 </div>
 <p>Este fenómeno matemático demuestra por qué los paneles laterales, que reciben la luz rasante, inyectan muchísima menos corriente que el panel superior orientado hacia el cénit, provocando el desequilibrio de fuerzas que da vida al motor Mendocino.</p>
 
-<h3>3.4. Geometría Hexagonal (Cálculo Espacial)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>3.4. Geometría Hexagonal (Cálculo Espacial)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>Para un polígono de ${N} caras, el ángulo central subtendido por cada lado es 360º / ${N} = ${(360/N).toFixed(1)}º.</p>
 <p>El circunradio (distancia del centro a los vértices) se calcula con la fórmula:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 20px 0;">
@@ -632,7 +773,16 @@ function inyectarMemoriaTecnica() {
 </div>
 <p>Si el eje de acero tiene 6 mm de diámetro (radio 3 mm), la <strong>profundidad de la ventana de bobinado</strong> disponible por cara es ${Apotema.toFixed(2)} - 3 = ${(Apotema-3).toFixed(2)} mm.</p>
 
-<h3>3.5. Análisis Volumétrico (Encaje del Hilo en la Ranura)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>3.5. Análisis Volumétrico (Encaje del Hilo en la Ranura)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>Una vez resuelta la geometría poligonal y determinada la resistencia objetivo que demanda el panel solar, es imperativo comprobar si la cantidad resultante de hilo de cobre cabe físicamente dentro del armazón estructural.</p>
 <p><strong>Superficie Útil de la Ranura (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>A</mi><mi>ranura</mi></msub></math>):</strong> Es el espacio geométrico transversal disponible bajo los paneles para alojar el bobinado. Matemáticamente, se determina evaluando el área del segmento interno del polígono y restando el volumen ocupado por el eje central pasante.</p>
 <p><strong>Sección Total de Cobre (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>A</mi><mi>cobre</mi></msub></math>):</strong> Es la suma del área transversal de todas las espiras necesarias. Depende directamente del diámetro del hilo (<i>d</i> = ${diametroHilo.toFixed(3)} mm) y del número total de vueltas (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>N</mi><mi>vueltas</mi></msub></math>) requeridas para alcanzar el equilibrio eléctrico:</p>
@@ -647,6 +797,9 @@ function inyectarMemoriaTecnica() {
 </div>
 <p><strong>Porcentaje de Ocupación:</strong> La viabilidad constructiva depende de este indicador crítico. Si el ratio entre el área total del cobre a introducir y el área libre de la ranura supera el límite de empaquetamiento práctico (alrededor del 70% o 80%, debido al espacio muerto entre hilos cilíndricos), la bobina desbordará su compartimento y resultará físicamente imposible cerrar y pegar los paneles solares sobre el chasis de resina.</p>
 
+
+    </div>
+</details>
 <h3>3.6. Electromagnetismo (Devanados, Resistencia y Densidad)</h3>
 <ul>
     <li><strong>Sección Transversal del Hilo (<i>S</i>)</strong>: 

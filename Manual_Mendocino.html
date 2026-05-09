@@ -175,7 +175,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <p>A continuación, se describe con exhaustividad cada una de las fases de la herramienta, detallando la base teórica y diferenciando exactamente qué información requiere la aplicación (<strong>Entradas</strong>) y qué información resuelve (<strong>Salidas</strong>).</p>
 
-<h3>Fase 1: Ensayo de Placas Solares (Fuente de Energía)</h3>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 1: Ensayo de Placas Solares (Fuente de Energía)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>El motor no se conecta a una red; su única fuente de energía son las células fotovoltaicas. Las células solares no son fuentes de tensión ni de corriente ideales, sino que operan bajo una <strong>curva característica I-V</strong> no lineal.</p>
 <p><strong>Concepto Físico:</strong> En esta fase, se procesan datos empíricos obtenidos iluminando la placa y variando su resistencia de carga (desde circuito abierto a cortocircuito). La potencia máxima extraíble sigue la ley de Watt:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -198,7 +204,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <div class="imagen-placeholder">[IMAGEN: Captura de pantalla de la gráfica de ensayo de placas solares]</div>
 
-<h3>Fase 2: Geometría del Motor (Mecánica Estructural)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 2: Geometría del Motor (Mecánica Estructural)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>El rotor de un motor Mendocino tiene forma de prisma poligonal regular, dictado por el número de paneles solares (N).</p>
 <p><strong>Concepto Teórico:</strong> Un diseño de 4 caras (cuadrado) es común, pero configuraciones de 6 caras (hexágono) u 8 caras ofrecen un par motriz más suave a expensas de mayor peso. El simulador recurre a trigonometría de polígonos regulares para calcular el encaje del rotor:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -227,7 +242,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <div class="imagen-placeholder">[IMAGEN: Captura de la geometría del rotor generada (Ej. polígono de 6 caras)]</div>
 
-<h3>Fase 3: Devanados (Electromagnetismo Circuital)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 3: Devanados (Electromagnetismo Circuital)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>El motor basa su empuje en la Fuerza de Lorentz, la cual requiere corriente eléctrica viajando por espiras conductoras.</p>
 <p><strong>Concepto Teórico:</strong> El espacio físico delimita la "ventana de bobinado". El compromiso entre el diámetro del hilo y el número de espiras viene regido por la Ley de Pouillet para la resistencia eléctrica del cobre:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -254,7 +278,16 @@ window.addEventListener('DOMContentLoaded', () => {
     <div class="io-entry io-out"><strong>Salida:</strong> Resistencia total de cada bobina (Ω) y Peso del metal añadido (gramos).</div>
 </div>
 
-<h3>Fase 4 y 5: Levitación e Interacción Magnética (Estática)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 4 y 5: Levitación e Interacción Magnética (Estática)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>Para un giro ultra-eficiente se suprime el rozamiento convencional usando campos magnéticos estacionarios.</p>
 <p><strong>Concepto Teórico:</strong> Se emplea la ley de repulsión dipolar magnética. El simulador asimila los imanes a dipolos de Neodimio. La altura Z de levitación estable se alcanza cuando la fuerza de repulsión iguala al peso gravitatorio:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -280,7 +313,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <div class="imagen-placeholder">[IMAGEN: Visor de Levitación Magnética mostrando los vectores de fuerza ascendente]</div>
 
-<h3>Fase 6: Interacción Lumínica (Conmutación Óptica)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 6: Interacción Lumínica (Conmutación Óptica)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>El sol y la geometría de la carcasa actúan como un sensor de efecto Hall pasivo.</p>
 <p><strong>Concepto Teórico:</strong> La energía interceptada obedece a la Ley del Coseno de Lambert, mitigada por las sombras proyectadas por las aristas del polígono al rotar el motor:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -301,7 +343,16 @@ window.addEventListener('DOMContentLoaded', () => {
     <div class="io-entry io-out"><strong>Salida:</strong> Intensidad de corriente inyectada en cada mili-segundo a los devanados.</div>
 </div>
 
-<h3>Fase 7: FCEM y Velocidad</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 7: FCEM y Velocidad</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>Todo motor eléctrico genera su propia tensión "freno" al rodar. Sin ella, aceleraría hasta desintegrarse.</p>
 <p><strong>Concepto Teórico:</strong> Al pasar por el campo magnético del imán central, la Ley de Faraday-Lenz induce una <em>Fuerza Contraelectromotriz</em> opuesta que actúa como freno asintótico de velocidad:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -325,7 +376,16 @@ window.addEventListener('DOMContentLoaded', () => {
     <div class="io-entry io-out"><strong>Salida:</strong> Límite termodinámico teórico de Velocidad en vacío (R.P.M.).</div>
 </div>
 
-<h3>Fase 8 y 9: Par Motriz y Simulación Global (Motor Físico Magpylib en 3D)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 8 y 9: Par Motriz y Simulación Global (Motor Físico Magpylib en 3D)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>El centro de gravedad computacional de esta herramienta: cálculos exhaustivos de elementos finitos para derivar la verdadera fuerza mecánica.</p>
 <p><strong>Concepto Teórico:</strong> El simulador segmenta cada espira en microvectores, aplicando la Ley de Lorentz (Fase 8). En la <strong>Fase 9 (Global)</strong> se calcula la superposición tensorial de todos los imanes, incluyendo el frenado magnético de los imanes de levitación.</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -354,7 +414,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <div class="imagen-placeholder">[IMAGEN: Visor 3D Interactivo de la Simulación Global mostrando las espiras]</div>
 
-<h3>Fase 10: Conexionado Eléctrico</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 10: Conexionado Eléctrico</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>Determina la dirección de los flujos de corriente y polos electromagnéticos en base a cómo se sueldan las placas solares.</p>
 <div class="io-box">
     <div class="io-title">Variables de la Fase 10</div>
@@ -364,7 +433,16 @@ window.addEventListener('DOMContentLoaded', () => {
     <div class="io-entry io-out"><strong>Salida:</strong> Determinación de si el motor rotará en sentido horario (CW) o antihorario (CCW).</div>
 </div>
 
-<h3>Fase 11 y 12: Equilibrado de Masas y Simulación Dinámica</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 11 y 12: Equilibrado de Masas y Simulación Dinámica</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>Un rotor asimétrico girará de forma excéntrica, se desequilibrará buscando su centro de gravedad y se detendrá oscilando como un péndulo físico amortiguado:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -388,20 +466,38 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <div class="imagen-placeholder">[IMAGEN: Diagrama SVG transversal del Equilibrado de Masas]</div>
 
+
+    </div>
+</details>
 <hr>
 
 <h2>3. ESTUDIO ANALÍTICO DESARROLLADO: "6 Caras - Placas 53x18x2 - Hilo 0,315"</h2>
 
 <p>A petición del usuario, desarrollaremos paso a paso los números detrás de un diseño característico alojado en la base de datos pública del simulador.</p>
 
-<h3>3.1. Especificaciones del Modelo Físico</h3>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>3.1. Especificaciones del Modelo Físico</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <ul>
     <li><strong>Rotor (N)</strong>: 6 caras (Hexagonal).</li>
     <li><strong>Paneles Solares</strong>: Longitud L = 53 mm, Anchura W = 18 mm, Grosor T = 2 mm.</li>
     <li><strong>Hilo Conductor</strong>: Diámetro d = 0.315 mm.</li>
 </ul>
 
-<h3>3.2. Geometría Hexagonal (Cálculo Espacial)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>3.2. Geometría Hexagonal (Cálculo Espacial)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p>Para un polígono de 6 caras, el ángulo central subtendido por cada lado es 360º / 6 = 60º.</p>
 <p>El circunradio (distancia del centro a los vértices) se calcula con la fórmula:</p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 20px 0;">
@@ -459,7 +555,16 @@ window.addEventListener('DOMContentLoaded', () => {
 </div>
 <p>Si el eje de acero tiene 6 mm de diámetro (radio 3 mm), la <strong>profundidad de la ventana de bobinado</strong> disponible por cara es 15.58 - 3 = 12.58 mm.</p>
 
-<h3>3.3. Estudio de Masas (Gravitatorio)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>3.3. Estudio de Masas (Gravitatorio)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <p><strong>Volumen geométrico de una placa:</strong></p>
 <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -522,7 +627,16 @@ window.addEventListener('DOMContentLoaded', () => {
 </math>
 </div>
 
-<h3>3.4. Electromagnetismo (Devanados y Resistencia)</h3>
+
+    </div>
+</details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>3.4. Electromagnetismo (Devanados y Resistencia)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
 <ul>
     <li><strong>Sección Transversal (<i>S</i>)</strong>: 
         <div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
@@ -601,6 +715,9 @@ window.addEventListener('DOMContentLoaded', () => {
     </li>
 </ul>
 
+
+    </div>
+</details>
 <h3>3.5. Generación de Par Motriz Teórico (Fuerza de Lorentz)</h3>
 <p>Asumimos que el ensayo de la Fase 1 demostró que el panel bajo luz inyecta <strong>200 mA (0.2 A)</strong> a la bobina debido a los 3.9 Ω. Si el imán inductor genera un campo intenso perpendicular de <strong>0.15 Teslas</strong> frente a la cara activa (50 mm):</p>
 <ul>
