@@ -4827,81 +4827,107 @@ function actualizarEsquemaMarx(etapas, C_nf, R_mohm) {
     
     const stageHeight = 60;
     const width = 160;
-    const totalHeight = etapas * stageHeight + 40;
+    // Añadimos un poco más de margen superior para la flecha de salida
+    const totalHeight = etapas * stageHeight + 60;
     
     let svgHTML = `
         <svg viewBox="0 0 ${width} ${totalHeight}" style="width: 100%; max-width: 250px; height: auto;">
             <defs>
-                <marker id="arrowhead-marx" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
+                <marker id="arrowhead-out" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#1e293b" />
                 </marker>
             </defs>
     `;
     
     const startY = totalHeight - 20;
     
-    // Bottom Source
+    // Bottom Source Terminals
     svgHTML += `
         <text x="${width/2}" y="${startY + 15}" font-family="sans-serif" font-size="10" font-weight="bold" fill="#334155" text-anchor="middle">HV DC</text>
-        <line x1="30" y1="${startY}" x2="130" y2="${startY}" stroke="#334155" stroke-width="2"/>
+        <text x="30" y="${startY + 15}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155" text-anchor="middle">+</text>
+        <text x="130" y="${startY + 15}" font-family="sans-serif" font-size="14" font-weight="bold" fill="#334155" text-anchor="middle">-</text>
+        
+        <line x1="30" y1="${startY}" x2="30" y2="${startY - 10}" stroke="#334155" stroke-width="2"/>
+        <line x1="130" y1="${startY}" x2="130" y2="${startY - 10}" stroke="#334155" stroke-width="2"/>
+        <!-- Flechas de entrada -->
+        <line x1="30" y1="${startY}" x2="30" y2="${startY + 5}" stroke="#334155" stroke-width="2" marker-end="url(#arrowhead-out)"/>
+        <line x1="130" y1="${startY}" x2="130" y2="${startY + 5}" stroke="#334155" stroke-width="2" marker-end="url(#arrowhead-out)"/>
     `;
     
     // Draw stages
     for (let i = 0; i < etapas; i++) {
-        let yBottom = startY - i * stageHeight;
+        let yBottom = startY - 10 - i * stageHeight;
         let yTop = yBottom - stageHeight;
         
-        // Left resistor
+        // Capacitor (horizontal) - se dibuja en yBottom
         svgHTML += `
-            <line x1="30" y1="${yBottom}" x2="30" y2="${yBottom - 10}" stroke="#334155" stroke-width="2"/>
-            <polyline points="30,${yBottom - 10} 25,${yBottom - 15} 35,${yBottom - 25} 25,${yBottom - 35} 35,${yBottom - 45} 30,${yBottom - 50}" fill="none" stroke="#334155" stroke-width="2"/>
-            <line x1="30" y1="${yBottom - 50}" x2="30" y2="${yTop}" stroke="#334155" stroke-width="2"/>
+            <line x1="30" y1="${yBottom}" x2="75" y2="${yBottom}" stroke="#334155" stroke-width="2"/>
+            <line x1="75" y1="${yBottom - 10}" x2="75" y2="${yBottom + 10}" stroke="#334155" stroke-width="2"/>
+            <line x1="85" y1="${yBottom - 10}" x2="85" y2="${yBottom + 10}" stroke="#334155" stroke-width="2"/>
+            <line x1="85" y1="${yBottom}" x2="130" y2="${yBottom}" stroke="#334155" stroke-width="2"/>
         `;
         
-        // Right resistor
+        // Nodos del capacitor
         svgHTML += `
-            <line x1="130" y1="${yBottom}" x2="130" y2="${yBottom - 10}" stroke="#334155" stroke-width="2"/>
-            <polyline points="130,${yBottom - 10} 125,${yBottom - 15} 135,${yBottom - 25} 125,${yBottom - 35} 135,${yBottom - 45} 130,${yBottom - 50}" fill="none" stroke="#334155" stroke-width="2"/>
-            <line x1="130" y1="${yBottom - 50}" x2="130" y2="${yTop}" stroke="#334155" stroke-width="2"/>
+            <circle cx="30" cy="${yBottom}" r="3" fill="#1e293b"/>
+            <circle cx="130" cy="${yBottom}" r="3" fill="#1e293b"/>
         `;
         
-        // Capacitor (horizontal)
-        svgHTML += `
-            <line x1="30" y1="${yTop}" x2="75" y2="${yTop}" stroke="#334155" stroke-width="2"/>
-            <line x1="75" y1="${yTop - 10}" x2="75" y2="${yTop + 10}" stroke="#334155" stroke-width="2"/>
-            <line x1="85" y1="${yTop - 10}" x2="85" y2="${yTop + 10}" stroke="#334155" stroke-width="2"/>
-            <line x1="85" y1="${yTop}" x2="130" y2="${yTop}" stroke="#334155" stroke-width="2"/>
-        `;
-        
-        // Spark gap (diagonal from right yBottom to left yTop - using user reference logic)
-        svgHTML += `
-            <line x1="130" y1="${yBottom}" x2="40" y2="${yTop+5}" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrowhead-marx)"/>
-        `;
-        
-        // Nodes
-        svgHTML += `
-            <circle cx="30" cy="${yTop}" r="3" fill="#334155"/>
-            <circle cx="130" cy="${yTop}" r="3" fill="#334155"/>
-        `;
+        // Si no es la última etapa, dibujamos resistencias hacia la etapa superior y el explosor
+        if (i < etapas - 1) {
+            // Left resistor
+            svgHTML += `
+                <line x1="30" y1="${yBottom}" x2="30" y2="${yBottom - 10}" stroke="#334155" stroke-width="2"/>
+                <polyline points="30,${yBottom - 10} 25,${yBottom - 15} 35,${yBottom - 25} 25,${yBottom - 35} 35,${yBottom - 45} 30,${yBottom - 50}" fill="none" stroke="#334155" stroke-width="2"/>
+                <line x1="30" y1="${yBottom - 50}" x2="30" y2="${yTop}" stroke="#334155" stroke-width="2"/>
+            `;
+            
+            // Right resistor
+            svgHTML += `
+                <line x1="130" y1="${yBottom}" x2="130" y2="${yBottom - 10}" stroke="#334155" stroke-width="2"/>
+                <polyline points="130,${yBottom - 10} 125,${yBottom - 15} 135,${yBottom - 25} 125,${yBottom - 35} 135,${yBottom - 45} 130,${yBottom - 50}" fill="none" stroke="#334155" stroke-width="2"/>
+                <line x1="130" y1="${yBottom - 50}" x2="130" y2="${yTop}" stroke="#334155" stroke-width="2"/>
+            `;
+            
+            // Spark gap (diagonal from left yBottom to right yTop)
+            // Calculamos coordenadas para dejar un gap en el medio
+            let gapStartX1 = 30;
+            let gapStartY1 = yBottom;
+            let gapEndX1 = 70;
+            let gapEndY1 = yBottom - 24; // sube 24px
+            
+            let gapStartX2 = 130;
+            let gapStartY2 = yTop;
+            let gapEndX2 = 90;
+            let gapEndY2 = yTop + 24; // baja 24px
+            
+            svgHTML += `
+                <!-- Electrodo izquierdo (inferior) -->
+                <line x1="${gapStartX1}" y1="${gapStartY1}" x2="${gapEndX1}" y2="${gapEndY1}" stroke="#1e293b" stroke-width="2"/>
+                <circle cx="${gapEndX1}" cy="${gapEndY1}" r="3.5" fill="#ffffff" stroke="#1e293b" stroke-width="1.5"/>
+                
+                <!-- Electrodo derecho (superior) -->
+                <line x1="${gapStartX2}" y1="${gapStartY2}" x2="${gapEndX2}" y2="${gapEndY2}" stroke="#1e293b" stroke-width="2"/>
+                <circle cx="${gapEndX2}" cy="${gapEndY2}" r="3.5" fill="#ffffff" stroke="#1e293b" stroke-width="1.5"/>
+            `;
+        }
         
         // Labels for first stage only
         if (i === 0) {
             svgHTML += `
-                <text x="10" y="${yBottom - 25}" font-family="sans-serif" font-size="10" fill="#334155" transform="rotate(-90 10,${yBottom - 25})">${R_mohm} MΩ</text>
-                <text x="150" y="${yBottom - 25}" font-family="sans-serif" font-size="10" fill="#334155" transform="rotate(-90 150,${yBottom - 25})">${R_mohm} MΩ</text>
-                <text x="80" y="${yTop - 15}" font-family="sans-serif" font-size="10" font-weight="bold" fill="#334155" text-anchor="middle">${C_nf} nF</text>
+                <text x="12" y="${yBottom - 25}" font-family="sans-serif" font-size="10" fill="#334155" transform="rotate(-90 12,${yBottom - 25})">${R_mohm} MΩ</text>
+                <text x="148" y="${yBottom - 25}" font-family="sans-serif" font-size="10" fill="#334155" transform="rotate(-90 148,${yBottom - 25})">${R_mohm} MΩ</text>
+                <text x="80" y="${yBottom - 15}" font-family="sans-serif" font-size="10" font-weight="bold" fill="#334155" text-anchor="middle">${C_nf} nF</text>
             `;
         }
     }
     
-    // Top Output Terminals
-    const yTopmost = startY - etapas * stageHeight;
+    // Top Output Arrow (from left node of the topmost capacitor)
+    const yTopmost = startY - 10 - (etapas - 1) * stageHeight;
     svgHTML += `
-        <line x1="30" y1="${yTopmost}" x2="30" y2="${yTopmost - 10}" stroke="#334155" stroke-width="2"/>
-        <line x1="130" y1="${yTopmost}" x2="130" y2="${yTopmost - 10}" stroke="#334155" stroke-width="2"/>
-        <circle cx="30" cy="${yTopmost - 10}" r="4" fill="#ffffff" stroke="#ef4444" stroke-width="2"/>
-        <circle cx="130" cy="${yTopmost - 10}" r="4" fill="#ffffff" stroke="#ef4444" stroke-width="2"/>
-        <text x="80" y="${yTopmost - 5}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#ef4444" text-anchor="middle">⚡ V_out</text>
+        <!-- Flecha de salida de alta tensión -->
+        <line x1="30" y1="${yTopmost}" x2="60" y2="${yTopmost - 35}" stroke="#1e293b" stroke-width="2.5" marker-end="url(#arrowhead-out)"/>
+        <text x="75" y="${yTopmost - 35}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#1e293b">⚡ V_out</text>
     `;
     
     svgHTML += `</svg>`;
