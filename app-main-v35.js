@@ -4703,13 +4703,11 @@ async function cargarPerfilUsuario(user) {
             
         if (profile && !error) {
             profileActual = profile;
-            // Si el perfil tiene rol admin, o ya lo detectamos por email whitelist
             esAdmin = esAdmin || (profile.rol === 'admin');
             usuarioActual.nombre = profile.nombre || user.email;
             usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
             usuarioActual.permisos_pasos = profile.permisos_pasos || null;
         } else {
-            // Error controlado o fila no existente: el whitelist por email ya nos protege arriba
             profileActual = null;
             usuarioActual.nombre = user.user_metadata?.nombre || user.email || 'Alumno';
             usuarioActual.nivel = NIVELES_USUARIO.BASICO;
@@ -4721,9 +4719,44 @@ async function cargarPerfilUsuario(user) {
         usuarioActual.nombre = user.email || 'Usuario';
         usuarioActual.nivel = NIVELES_USUARIO.BASICO;
     } finally {
-        actualizarPanelAdminUI(); // Aseguramos que el botón se actualice tras el intento de carga
+        actualizarPanelAdminUI();
         actualizarMensajeNivel();
+        
+        // --- Lógica para revelar el selector del Generador de Marx ---
+        const emailsMarx = ["cmillan@unizar.es", "smartin@unizar.es"];
+        if (user && emailsMarx.includes(user.email)) {
+            const selector = document.getElementById("maquina-selector");
+            if(selector) selector.style.display = "block";
+        }
     }
+}
+
+// --- LOGICA DE CAMBIO DE MÁQUINA ---
+window.cambiarMaquina = function(maquina) {
+    const sidebarMendocino = document.getElementById('sidebar-context-calc');
+    const sidebarMarx = document.getElementById('sidebar-context-marx');
+    const pageMendocino = document.getElementById('page-calc');
+    const pageMarx = document.getElementById('page-calc-marx');
+
+    if (maquina === 'marx') {
+        if (sidebarMendocino) sidebarMendocino.style.display = 'none';
+        if (sidebarMarx) sidebarMarx.style.display = 'block';
+        if (pageMendocino) { pageMendocino.classList.remove('active'); pageMendocino.style.display = 'none'; }
+        if (pageMarx) { pageMarx.classList.add('active'); pageMarx.style.display = 'block'; }
+    } else {
+        if (sidebarMendocino) sidebarMendocino.style.display = 'block';
+        if (sidebarMarx) sidebarMarx.style.display = 'none';
+        if (pageMendocino) { pageMendocino.classList.add('active'); pageMendocino.style.display = 'block'; }
+        if (pageMarx) { pageMarx.classList.remove('active'); pageMarx.style.display = 'none'; }
+    }
+};
+
+window.cambiarPasoMarx = function(paso) {
+    document.querySelectorAll('#sidebar-context-marx .step-indicator').forEach(ind => ind.classList.remove('active'));
+    const activo = document.getElementById(`ind-marx-${paso}`);
+    if(activo) activo.classList.add('active');
+    console.log("Cambiando al paso Marx:", paso);
+};
 }
 
 

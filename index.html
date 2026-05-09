@@ -149,7 +149,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <div class="top-navbar">
             <div class="nav-right" style="width: 100%; justify-content: center;">
-                <div class="grupo-config-nav" style="display: flex; gap: 10px;">
+                <div class="grupo-config-nav" style="display: flex; gap: 10px; align-items: center;">
+                    <select id="maquina-selector" style="display:none; background: rgba(52, 152, 219, 0.1); border: 1px solid rgba(52, 152, 219, 0.4); border-radius: 6px; padding: 6px 12px; color: #2c3e50; font-weight: bold; cursor: pointer; font-size: 14px;" onchange="cambiarMaquina(this.value)">
+                        <option value="mendocino">⚡ Simulador: Mendocino</option>
+                        <option value="marx">⚡ Simulador: Marx</option>
+                    </select>
                     <button class="btn-toolbar-nav" type="button" onclick="nuevoProyecto()" title="Nuevo proyecto desde cero" style="background: rgba(52, 152, 219, 0.2); border-color: rgba(52, 152, 219, 0.3);">
                         <span>Nuevo</span> ✨
                     </button>
@@ -207,11 +211,39 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="step-indicator" id="ind-11" onclick="cambiarPaso(11)"><span>11. Equilibrado de Masas</span></div>
                     <div class="step-indicator" id="ind-12" onclick="cambiarPaso(12)"><span>12. Simulación Dinámica</span></div>
                     <div class="step-indicator" id="ind-13" onclick="cambiarPaso(13)"><span>13. Informe</span></div>
-</div>
+                </div>
+            </div>
+
+            <div id="sidebar-context-marx" class="sidebar-context" style="display:none;">
+                <hr style="border: none; height: 1px; background: rgba(148, 163, 184, 0.3); margin: 25px 10px;">
+                <h3 class="sidebar-title">FASES DEL MARX</h3>
+                <div class="stepper-container">
+                    <div class="step-indicator active" id="ind-marx-1" onclick="cambiarPasoMarx(1)"><span>1. Condensadores</span></div>
+                    <div class="step-indicator" id="ind-marx-2" onclick="cambiarPasoMarx(2)"><span>2. Resistencias</span></div>
+                    <div class="step-indicator" id="ind-marx-3" onclick="cambiarPasoMarx(3)"><span>3. Spark Gaps</span></div>
+                    <div class="step-indicator" id="ind-marx-4" onclick="cambiarPasoMarx(4)"><span>4. Fuente de AT</span></div>
+                    <div class="step-indicator" id="ind-marx-5" onclick="cambiarPasoMarx(5)"><span>5. Simulación</span></div>
+                </div>
             </div>
         </aside>
 
         <main class="app-main-content">
+            <div id="page-calc-marx" class="page-container" style="display:none;">
+                <div class="card">
+                    <div class="header">
+                        <h1>Diseño de Generador de Marx <span style="font-size: 0.5em; color: #94a3b8;">v1.0</span></h1>
+                        <p>Calculadora y simulador de Alta Tensión</p>
+                    </div>
+                    <div class="content">
+                        <div id="step-marx-1" class="step-container active" style="padding: 40px; text-align: center;">
+                            <h2 style="color: #2c3e50;">⚡ Entorno de Simulación Marx</h2>
+                            <p style="color: #64748b; font-size: 16px; margin-top: 15px;">Bienvenido al nuevo simulador del Generador de Marx. Las herramientas de cálculo se están instalando...</p>
+                            <div style="margin-top: 30px; font-size: 48px; animation: pulse 2s infinite;">🚧</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="page-calc" class="page-container active">
                 <div class="card">
                     <div class="header">
