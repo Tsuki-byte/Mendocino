@@ -1767,5 +1767,94 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             });
         };
     </script>
+    
+    <!-- Widget de Chat IA Flotante -->
+    <div id="ai-chat-widget" style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; font-family: 'Segoe UI', sans-serif;">
+        <button id="ai-chat-btn" onclick="toggleAIChat()" style="background: #10b981; color: white; width: 60px; height: 60px; border-radius: 50%; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 32px; transition: transform 0.2s;">
+            🤖
+        </button>
+        
+        <div id="ai-chat-window" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; height: 500px; background: white; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; transform: translateY(10px);">
+            <div style="background: #1e293b; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 24px;">🤖</span>
+                    <div>
+                        <strong style="display: block; font-size: 15px; line-height: 1.2;">Mendocino AI</strong>
+                        <span style="font-size: 11px; color: #94a3b8;">Asistente Técnico Integrado</span>
+                    </div>
+                </div>
+                <button onclick="toggleAIChat()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div id="ai-chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 10px;">
+                <div style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 14px; color: #334155; align-self: flex-start; max-width: 85%; line-height: 1.4;">
+                    ¡Hola! Soy el asistente experto en el Simulador de Motores Mendocino. Conozco toda la física, matemáticas y usabilidad de esta web.<br><br>¿En qué te puedo ayudar hoy?
+                </div>
+            </div>
+            
+            <div style="padding: 15px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 10px;">
+                <input type="text" id="ai-chat-input" placeholder="Escribe tu duda técnica..." onkeypress="if(event.key === 'Enter') enviarMensajeIA()" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px;">
+                <button onclick="enviarMensajeIA()" style="background: #3b82f6; color: white; border: none; border-radius: 6px; padding: 0 15px; cursor: pointer; font-weight: bold; font-size: 16px;">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleAIChat() {
+            const win = document.getElementById('ai-chat-window');
+            if (win.style.opacity === '0' || win.style.display === 'none') {
+                win.style.display = 'flex';
+                setTimeout(() => {
+                    win.style.opacity = '1';
+                    win.style.pointerEvents = 'all';
+                    win.style.transform = 'translateY(0)';
+                    document.getElementById('ai-chat-input').focus();
+                }, 10);
+            } else {
+                win.style.opacity = '0';
+                win.style.pointerEvents = 'none';
+                win.style.transform = 'translateY(10px)';
+                setTimeout(() => { win.style.display = 'none'; }, 300);
+            }
+        }
+
+        async function enviarMensajeIA() {
+            const input = document.getElementById('ai-chat-input');
+            const messages = document.getElementById('ai-chat-messages');
+            const texto = input.value.trim();
+            if (!texto) return;
+
+            // Renderizar mensaje del usuario
+            messages.innerHTML += `
+                <div style="background: #3b82f6; color: white; padding: 12px; border-radius: 8px; font-size: 14px; align-self: flex-end; max-width: 85%; line-height: 1.4;">
+                    ${texto}
+                </div>
+            `;
+            input.value = '';
+            messages.scrollTop = messages.scrollHeight;
+
+            // Renderizar estado de carga
+            const idTemp = 'escribiendo-' + Date.now();
+            messages.innerHTML += `
+                <div id="${idTemp}" style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 14px; color: #94a3b8; align-self: flex-start; max-width: 85%;">
+                    <em>Analizando documentación...</em>
+                </div>
+            `;
+            messages.scrollTop = messages.scrollHeight;
+
+            // AQUÍ CONECTAREMOS LA API DE OPENAI O GEMINI
+            setTimeout(() => {
+                const tempEl = document.getElementById(idTemp);
+                if (tempEl) tempEl.remove();
+
+                messages.innerHTML += `
+                    <div style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #f59e0b; font-size: 14px; color: #b45309; align-self: flex-start; max-width: 85%; line-height: 1.4; background-color: #fffbeb;">
+                        <strong>⚠️ [Modo Demo]</strong><br>El "Cerebro" de la IA aún no está conectado a la red. Por favor, introduce la API Key en el código fuente para activar las respuestas inteligentes.
+                    </div>
+                `;
+                messages.scrollTop = messages.scrollHeight;
+            }, 1200);
+        }
+    </script>
 </body>
 </html>
