@@ -4757,8 +4757,6 @@ window.cambiarPasoMarx = function(paso) {
     if(activo) activo.classList.add('active');
     console.log("Cambiando al paso Marx:", paso);
 };
-}
-
 
 async function cerrarSesion() {
     try {
