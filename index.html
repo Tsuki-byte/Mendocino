@@ -95,11 +95,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <div class="form-group">
             <label>Correo Electrónico</label>
-            <input type="email" id="auth-email" placeholder="Introduce tu correo">
+            <input type="email" id="auth-email" placeholder="Introduce tu correo" onkeypress="if(event.key === 'Enter') document.getElementById('auth-password').focus()">
         </div>
         <div class="form-group">
             <label>Contraseña</label>
-            <input type="password" id="auth-password" placeholder="Tu contraseña">
+            <input type="password" id="auth-password" placeholder="Tu contraseña" onkeypress="if(event.key === 'Enter') ejecutarAuth()">
         </div>
         
         <div id="auth-nombre-group" class="form-group" style="display: none;">
