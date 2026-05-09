@@ -237,19 +237,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <!-- Paso 1 -->
                         <div id="step-marx-1" class="step-container active">
                             <div class="form-section">
-                                <h2 class="titulo-seccion-principal">⚡ 1. Fundamentos y Condensadores</h2>
+                                <h2 class="titulo-seccion-principal">⚡ 1. Carga (Condensadores y Resistencias)</h2>
                                 
-                                <div class="teoria-nota" style="margin-top: 0;">
-                                    <strong>¿Qué es un Generador de Marx?</strong><br>
-                                    Un generador de Marx es un circuito eléctrico diseñado para generar pulsos de muy alta tensión. Fue inventado por el ingeniero alemán Erwin Otto Marx en 1924. 
-                                    <br><br>
-                                    <strong>¿Para qué sirve?</strong><br>
-                                    Se utiliza principalmente en laboratorios de investigación y en la industria para simular los efectos de los rayos en equipos eléctricos (como aisladores o transformadores), y en física avanzada para generar rayos X duros, haces de electrones y pulsos electromagnéticos (EMP).
-                                    <br><br>
-                                    <strong>Principio de funcionamiento:</strong><br>
-                                    El circuito carga un grupo de <strong>condensadores en paralelo</strong> utilizando una fuente de alimentación de corriente continua de alta tensión. Una vez cargados, una serie de interruptores (llamados <i>spark gaps</i> o explosores) se activan casi simultáneamente, conectando todos los condensadores <strong>en serie</strong>. Esto hace que las tensiones individuales de cada condensador se sumen, liberando un pulso de tensión gigantesco en la salida.
-                                </div>
-
                                 <h3 class="subtitulo-seccion">Parámetros de la Etapa (Celda Base)</h3>
                                 <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Define las características de un condensador y su resistencia asociada. Su agrupación formará las "etapas".</p>
 
@@ -268,7 +257,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                     </div>
                                 </div>
                                 
-                                <div class="nav-buttons">
+                                <h3 class="subtitulo-seccion" style="margin-top: 15px;">Diseño del Generador</h3>
+                                <div class="fila-formulario">
+                                    <div class="form-group" style="flex: 1;">
+                                        <label>Número de Etapas (N) <span>Cantidad de niveles (2-10)</span></label>
+                                        <input type="number" id="marx-etapas" value="4" step="1" min="2" max="10" oninput="calcularMarxPaso1()">
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-top: 25px; padding: 15px; background: rgba(59, 130, 246, 0.05); border-left: 4px solid #3b82f6; border-radius: 4px;">
+                                    <h4 style="margin-top:0; color:#1e40af; font-size: 15px;">💡 Fundamentos del Generador de Marx</h4>
+                                    <p style="margin-bottom:8px; font-size:13px; color:#334155; line-height: 1.5;">
+                                        <strong>¿Qué es?</strong> Un circuito eléctrico inventado por Erwin Otto Marx en 1924, diseñado para generar pulsos de muy alta tensión.
+                                    </p>
+                                    <p style="margin-bottom:8px; font-size:13px; color:#334155; line-height: 1.5;">
+                                        <strong>¿Para qué sirve?</strong> Se utiliza en investigación e industria para simular el efecto de los rayos sobre equipos eléctricos (aisladores, transformadores) y en física avanzada para generar rayos X duros o pulsos electromagnéticos (EMP).
+                                    </p>
+                                    <p style="margin-bottom:0; font-size:13px; color:#334155; line-height: 1.5;">
+                                        <strong>Principio de funcionamiento:</strong> El circuito carga un grupo de condensadores <strong>en paralelo</strong> a través de las resistencias utilizando una fuente de corriente continua (HV DC). Una vez cargados, los explosores (<i>spark gaps</i>) se activan, conectando todos los condensadores <strong>en serie</strong>, sumando sus tensiones individuales para liberar un pulso eléctrico gigantesco en la salida.
+                                    </p>
+                                </div>
+
+                                <div class="nav-buttons" style="margin-top: 30px;">
                                     <div></div>
                                     <button class="btn-nav btn-next" onclick="cambiarPasoMarx(2)">Siguiente: Explosores ➔</button>
                                 </div>
@@ -277,43 +287,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <div class="summary-section">
                                 <h3 style="margin-top: 0; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📊 Esquema de Etapa</h3>
                                 
-                                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: center; display: flex; justify-content: center; align-items: center;">
-                                    <svg viewBox="0 0 150 180" style="width: 130px; height: auto;">
-                                        <defs>
-                                            <marker id="arrowhead-marx" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                                                <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
-                                            </marker>
-                                        </defs>
-                                        <!-- Resistencia Vertical -->
-                                        <line x1="40" y1="20" x2="40" y2="40" stroke="#334155" stroke-width="2"/>
-                                        <polyline points="40,40 30,50 50,60 30,70 50,80 30,90 50,100 40,110" fill="none" stroke="#334155" stroke-width="2"/>
-                                        <text x="60" y="80" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155" id="svg-marx-r">1 MΩ</text>
-                                        <line x1="40" y1="110" x2="40" y2="130" stroke="#334155" stroke-width="2"/>
-                                        
-                                        <!-- Capacitor Horizontal -->
-                                        <line x1="40" y1="130" x2="80" y2="130" stroke="#334155" stroke-width="2"/>
-                                        <line x1="80" y1="110" x2="80" y2="150" stroke="#334155" stroke-width="2"/>
-                                        <line x1="90" y1="110" x2="90" y2="150" stroke="#334155" stroke-width="2"/>
-                                        <line x1="90" y1="130" x2="130" y2="130" stroke="#334155" stroke-width="2"/>
-                                        <text x="85" y="170" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155" text-anchor="middle" id="svg-marx-c">2 nF</text>
-                                        
-                                        <!-- Spark Gap Arrow (Diagonal) -->
-                                        <line x1="40" y1="130" x2="90" y2="60" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead-marx)"/>
-                                        
-                                        <!-- Nodos -->
-                                        <circle cx="40" cy="20" r="3" fill="#ffffff" stroke="#334155" stroke-width="2"/>
-                                        <circle cx="40" cy="130" r="3" fill="#334155"/>
-                                        <circle cx="130" cy="130" r="3" fill="#ffffff" stroke="#334155" stroke-width="2"/>
-                                    </svg>
+                                <div id="svg-marx-container" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: center; display: flex; justify-content: center; align-items: center; min-height: 200px;">
+                                    <!-- El SVG dinámico se inyectará aquí -->
                                 </div>
 
+                                <h4 style="margin: 15px 0 5px 0; color: #334155; font-size: 14px;">Por Etapa individual</h4>
                                 <div class="summary-item">
-                                    <span>Energía almacenada (E):</span>
+                                    <span>Energía (E):</span>
                                     <span class="value" id="res-marx-energia-etapa">1.60 J</span>
                                 </div>
                                 <div class="summary-item">
-                                    <span>Carga eléctrica (Q):</span>
+                                    <span>Carga (Q):</span>
                                     <span class="value" id="res-marx-carga-etapa">80.00 µC</span>
+                                </div>
+                                
+                                <h4 style="margin: 15px 0 5px 0; color: #334155; font-size: 14px;">Total del Generador</h4>
+                                <div class="summary-item" style="background-color: #fef2f2; border-left: 3px solid #ef4444;">
+                                    <span style="color: #991b1b; font-weight: bold;">Tensión de Salida:</span>
+                                    <span class="value" id="res-marx-voltaje-total" style="color: #991b1b; font-weight: bold;">160.0 kV</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Energía Total (E_tot):</span>
+                                    <span class="value" id="res-marx-energia-total">6.40 J</span>
                                 </div>
                             </div>
                         </div>
