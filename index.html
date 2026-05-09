@@ -263,6 +263,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                         <label>Número de Etapas (N) <span>Cantidad de niveles (2-10)</span></label>
                                         <input type="number" id="marx-etapas" value="4" step="1" min="2" max="10" oninput="calcularMarxPaso1()">
                                     </div>
+                                    <div class="form-group" style="flex: 1;">
+                                        <label>Tensión Fuente (V_in) <span>En kiloVoltios (kV)</span></label>
+                                        <input type="number" id="marx-vin-kv" value="30" step="1" min="1" oninput="calcularMarxPaso1()">
+                                    </div>
                                 </div>
                                 
                                 <div style="margin-top: 25px; padding: 15px; background: rgba(59, 130, 246, 0.05); border-left: 4px solid #3b82f6; border-radius: 4px;">

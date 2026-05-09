@@ -4791,21 +4791,25 @@ window.cambiarPasoMarx = function(paso) {
 
 window.calcularMarxPaso1 = function() {
     const C_nf = parseFloat(document.getElementById('marx-cap-nf').value) || 0;
-    const V_kv = parseFloat(document.getElementById('marx-volt-kv').value) || 0;
+    const V_nom_kv = parseFloat(document.getElementById('marx-volt-kv').value) || 0;
     const R_mohm = parseFloat(document.getElementById('marx-res-mohm').value) || 0;
     const etapas = parseInt(document.getElementById('marx-etapas').value) || 2;
+    const V_in_kv = parseFloat(document.getElementById('marx-vin-kv') ? document.getElementById('marx-vin-kv').value : 30) || 0;
+    
+    // Si la tensión de entrada supera la nominal, podríamos mostrar una alerta visual, pero por ahora solo calculamos
+    const V_real_kv = Math.min(V_in_kv, V_nom_kv); // O quizás asumimos que puede sobrecargar. Lo lógico es usar V_in_kv.
     
     // C en faradios: C_nf * 1e-9
-    // V en voltios: V_kv * 1000
-    const E_joules = 0.5 * (C_nf * 1e-9) * Math.pow(V_kv * 1000, 2);
-    const Q_coulombs = (C_nf * 1e-9) * (V_kv * 1000);
+    // V en voltios: V_in_kv * 1000
+    const E_joules = 0.5 * (C_nf * 1e-9) * Math.pow(V_in_kv * 1000, 2);
+    const Q_coulombs = (C_nf * 1e-9) * (V_in_kv * 1000);
     const Q_microcoulombs = Q_coulombs * 1e6;
     
     document.getElementById('res-marx-energia-etapa').innerText = E_joules.toFixed(2) + " J";
     document.getElementById('res-marx-carga-etapa').innerText = Q_microcoulombs.toFixed(2) + " µC";
     
     // Totales
-    const V_out_kv = V_kv * etapas;
+    const V_out_kv = V_in_kv * etapas;
     const E_total = E_joules * etapas;
     
     const elVoltajeTotal = document.getElementById('res-marx-voltaje-total');
