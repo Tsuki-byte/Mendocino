@@ -4794,7 +4794,7 @@ window.calcularMarxPaso1 = function() {
     const V_nom_kv = parseFloat(document.getElementById('marx-volt-kv').value) || 0;
     const R_mohm = parseFloat(document.getElementById('marx-res-mohm').value) || 0;
     const etapas = parseInt(document.getElementById('marx-etapas').value) || 2;
-    const V_in_kv = parseFloat(document.getElementById('marx-vin-kv') ? document.getElementById('marx-vin-kv').value : 30) || 0;
+    const V_in_kv = parseFloat(document.getElementById('marx-vin-kv') ? document.getElementById('marx-vin-kv').value : 5) || 0;
     
     // Si la tensión de entrada supera la nominal, podríamos mostrar una alerta visual, pero por ahora solo calculamos
     const V_real_kv = Math.min(V_in_kv, V_nom_kv); // O quizás asumimos que puede sobrecargar. Lo lógico es usar V_in_kv.
