@@ -1498,6 +1498,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                     <option value="">(Diseño actual de la calculadora en curso...)</option>
                                 </select>
                                 <button class="btn-tool" onclick="window.cargarProyectoEnInforme()" style="padding: 8px 15px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Generar Memoria</button>
+                                <button class="btn-tool" onclick="window.exportarPDF()" style="padding: 8px 15px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px;" title="Descargar como documento PDF">💾 Exportar a PDF</button>
                             </div>
                             
                             <label class="informe-label" for="informe-automatico-html">Memoria Técnica del Proyecto</label>
@@ -1731,5 +1732,39 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </script>
     <!-- Script para la Memoria Técnica (cache buster) -->
     <script src="inyectarMemoria.js?v=2.32"></script>
+    <!-- Script para html2pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        window.exportarPDF = function() {
+            const elemento = document.getElementById('informe-automatico-html');
+            if (!elemento || elemento.innerHTML.includes('El informe técnico aún no se ha generado')) {
+                alert('Por favor, genera primero la memoria técnica haciendo clic en "Generar Memoria" antes de exportar a PDF.');
+                return;
+            }
+            
+            // Ocultar temporalmente los bordes/scroll para que el PDF se vea limpio
+            const oldBorder = elemento.style.border;
+            const oldOverflow = elemento.style.overflowY;
+            const oldHeight = elemento.style.height;
+            elemento.style.border = 'none';
+            elemento.style.overflowY = 'visible';
+            elemento.style.height = 'auto';
+
+            const opciones = {
+                margin:       [15, 15, 15, 15],
+                filename:     'Memoria_Mendocino.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            // Generar y restaurar estilos al terminar
+            html2pdf().set(opciones).from(elemento).save().then(() => {
+                elemento.style.border = oldBorder;
+                elemento.style.overflowY = oldOverflow;
+                elemento.style.height = oldHeight;
+            });
+        };
+    </script>
 </body>
 </html>
