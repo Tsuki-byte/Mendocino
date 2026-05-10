@@ -2796,7 +2796,8 @@ function dibujarInteraccionLuminicaSVG() {
     const solY = cy + radioOrbita * Math.sin(anguloSolRad);
     
     // Dibujar la fuente de luz seleccionada
-    const tipoLuz = (EstadoDiseno.ensayo_data && EstadoDiseno.ensayo_data.luz) ? EstadoDiseno.ensayo_data.luz : 'halogena';
+    const selectLuz = document.getElementById('ensayo-fuente-luz');
+    const tipoLuz = selectLuz ? selectLuz.value : 'halogena';
     const iconoLuz = window.generarSVGIconoFuenteLuz(tipoLuz);
     
     const solGlow = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -5803,7 +5804,8 @@ function dibujarConexionado() {
         let solY = midRotorY - solDist * Math.cos(luzRad);
         
         // Dibujar la fuente de luz seleccionada
-        const tipoLuz = (EstadoDiseno.ensayo_data && EstadoDiseno.ensayo_data.luz) ? EstadoDiseno.ensayo_data.luz : 'halogena';
+        const selectLuz = document.getElementById('ensayo-fuente-luz');
+        const tipoLuz = selectLuz ? selectLuz.value : 'halogena';
         const iconoLuz = window.generarSVGIconoFuenteLuz(tipoLuz);
         
         let solGroup = `<g transform="translate(${solX}, ${solY}) rotate(${anguloLuz})">`;
@@ -6730,7 +6732,8 @@ function renderizarAnimacionDinamica() {
     const solY = cy + Math.sin(luz_rad) * radioOrbita;
     
     // Dibujar la fuente de luz seleccionada
-    const tipoLuz = (window.EstadoDiseno.ensayo_data && window.EstadoDiseno.ensayo_data.luz) ? window.EstadoDiseno.ensayo_data.luz : 'halogena';
+    const selectLuz = document.getElementById('ensayo-fuente-luz');
+    const tipoLuz = selectLuz ? selectLuz.value : 'halogena';
     const iconoLuz = window.generarSVGIconoFuenteLuz(tipoLuz);
     
     const solGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -7603,6 +7606,16 @@ function actualizarEsquemaEnsayo() {
     
     const tipoLuz = document.getElementById('ensayo-fuente-luz') ? document.getElementById('ensayo-fuente-luz').value : 'halogena';
     const distancia = document.getElementById('ensayo-distancia') ? document.getElementById('ensayo-distancia').value : 156;
+    
+    // Inmediatamente heredar la fuente de luz en el estado global para sincronizar todas las vistas
+    if (!window.EstadoDiseno) window.EstadoDiseno = {};
+    if (!window.EstadoDiseno.ensayo_data) window.EstadoDiseno.ensayo_data = {};
+    window.EstadoDiseno.ensayo_data.luz = tipoLuz;
+    
+    // Forzar el repintado de las demás pantallas donde aparezca la luz
+    if (typeof dibujarInteraccionLuminicaSVG === 'function') dibujarInteraccionLuminicaSVG();
+    if (typeof dibujarConexionado === 'function') dibujarConexionado();
+    if (typeof dibujarSimulacionDinamica === 'function') dibujarSimulacionDinamica();
     
     const fuente = window.generarSVGIconoFuenteLuz(tipoLuz);
     const svgFuenteLuz = `<g transform="translate(100, 25)">${fuente.svg}</g>`;
