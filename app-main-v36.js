@@ -3736,7 +3736,7 @@ function calcularOcupacionRanura() {
                                         <div class="proyecto-ficha__fila"><span>Panel</span><strong>${proyecto.ficha?.panel || proyecto.config?.panelNombre || '--'}</strong></div>
                                         <div class="proyecto-ficha__fila"><span>Hilo</span><strong>${proyecto.ficha?.hilo || (proyecto.config?.hilo ? (proyecto.config.hilo + ' mm') : '--')}</strong></div>
                                         <div class="proyecto-ficha__fila"><span>Espiras</span><strong>${proyecto.ficha?.espiras || proyecto.config?.resumen?.espiras || '--'}</strong></div>
-                                        <div class="proyecto-ficha__fila"><span>Velocidad</span><strong>${proyecto.ficha?.velocidad || proyecto.config?.resumen?.velocidadMax || '--'}</strong></div>
+                                        <div class="proyecto-ficha__fila"><span>Velocidad</span><strong>${proyecto.ficha?.velocidad || '-'}</strong></div>
                                         <div class="proyecto-ficha__fila"><span>Peso</span><strong>${proyecto.ficha?.peso || (proyecto.config?.resumen?.pesoReal && proyecto.config.resumen.pesoReal !== '0' ? (proyecto.config.resumen.pesoReal + ' g') : (proyecto.config?.resumen?.pesoCobre || proyecto.config?.resumen?.pesoTotal || '--'))}</strong></div>
                                     </div>
                                 </div>
