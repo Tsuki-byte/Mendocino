@@ -263,49 +263,8 @@ window.descargarSTL = function(tipo) {
 };
 
 window.cargarMotorY3D = function(proyecto) {
+    // Ya no se usa, redirigimos a la calculadora clásica
     cargarMotor(proyecto.config, proyecto.id_unico, proyecto.titulo);
-    
-    // Actualizar Visores 3D Independientes
-    const visorBase = document.getElementById('visor-3d-base');
-    const visorRotor = document.getElementById('visor-3d-rotor');
-    
-    if (visorBase) {
-        visorBase.src = proyecto.modelo_3d_base_url || "https://modelviewer.dev/shared-assets/models/Astronaut.glb";
-    }
-    if (visorRotor) {
-        visorRotor.src = proyecto.modelo_3d_rotor_url || "https://modelviewer.dev/shared-assets/models/Astronaut.glb";
-    }
-
-    // Actualizar botones STL
-    const btnBase = document.getElementById('btn-download-base');
-    const btnRotor = document.getElementById('btn-download-rotor');
-
-    window.urlsSTLActuales.base = proyecto.base_stl_url || null;
-    window.urlsSTLActuales.rotor = proyecto.rotor_stl_url || null;
-
-    if (btnBase) {
-        if (proyecto.base_stl_url) {
-            btnBase.style.opacity = '1';
-            btnBase.style.cursor = 'pointer';
-            btnBase.disabled = false;
-        } else {
-            btnBase.style.opacity = '0.5';
-            btnBase.style.cursor = 'not-allowed';
-            btnBase.disabled = true;
-        }
-    }
-
-    if (btnRotor) {
-        if (proyecto.rotor_stl_url) {
-            btnRotor.style.opacity = '1';
-            btnRotor.style.cursor = 'pointer';
-            btnRotor.disabled = false;
-        } else {
-            btnRotor.style.opacity = '0.5';
-            btnRotor.style.cursor = 'not-allowed';
-            btnRotor.disabled = true;
-        }
-    }
 };
 
 function cargarMotor(config, id_unico = null, titulo = null) {
@@ -3757,12 +3716,36 @@ function calcularOcupacionRanura() {
 
                                 <div class="proyecto-bloque proyecto-acciones">
                                     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-                                        <button class="btn-config" style="width: 100%; font-family: inherit !important; font-size:14px; height:42px; font-weight:700 !important; padding:0; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;" onclick='window.cargarMotorY3D(${JSON.stringify(proyecto).replace(/'/g, "&apos;")})'>⚙️ Cargar en calculadora</button>
+                                        <button class="btn-config" style="width: 100%; font-family: inherit !important; font-size:14px; height:42px; font-weight:700 !important; padding:0; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;" onclick='window.cargarMotor(${JSON.stringify(proyecto.config)}, "${proyecto.id_unico}", "${proyecto.titulo}")'>⚙️ Cargar en calculadora</button>
                                         <a href="${proyecto.video_url}" download class="btn-download" style="text-decoration:none; font-family: inherit !important; display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; height:42px; font-size:14px; font-weight:700 !important; padding:0; background-color:#10b981; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
                                             ⬇️ Descargar vídeo
                                         </a>
                                     </div>
                                 </div>
+                                
+                                ${(proyecto.modelo_3d_base_url || proyecto.modelo_3d_rotor_url || proyecto.base_stl_url || proyecto.rotor_stl_url) ? `
+                                <div class="proyecto-bloque" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:15px; margin-top:15px;">
+                                    <h4 style="margin-top:0; color:#1e40af; border-bottom:1px solid #cbd5e1; padding-bottom:8px;">🧊 Modelos 3D y Piezas (.STL)</h4>
+                                    
+                                    ${(proyecto.modelo_3d_base_url || proyecto.modelo_3d_rotor_url) ? `
+                                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                        ${proyecto.modelo_3d_base_url ? `
+                                        <div style="flex:1; border:1px solid #cbd5e1; border-radius:6px; overflow:hidden; background:#fff;">
+                                            <div style="font-size:11px; text-align:center; background:#e2e8f0; padding:4px; font-weight:bold; color:#475569;">Visor: Base</div>
+                                            <model-viewer src="${proyecto.modelo_3d_base_url}" auto-rotate camera-controls shadow-intensity="1" loading="lazy" style="width: 100%; height: 150px;"></model-viewer>
+                                        </div>` : ''}
+                                        ${proyecto.modelo_3d_rotor_url ? `
+                                        <div style="flex:1; border:1px solid #cbd5e1; border-radius:6px; overflow:hidden; background:#fff;">
+                                            <div style="font-size:11px; text-align:center; background:#e2e8f0; padding:4px; font-weight:bold; color:#475569;">Visor: Rotor</div>
+                                            <model-viewer src="${proyecto.modelo_3d_rotor_url}" auto-rotate camera-controls shadow-intensity="1" loading="lazy" style="width: 100%; height: 150px;"></model-viewer>
+                                        </div>` : ''}
+                                    </div>` : ''}
+
+                                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                                        ${proyecto.base_stl_url ? `<a href="${proyecto.base_stl_url}" target="_blank" class="btn-primary" style="text-decoration:none; display:flex; justify-content:center; gap:8px; font-size:13px; padding:8px; border-radius:6px;">📦 Descargar Base (.STL)</a>` : ''}
+                                        ${proyecto.rotor_stl_url ? `<a href="${proyecto.rotor_stl_url}" target="_blank" class="btn-primary" style="text-decoration:none; display:flex; justify-content:center; gap:8px; font-size:13px; padding:8px; border-radius:6px;">⚙️ Descargar Rotor (.STL)</a>` : ''}
+                                    </div>
+                                </div>` : ''}
                             </div>
                         </div>
                     `;

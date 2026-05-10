@@ -1748,46 +1748,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             <div style="display: flex; gap: 30px; flex-wrap: wrap;">
                 
-                <!-- Sección Izquierda: 3D y Descargas -->
-                <div style="flex: 1; min-width: 300px;">
-                    <h3 style="color: #1e40af; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📦 Piezas 3D (.STL / .GLB)</h3>
-                    
-                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                        <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-                            <h4 style="margin: 0; padding: 10px; background: #e2e8f0; text-align: center; font-size: 14px; color: #1e293b;">Visor: Base</h4>
-                            <model-viewer id="visor-3d-base"
-                                src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" 
-                                alt="Visor 3D Base" 
-                                auto-rotate camera-controls shadow-intensity="1"
-                                style="width: 100%; height: 200px; background-color: #f1f5f9;">
-                            </model-viewer>
-                        </div>
-                        <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-                            <h4 style="margin: 0; padding: 10px; background: #e2e8f0; text-align: center; font-size: 14px; color: #1e293b;">Visor: Eje y Rotor</h4>
-                            <model-viewer id="visor-3d-rotor"
-                                src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" 
-                                alt="Visor 3D Rotor" 
-                                auto-rotate camera-controls shadow-intensity="1"
-                                style="width: 100%; height: 200px; background-color: #f1f5f9;">
-                            </model-viewer>
-                        </div>
-                    </div>
-                    <div style="text-align: center; margin-bottom: 15px;">
-                        <span style="font-size: 13px; color: #64748b;">*Modelos interactivos. Arrastra para rotar, haz scroll para zoom.</span>
-                    </div>
-
-                    <div style="display: flex; gap: 10px; flex-direction: column;">
-                        <button id="btn-download-base" class="btn-primary" style="display: flex; justify-content: center; gap: 10px; opacity: 0.5; cursor: not-allowed;" onclick="descargarSTL('base')" disabled>
-                            <span style="font-size: 16px;">⬇️</span> Descargar Base del Motor (.STL)
-                        </button>
-                        <button id="btn-download-rotor" class="btn-primary" style="display: flex; justify-content: center; gap: 10px; opacity: 0.5; cursor: not-allowed;" onclick="descargarSTL('rotor')" disabled>
-                            <span style="font-size: 16px;">⬇️</span> Descargar Eje y Rotor (.STL)
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Sección Derecha: Materiales y Manual -->
-                <div style="flex: 1.5; min-width: 400px; display: flex; flex-direction: column; gap: 30px;">
+                <!-- Sección: Materiales y Manual -->
+                <div style="width: 100%; display: flex; flex-direction: column; gap: 30px;">
                     
                     <!-- Lista de Materiales -->
                     <div>
