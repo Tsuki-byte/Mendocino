@@ -3743,7 +3743,7 @@ function calcularOcupacionRanura() {
 
                                 ${proyecto.notas ? `
                                 <div class="proyecto-bloque">
-                                    <h4>🧠 Notas técnicas anexas</h4>
+                                    <h4>📝 Créditos y Autoría</h4>
                                     <ul>
                                         ${proyecto.notas.map(nota => `<li>${nota}</li>`).join('')}
                                     </ul>
