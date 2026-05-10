@@ -412,6 +412,7 @@
                     <div class="table-toolbar">
                         <p style="margin:0; color:#64748b;">Aquí aparecen todos los motores guardados en el sistema.</p>
                         <input type="file" id="upload-video-input" accept="video/mp4" style="display:none" onchange="procesarSubidaVideo(this)">
+                        <input type="file" id="upload-3d-input" accept=".glb,.gltf,.stl" style="display:none" onchange="procesarSubida3D(this)">
                     </div>
                     <div id="contenedor-lista-motores-admin"></div>
                 </div>
@@ -796,6 +797,15 @@
                                         <button class="btn-icon" title="Subir o cambiar vídeo" onclick="solicitarSubidaVideo('${m.id}', '${m.id_unico}')">
                                             📁
                                         </button>
+                                        <button class="btn-icon" title="Subir Modelo 3D Interactivo (.glb)" onclick="solicitarSubida3D('${m.id}', '${m.id_unico}', 'modelo_3d_url', '.glb,.gltf')">
+                                            🧊
+                                        </button>
+                                        <button class="btn-icon" title="Subir STL Base (.stl)" onclick="solicitarSubida3D('${m.id}', '${m.id_unico}', 'base_stl_url', '.stl')">
+                                            📦
+                                        </button>
+                                        <button class="btn-icon" title="Subir STL Rotor/Eje (.stl)" onclick="solicitarSubida3D('${m.id}', '${m.id_unico}', 'rotor_stl_url', '.stl')">
+                                            ⚙️
+                                        </button>
                                         <button class="btn-action" style="background:${m.es_publico ? '#64748b' : '#3b82f6'}; font-size:11px; padding:5px 10px;" onclick="togglePublico('${m.id}', ${m.es_publico}, '${m.config?.panelNombre}', '${m.config?.hilo}')">
                                             ${m.es_publico ? 'Quitar' : 'Hacer Público'}
                                         </button>
@@ -889,6 +899,86 @@
                 input.value = ''; // Limpiar input
                 idProyectoEnSubida = null;
                 idUnicoEnSubida = null;
+            }
+        }
+
+        let tipoColumnaSubida3D = null;
+
+        function solicitarSubida3D(id, idUnico, columna, acceptTypes) {
+            idProyectoEnSubida = id;
+            idUnicoEnSubida = idUnico;
+            tipoColumnaSubida3D = columna;
+            
+            const input = document.getElementById('upload-3d-input');
+            input.accept = acceptTypes;
+            input.click();
+        }
+
+        async function procesarSubida3D(input) {
+            if (!input.files || input.files.length === 0 || !idProyectoEnSubida || !tipoColumnaSubida3D) return;
+            const archivo = input.files[0];
+            
+            const extension = archivo.name.split('.').pop().toLowerCase();
+            
+            // Validar tamaño (p.ej. 20MB)
+            if (archivo.size > 20 * 1024 * 1024) {
+                mostrarToast('El archivo 3D supera los 20MB permitidos', 'error');
+                return;
+            }
+
+            const elProgreso = document.getElementById(`progress-${idProyectoEnSubida}`);
+            const elBarra = document.getElementById(`bar-${idProyectoEnSubida}`);
+            const elStatus = document.getElementById(`status-${idProyectoEnSubida}`);
+            
+            if (elProgreso) elProgreso.style.display = 'block';
+
+            try {
+                // Generar nombre de archivo basado en el ID único y el tipo de columna
+                const prefijo = tipoColumnaSubida3D.replace('_url', '');
+                const nombreLimpio = `${idUnicoEnSubida}_${prefijo}.${extension}`;
+                const ruta = `modelos_3d/${nombreLimpio}`; // Guardaremos todo en una carpeta modelos_3d dentro de motores
+
+                // 1. Subir al Storage (Bucket: motores)
+                const { data, error: uploadError } = await dbMendocinoClient.storage
+                    .from('motores')
+                    .upload(ruta, archivo, { 
+                        cacheControl: '3600',
+                        upsert: true 
+                    });
+
+                if (uploadError) throw uploadError;
+
+                // 2. Obtener URL Pública
+                const { data: { publicUrl } } = dbMendocinoClient.storage
+                    .from('motores')
+                    .getPublicUrl(ruta);
+
+                // 3. Actualizar la base de datos dinámica
+                const actualizaciones = {};
+                actualizaciones[tipoColumnaSubida3D] = publicUrl;
+
+                const { error: dbError } = await dbMendocinoClient
+                    .from('motores')
+                    .update(actualizaciones)
+                    .eq('id', idProyectoEnSubida);
+
+                if (dbError) throw dbError;
+
+                if (elBarra) elBarra.style.width = '100%';
+                if (elStatus) elStatus.textContent = '¡Completado!';
+                mostrarToast('Archivo 3D subido y vinculado correctamente', 'ok');
+                
+                setTimeout(() => cargarTodosLosMotores(), 1500);
+
+            } catch (e) {
+                console.error("Error en subida 3D:", e);
+                mostrarToast('Error en la subida: ' + e.message, 'error');
+                if (elStatus) elStatus.textContent = 'Error';
+            } finally {
+                input.value = ''; // Limpiar input
+                idProyectoEnSubida = null;
+                idUnicoEnSubida = null;
+                tipoColumnaSubida3D = null;
             }
         }
 
