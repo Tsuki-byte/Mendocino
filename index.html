@@ -1754,7 +1754,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     
                     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
                         <!-- Aquí va el visor 3D, usaremos un cubo de prueba hasta tener tus archivos -->
-                        <model-viewer 
+                        <model-viewer id="visor-3d-mendo"
                             src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" 
                             alt="Visor 3D" 
                             auto-rotate 
@@ -1763,15 +1763,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             style="width: 100%; height: 250px; background-color: #f1f5f9;">
                         </model-viewer>
                         <div style="padding: 15px; text-align: center; border-top: 1px solid #e2e8f0;">
-                            <span style="font-size: 13px; color: #64748b; margin-bottom: 10px; display: block;">*Ejemplo interactivo. Arrastra para rotar, haz scroll para zoom.</span>
+                            <span id="visor-3d-text" style="font-size: 13px; color: #64748b; margin-bottom: 10px; display: block;">*Ejemplo interactivo. Arrastra para rotar, haz scroll para zoom.</span>
                         </div>
                     </div>
 
                     <div style="display: flex; gap: 10px; flex-direction: column;">
-                        <button class="btn-primary" style="display: flex; justify-content: center; gap: 10px;">
+                        <button id="btn-download-base" class="btn-primary" style="display: flex; justify-content: center; gap: 10px; opacity: 0.5; cursor: not-allowed;" onclick="descargarSTL('base')" disabled>
                             <span style="font-size: 16px;">⬇️</span> Descargar Base del Motor (.STL)
                         </button>
-                        <button class="btn-primary" style="display: flex; justify-content: center; gap: 10px;">
+                        <button id="btn-download-rotor" class="btn-primary" style="display: flex; justify-content: center; gap: 10px; opacity: 0.5; cursor: not-allowed;" onclick="descargarSTL('rotor')" disabled>
                             <span style="font-size: 16px;">⬇️</span> Descargar Eje y Rotor (.STL)
                         </button>
                     </div>

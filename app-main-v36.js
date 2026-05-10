@@ -251,7 +251,59 @@ function cargarScriptsSecuencialmente(contenedor) {
                 boton.addEventListener('click', () => cambiarPagina(boton.dataset.page));
             });
         }
+window.urlsSTLActuales = { base: null, rotor: null };
 
+window.descargarSTL = function(tipo) {
+    const url = window.urlsSTLActuales[tipo];
+    if (url) {
+        window.open(url, '_blank');
+    } else {
+        alert("El archivo STL no está disponible para este diseño.");
+    }
+};
+
+window.cargarMotorY3D = function(proyecto) {
+    cargarMotor(proyecto.config, proyecto.id_unico, proyecto.titulo);
+    
+    // Actualizar Visor 3D
+    const visor = document.getElementById('visor-3d-mendo');
+    if (visor && proyecto.modelo_3d_url) {
+        visor.src = proyecto.modelo_3d_url;
+    } else if (visor) {
+        visor.src = "https://modelviewer.dev/shared-assets/models/Astronaut.glb"; // Placeholder si no hay
+    }
+
+    // Actualizar botones STL
+    const btnBase = document.getElementById('btn-download-base');
+    const btnRotor = document.getElementById('btn-download-rotor');
+
+    window.urlsSTLActuales.base = proyecto.base_stl_url || null;
+    window.urlsSTLActuales.rotor = proyecto.rotor_stl_url || null;
+
+    if (btnBase) {
+        if (proyecto.base_stl_url) {
+            btnBase.style.opacity = '1';
+            btnBase.style.cursor = 'pointer';
+            btnBase.disabled = false;
+        } else {
+            btnBase.style.opacity = '0.5';
+            btnBase.style.cursor = 'not-allowed';
+            btnBase.disabled = true;
+        }
+    }
+
+    if (btnRotor) {
+        if (proyecto.rotor_stl_url) {
+            btnRotor.style.opacity = '1';
+            btnRotor.style.cursor = 'pointer';
+            btnRotor.disabled = false;
+        } else {
+            btnRotor.style.opacity = '0.5';
+            btnRotor.style.cursor = 'not-allowed';
+            btnRotor.disabled = true;
+        }
+    }
+};
 
 function cargarMotor(config, id_unico = null, titulo = null) {
     if (!config) {
@@ -3656,7 +3708,7 @@ function calcularOcupacionRanura() {
 
                                 <div class="proyecto-bloque proyecto-acciones">
                                     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-                                        <button class="btn-config" style="width: 100%; font-family: inherit !important; font-size:14px; height:42px; font-weight:700 !important; padding:0; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;" onclick='cargarMotor(${JSON.stringify(proyecto.config)})'>⚙️ Cargar en calculadora</button>
+                                        <button class="btn-config" style="width: 100%; font-family: inherit !important; font-size:14px; height:42px; font-weight:700 !important; padding:0; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;" onclick='window.cargarMotorY3D(${JSON.stringify(proyecto).replace(/'/g, "&apos;")})'>⚙️ Cargar en calculadora</button>
                                         <a href="${proyecto.video_url}" download class="btn-download" style="text-decoration:none; font-family: inherit !important; display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; height:42px; font-size:14px; font-weight:700 !important; padding:0; background-color:#10b981; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
                                             ⬇️ Descargar vídeo
                                         </a>
