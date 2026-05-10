@@ -1021,6 +1021,7 @@
             document.getElementById('edit-motor-id').value = motor.id;
             document.getElementById('edit-motor-titulo').value = motor.titulo || '';
             document.getElementById('edit-motor-subtitulo').value = motor.subtitulo || '';
+            document.getElementById('edit-motor-autor').value = motor.autor_nombre || '';
             document.getElementById('edit-motor-explicacion').value = motor.explicacion || '';
             document.getElementById('edit-motor-etiquetas').value = (motor.etiquetas || []).join(', ');
             document.getElementById('edit-motor-notas').value = (motor.notas || []).join(', ');
@@ -1036,6 +1037,7 @@
             const id = document.getElementById('edit-motor-id').value;
             const titulo = document.getElementById('edit-motor-titulo').value;
             const subtitulo = document.getElementById('edit-motor-subtitulo').value;
+            const autor_nombre = document.getElementById('edit-motor-autor').value;
             const explicacion = document.getElementById('edit-motor-explicacion').value;
             const etiquetasStr = document.getElementById('edit-motor-etiquetas').value;
             const notasStr = document.getElementById('edit-motor-notas').value;
@@ -1056,6 +1058,7 @@
                     .update({
                         titulo,
                         subtitulo,
+                        autor_nombre,
                         explicacion,
                         etiquetas,
                         notas
@@ -1106,6 +1109,10 @@
                 <div class="edit-form-group">
                     <label>Subtítulo / Versión</label>
                     <input type="text" id="edit-motor-subtitulo" placeholder="Ej: v2.1 Prototipo">
+                </div>
+                <div class="edit-form-group">
+                    <label>Nombre del Creador / Autor</label>
+                    <input type="text" id="edit-motor-autor" placeholder="Ej: Carlos Millán">
                 </div>
                 <div class="edit-form-group">
                     <label>Comentario Técnico (Explicación)</label>
