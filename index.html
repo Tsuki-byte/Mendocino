@@ -24,8 +24,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     
     <title>Motor Mendocino - Calculadora y Datos</title>
-        <link rel="stylesheet" href="styles.css?v=35.35">
-
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css?v=35.35">
+    
+    <!-- Model Viewer for 3D Previews -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -191,6 +194,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <button class="nav-tab active" id="tab-calc" data-page="calc">⚙️ Calculadora</button>
                 <button class="nav-tab" id="tab-db" data-page="db">🗄️ Componentes</button>
                 <button class="nav-tab" id="tab-videos" data-page="videos">🚀 Proyectos</button>
+                <button class="nav-tab" id="tab-montaje" data-page="montaje">🛠️ Montaje e Impresión 3D</button>
                 <button class="nav-tab" onclick="window.open('Manual_Mendocino.html', '_blank')" title="Abrir el Manual de Ayuda en una nueva pestaña">📖 Ayuda / Manual</button>
             </div>
             
@@ -1730,6 +1734,72 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <h2>🚀 Proyectos de Motores</h2>
             <p>Explora diseños reales, entiende por qué se comportan así y valora tus favoritos.</p>
             <div id="contenedor-proyectos" class="proyectos-grid"></div>
+        </div>
+    </div>
+
+    <div id="page-montaje" class="page-container">
+        <div class="panel-contenedor">
+            <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 28px;">🛠️</span> Montaje e Impresión 3D
+            </h2>
+            <p style="color: #64748b; font-size: 15px; margin-bottom: 30px;">
+                Descarga las piezas en 3D para tu impresora, revisa la lista de materiales necesarios y sigue las instrucciones para ensamblar tu motor Mendocino.
+            </p>
+
+            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                
+                <!-- Sección Izquierda: 3D y Descargas -->
+                <div style="flex: 1; min-width: 300px;">
+                    <h3 style="color: #1e40af; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📦 Piezas 3D (.STL / .GLB)</h3>
+                    
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                        <!-- Aquí va el visor 3D, usaremos un cubo de prueba hasta tener tus archivos -->
+                        <model-viewer 
+                            src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" 
+                            alt="Visor 3D" 
+                            auto-rotate 
+                            camera-controls 
+                            shadow-intensity="1"
+                            style="width: 100%; height: 250px; background-color: #f1f5f9;">
+                        </model-viewer>
+                        <div style="padding: 15px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <span style="font-size: 13px; color: #64748b; margin-bottom: 10px; display: block;">*Ejemplo interactivo. Arrastra para rotar, haz scroll para zoom.</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; flex-direction: column;">
+                        <button class="btn-primary" style="display: flex; justify-content: center; gap: 10px;">
+                            <span style="font-size: 16px;">⬇️</span> Descargar Base del Motor (.STL)
+                        </button>
+                        <button class="btn-primary" style="display: flex; justify-content: center; gap: 10px;">
+                            <span style="font-size: 16px;">⬇️</span> Descargar Eje y Rotor (.STL)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sección Derecha: Materiales y Manual -->
+                <div style="flex: 1.5; min-width: 400px; display: flex; flex-direction: column; gap: 30px;">
+                    
+                    <!-- Lista de Materiales -->
+                    <div>
+                        <h3 style="color: #1e40af; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📋 Listado de Materiales (BOM)</h3>
+                        <div id="montaje-materiales-container" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+                            <p style="color: #64748b; font-style: italic;">Esperando los datos del Word...</p>
+                            <!-- Aquí inyectaremos la tabla de materiales con enlaces de compra -->
+                        </div>
+                    </div>
+
+                    <!-- Manual de Montaje -->
+                    <div>
+                        <h3 style="color: #1e40af; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📖 Instrucciones de Ensamblaje</h3>
+                        <div id="montaje-instrucciones-container" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+                            <p style="color: #64748b; font-style: italic;">Esperando los textos y fotos del Word...</p>
+                            <!-- Aquí inyectaremos el manual paso a paso -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
 
