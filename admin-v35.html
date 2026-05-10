@@ -1025,6 +1025,7 @@
             document.getElementById('edit-motor-explicacion').value = motor.explicacion || '';
             document.getElementById('edit-motor-etiquetas').value = (motor.etiquetas || []).join(', ');
             document.getElementById('edit-motor-notas').value = (motor.notas || []).join(', ');
+            document.getElementById('edit-motor-velocidad').value = motor.ficha?.velocidad || '';
 
             document.getElementById('modal-edicion-motor').style.display = 'flex';
         }
@@ -1041,10 +1042,19 @@
             const explicacion = document.getElementById('edit-motor-explicacion').value;
             const etiquetasStr = document.getElementById('edit-motor-etiquetas').value;
             const notasStr = document.getElementById('edit-motor-notas').value;
+            const velocidadStr = document.getElementById('edit-motor-velocidad').value.trim();
 
             // Procesar etiquetas y notas
             const etiquetas = etiquetasStr.split(',').map(s => s.trim()).filter(s => s !== '');
             const notas = notasStr.split(',').map(s => s.trim()).filter(s => s !== '');
+
+            const motor = listaMotoresLocal.find(m => m.id == id);
+            const ficha = motor.ficha || {};
+            if (velocidadStr !== '') {
+                ficha.velocidad = velocidadStr;
+            } else {
+                delete ficha.velocidad;
+            }
 
             const btnSave = document.querySelector('.btn-save');
             const originalText = btnSave.textContent;
@@ -1061,7 +1071,8 @@
                         autor_nombre,
                         explicacion,
                         etiquetas,
-                        notas
+                        notas,
+                        ficha
                     })
                     .eq('id', id)
                     .select();
@@ -1125,6 +1136,10 @@
                 <div class="edit-form-group">
                     <label>Notas Técnicas (separadas por comas)</label>
                     <textarea id="edit-motor-notas" placeholder="Ej: Rotor equilibrado, Bobinado artesanal..."></textarea>
+                </div>
+                <div class="edit-form-group">
+                    <label>Velocidad Real (Mano)</label>
+                    <input type="text" id="edit-motor-velocidad" placeholder="Ej: 3500 RPM">
                 </div>
             </div>
             <div class="modal-edit-footer">
