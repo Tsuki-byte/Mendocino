@@ -4472,6 +4472,20 @@ function aplicarNivelUsuario() {
         indicador.style.display = 'flex';
     });
 
+    // Control de la pestaña de Montaje e Impresión 3D
+    const tabMontaje = document.getElementById('tab-montaje');
+    if (tabMontaje) {
+        if (usuarioActual.nivel === 'basico') {
+            tabMontaje.style.opacity = '0.4';
+            tabMontaje.style.pointerEvents = 'none';
+            tabMontaje.title = 'Requiere nivel Avanzado o Experto';
+        } else {
+            tabMontaje.style.opacity = '1';
+            tabMontaje.style.pointerEvents = 'auto';
+            tabMontaje.title = '';
+        }
+    }
+
     aplicarVisibilidadPorNivel();
     actualizarMensajeNivel();
 
