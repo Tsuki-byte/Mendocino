@@ -2723,6 +2723,61 @@ function calcularPasoLuminico() {
     }
 }
 
+// Función global para unificar el dibujo de la fuente de luz
+window.generarSVGIconoFuenteLuz = function(tipoLuz) {
+    let svg = '';
+    let color = '#fef08a';
+    
+    if (tipoLuz === 'sol') {
+        svg = '<text x="0" y="0" font-size="28" text-anchor="middle" dominant-baseline="central">☀️</text>';
+        color = '#fde047';
+    } else if (tipoLuz === 'incandescente') {
+        svg = '<text x="0" y="0" font-size="28" text-anchor="middle" dominant-baseline="central" transform="rotate(180)">💡</text>';
+        color = '#fef08a';
+    } else if (tipoLuz === 'halogena') {
+        svg = `
+            <g transform="translate(-15, -15)">
+                <line x1="10" y1="0" x2="10" y2="8" stroke="#94a3b8" stroke-width="2" />
+                <line x1="20" y1="0" x2="20" y2="8" stroke="#94a3b8" stroke-width="2" />
+                <polygon points="10,8 20,8 30,25 0,25" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5" />
+                <polygon points="12,10 18,10 26,24 4,24" fill="#f1f5f9" />
+                <circle cx="15" cy="18" r="4" fill="#fef08a" />
+            </g>`;
+        color = '#fef08a';
+    } else if (tipoLuz === 'fluorescente') {
+        svg = `
+            <g transform="translate(-40, -6)">
+                <rect x="0" y="0" width="80" height="12" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" />
+                <rect x="-2" y="1" width="4" height="10" fill="#cbd5e1" stroke="#64748b" stroke-width="1" />
+                <rect x="78" y="1" width="4" height="10" fill="#cbd5e1" stroke="#64748b" stroke-width="1" />
+                <line x1="10" y1="4" x2="70" y2="4" stroke="#ffffff" stroke-width="2" opacity="0.8" />
+            </g>`;
+        color = '#e2e8f0';
+    } else if (tipoLuz === 'led') {
+        svg = `
+            <g transform="translate(-10, -15)">
+                <line x1="7" y1="0" x2="7" y2="12" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="13" y1="0" x2="13" y2="12" stroke="#94a3b8" stroke-width="1.5" />
+                <rect x="4" y="12" width="12" height="3" fill="#bfdbfe" stroke="#60a5fa" stroke-width="1" />
+                <path d="M 4,15 L 4,22 Q 10,32 16,22 L 16,15 Z" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.5" />
+                <circle cx="10" cy="20" r="2.5" fill="#93c5fd" />
+            </g>`;
+        color = '#bfdbfe';
+    } else {
+        svg = `<circle cx="0" cy="0" r="14" fill="#f1c40f" stroke="#f39c12" stroke-width="1.5"/>`;
+        for(let i=0; i<8; i++) {
+            let a = i * Math.PI / 4;
+            let x1 = 18 * Math.cos(a);
+            let y1 = 18 * Math.sin(a);
+            let x2 = 24 * Math.cos(a);
+            let y2 = 24 * Math.sin(a);
+            svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#f39c12" stroke-width="2" stroke-linecap="round"/>`;
+        }
+        color = '#f1c40f';
+    }
+    return { svg, color };
+};
+
 function dibujarInteraccionLuminicaSVG() {
     const svg = document.getElementById('luminico-svg');
     if (!svg || !window.estadoLuminico) return;
@@ -2740,21 +2795,13 @@ function dibujarInteraccionLuminicaSVG() {
     const solX = cx + radioOrbita * Math.cos(anguloSolRad);
     const solY = cy + radioOrbita * Math.sin(anguloSolRad);
     
-    // Brillo del Sol
-    const solGlow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    solGlow.setAttribute('cx', solX); solGlow.setAttribute('cy', solY);
-    solGlow.setAttribute('r', 18); solGlow.setAttribute('fill', 'url(#sunGradient)');
+    // Dibujar la fuente de luz seleccionada
+    const tipoLuz = (EstadoDiseno.ensayo_data && EstadoDiseno.ensayo_data.luz) ? EstadoDiseno.ensayo_data.luz : 'halogena';
+    const iconoLuz = window.generarSVGIconoFuenteLuz(tipoLuz);
     
-    // Gradiente para el sol si no existe lo creamos
-    let defs = svg.querySelector('defs');
-    if(!defs){
-        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        svg.appendChild(defs);
-        const grad = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
-        grad.setAttribute('id', 'sunGradient');
-        grad.innerHTML = '<stop offset="0%" stop-color="#fff700"/><stop offset="100%" stop-color="#f39c12"/>';
-        defs.appendChild(grad);
-    }
+    const solGlow = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    solGlow.setAttribute('transform', `translate(${solX}, ${solY}) rotate(${luz}) scale(1.2)`);
+    solGlow.innerHTML = iconoLuz.svg;
     svg.appendChild(solGlow);
 
     // Rayos direccionales (siguen al sol)
@@ -5755,17 +5802,12 @@ function dibujarConexionado() {
         let solX = midRotorX + solDist * Math.sin(luzRad);
         let solY = midRotorY - solDist * Math.cos(luzRad);
         
-        // Dibujar el icono del Sol
-        let solGroup = `<g transform="translate(${solX}, ${solY})">`;
-        solGroup += `<circle cx="0" cy="0" r="10" fill="#f1c40f" stroke="#f39c12" stroke-width="1.5"/>`;
-        for(let i=0; i<8; i++) {
-            let a = i * Math.PI / 4;
-            let x1 = 13 * Math.cos(a);
-            let y1 = 13 * Math.sin(a);
-            let x2 = 18 * Math.cos(a);
-            let y2 = 18 * Math.sin(a);
-            solGroup += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#f39c12" stroke-width="2" stroke-linecap="round"/>`;
-        }
+        // Dibujar la fuente de luz seleccionada
+        const tipoLuz = (EstadoDiseno.ensayo_data && EstadoDiseno.ensayo_data.luz) ? EstadoDiseno.ensayo_data.luz : 'halogena';
+        const iconoLuz = window.generarSVGIconoFuenteLuz(tipoLuz);
+        
+        let solGroup = `<g transform="translate(${solX}, ${solY}) rotate(${anguloLuz})">`;
+        solGroup += iconoLuz.svg;
         solGroup += `</g>`;
         html3d += solGroup;
         
@@ -5823,13 +5865,33 @@ function dibujarConexionado() {
             let strokeW = isFrontFacing ? 1.5 : 1;
             
             if (isHighlighted) {
-                fill = isFrontFacing ? "rgba(44, 62, 80, 0.95)" : "rgba(52, 152, 219, 0.85)";
-                stroke = isFrontFacing ? "#1a252f" : "#2980b9";
+                fill = isFrontFacing ? "#3b82f6" : "rgba(59, 130, 246, 0.85)";
+                stroke = isFrontFacing ? "#1e40af" : "#2563eb";
                 strokeW = 2;
             }
             
             const pts = `${vFront[i].x},${vFront[i].y} ${vFront[next].x},${vFront[next].y} ${vBack[next].x},${vBack[next].y} ${vBack[i].x},${vBack[i].y}`;
             html3d += `<polygon points="${pts}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeW}" stroke-linejoin="round"/>`;
+            
+            // Dibujar rejilla (grid) de la placa solar si está iluminada/seleccionada
+            if (isHighlighted && isFrontFacing) {
+                // Línea central a lo largo
+                let mxFront = (vFront[i].x + vFront[next].x) / 2;
+                let myFront = (vFront[i].y + vFront[next].y) / 2;
+                let mxBack = (vBack[i].x + vBack[next].x) / 2;
+                let myBack = (vBack[i].y + vBack[next].y) / 2;
+                html3d += `<line x1="${mxFront}" y1="${myFront}" x2="${mxBack}" y2="${myBack}" stroke="#93c5fd" stroke-width="1.5" opacity="0.7"/>`;
+                
+                // Líneas transversales
+                for (let j = 1; j <= 3; j++) {
+                    let f = j / 4;
+                    let p1x = vFront[i].x + (vBack[i].x - vFront[i].x) * f;
+                    let p1y = vFront[i].y + (vBack[i].y - vFront[i].y) * f;
+                    let p2x = vFront[next].x + (vBack[next].x - vFront[next].x) * f;
+                    let p2y = vFront[next].y + (vBack[next].y - vFront[next].y) * f;
+                    html3d += `<line x1="${p1x}" y1="${p1y}" x2="${p2x}" y2="${p2y}" stroke="#93c5fd" stroke-width="1.5" opacity="0.7"/>`;
+                }
+            }
         };
         
         // 3. Dibujar caras TRASERAS
@@ -6039,12 +6101,29 @@ function dibujarConexionado() {
     
     let html = '';
     
-    // Backgrounds for panels
-    html += `<rect x="${cx - pw/2}" y="${ty - ph/2}" width="${pw}" height="${ph}" fill="#2c3e50" rx="4"/>`;
-    html += `<text x="${cx}" y="${ty + 4}" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">C${caraTop}</text>`;
-    
-    html += `<rect x="${cx - pw/2}" y="${by - ph/2}" width="${pw}" height="${ph}" fill="#2c3e50" rx="4"/>`;
-    html += `<text x="${cx}" y="${by + 4}" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">C${caraBot}</text>`;
+    // Función para dibujar panel solar 2D con rejilla
+    const drawSolarPanel2D = (x, y, label) => {
+        let pHtml = `<rect x="${x - pw/2}" y="${y - ph/2}" width="${pw}" height="${ph}" fill="#3b82f6" rx="4" stroke="#1e40af" stroke-width="1.5"/>`;
+        // Rejilla de células
+        const cols = 5;
+        const rows = 2;
+        const cellW = pw / cols;
+        const cellH = ph / rows;
+        for (let i = 1; i < cols; i++) {
+            pHtml += `<line x1="${x - pw/2 + i*cellW}" y1="${y - ph/2}" x2="${x - pw/2 + i*cellW}" y2="${y + ph/2}" stroke="#93c5fd" stroke-width="1"/>`;
+        }
+        for (let i = 1; i < rows; i++) {
+            pHtml += `<line x1="${x - pw/2}" y1="${y - ph/2 + i*cellH}" x2="${x + pw/2}" y2="${y - ph/2 + i*cellH}" stroke="#93c5fd" stroke-width="1"/>`;
+        }
+        // Etiqueta con fondo semitransparente para mejor legibilidad
+        pHtml += `<rect x="${x - 14}" y="${y - 8}" width="28" height="16" fill="rgba(0,0,0,0.5)" rx="3"/>`;
+        pHtml += `<text x="${x}" y="${y + 4}" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">C${label}</text>`;
+        return pHtml;
+    };
+
+    // Dibujar los dos paneles
+    html += drawSolarPanel2D(cx, ty, caraTop);
+    html += drawSolarPanel2D(cx, by, caraBot);
     
     // Terminals on Top Panel
     // Left (Positive - Red)
@@ -6650,31 +6729,15 @@ function renderizarAnimacionDinamica() {
     const solX = cx + Math.cos(luz_rad) * radioOrbita;
     const solY = cy + Math.sin(luz_rad) * radioOrbita;
     
-    // Gradiente para el sol si no existe lo creamos
-    let defs = svg.querySelector('defs');
-    if(!defs){
-        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        svg.appendChild(defs);
-    }
+    // Dibujar la fuente de luz seleccionada
+    const tipoLuz = (window.EstadoDiseno.ensayo_data && window.EstadoDiseno.ensayo_data.luz) ? window.EstadoDiseno.ensayo_data.luz : 'halogena';
+    const iconoLuz = window.generarSVGIconoFuenteLuz(tipoLuz);
     
-    let grad = svg.querySelector('#sunGradientDinamica');
-    if(!grad){
-        grad = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
-        grad.setAttribute('id', 'sunGradientDinamica');
-        defs.appendChild(grad);
-    }
-    
-    if (animacionCorriendo) {
-        grad.innerHTML = '<stop offset="0%" stop-color="#fff700"/><stop offset="100%" stop-color="#f39c12"/>';
-    } else {
-        grad.innerHTML = '<stop offset="0%" stop-color="#e2e8f0"/><stop offset="100%" stop-color="#94a3b8"/>';
-    }
-
     const solGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    const sol = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    sol.setAttribute("cx", solX); sol.setAttribute("cy", solY);
-    sol.setAttribute("r", 25); sol.setAttribute("fill", "url(#sunGradientDinamica)");
-    solGroup.appendChild(sol);
+    solGroup.setAttribute("transform", `translate(${solX}, ${solY}) scale(1.5) rotate(${luz_deg})`);
+    if (!animacionCorriendo) solGroup.setAttribute("opacity", "0.3");
+    solGroup.innerHTML = iconoLuz.svg;
+    svg.appendChild(solGroup);
     
     // Rayos direccionales (paralelos)
     if (animacionCorriendo) {
@@ -7541,60 +7604,9 @@ function actualizarEsquemaEnsayo() {
     const tipoLuz = document.getElementById('ensayo-fuente-luz') ? document.getElementById('ensayo-fuente-luz').value : 'halogena';
     const distancia = document.getElementById('ensayo-distancia') ? document.getElementById('ensayo-distancia').value : 156;
     
-    let svgFuenteLuz = '';
-    let colorRayo = '#fef08a';
-    
-    if (tipoLuz === 'sol') {
-        svgFuenteLuz = '<text x="100" y="30" font-size="28" text-anchor="middle" dominant-baseline="central">☀️</text>';
-        colorRayo = '#fde047';
-    } else if (tipoLuz === 'incandescente') {
-        // La incandescente usa ahora el emoji de bombilla normal (antigua halógena) rotado 180 grados
-        svgFuenteLuz = '<text x="100" y="30" font-size="28" text-anchor="middle" dominant-baseline="central" transform="rotate(180, 100, 30)">💡</text>';
-        colorRayo = '#fef08a';
-    } else if (tipoLuz === 'halogena') {
-        // Halógena Dicroica apuntando hacia abajo
-        svgFuenteLuz = `
-            <g transform="translate(85, 10)">
-                <!-- Pines -->
-                <line x1="10" y1="0" x2="10" y2="8" stroke="#94a3b8" stroke-width="2" />
-                <line x1="20" y1="0" x2="20" y2="8" stroke="#94a3b8" stroke-width="2" />
-                <!-- Cono -->
-                <polygon points="10,8 20,8 30,25 0,25" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5" />
-                <!-- Reflector interno -->
-                <polygon points="12,10 18,10 26,24 4,24" fill="#f1f5f9" />
-                <!-- Bulbo interno -->
-                <circle cx="15" cy="18" r="4" fill="#fef08a" />
-            </g>`;
-        colorRayo = '#fef08a';
-    } else if (tipoLuz === 'fluorescente') {
-        // Tubo fluorescente horizontal
-        svgFuenteLuz = `
-            <g transform="translate(60, 20)">
-                <!-- Tubo -->
-                <rect x="0" y="0" width="80" height="12" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" />
-                <!-- Casquillos -->
-                <rect x="-2" y="1" width="4" height="10" fill="#cbd5e1" stroke="#64748b" stroke-width="1" />
-                <rect x="78" y="1" width="4" height="10" fill="#cbd5e1" stroke="#64748b" stroke-width="1" />
-                <!-- Brillo -->
-                <line x1="10" y1="4" x2="70" y2="4" stroke="#ffffff" stroke-width="2" opacity="0.8" />
-            </g>`;
-        colorRayo = '#e2e8f0';
-    } else if (tipoLuz === 'led') {
-        // Diodo LED 5mm apuntando hacia abajo
-        svgFuenteLuz = `
-            <g transform="translate(90, 8)">
-                <!-- Patas -->
-                <line x1="7" y1="0" x2="7" y2="12" stroke="#94a3b8" stroke-width="1.5" />
-                <line x1="13" y1="0" x2="13" y2="12" stroke="#94a3b8" stroke-width="1.5" />
-                <!-- Base plana -->
-                <rect x="4" y="12" width="12" height="3" fill="#bfdbfe" stroke="#60a5fa" stroke-width="1" />
-                <!-- Cápsula epoxi -->
-                <path d="M 4,15 L 4,22 Q 10,32 16,22 L 16,15 Z" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.5" />
-                <!-- Cristal central -->
-                <circle cx="10" cy="20" r="2.5" fill="#93c5fd" />
-            </g>`;
-        colorRayo = '#bfdbfe';
-    }
+    const fuente = window.generarSVGIconoFuenteLuz(tipoLuz);
+    const svgFuenteLuz = `<g transform="translate(100, 25)">${fuente.svg}</g>`;
+    const colorRayo = fuente.color;
     
     // Panel Solar (80x16)
     const px = 60, py = 97, pw = 80, ph = 16;
