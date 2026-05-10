@@ -265,12 +265,15 @@ window.descargarSTL = function(tipo) {
 window.cargarMotorY3D = function(proyecto) {
     cargarMotor(proyecto.config, proyecto.id_unico, proyecto.titulo);
     
-    // Actualizar Visor 3D
-    const visor = document.getElementById('visor-3d-mendo');
-    if (visor && proyecto.modelo_3d_url) {
-        visor.src = proyecto.modelo_3d_url;
-    } else if (visor) {
-        visor.src = "https://modelviewer.dev/shared-assets/models/Astronaut.glb"; // Placeholder si no hay
+    // Actualizar Visores 3D Independientes
+    const visorBase = document.getElementById('visor-3d-base');
+    const visorRotor = document.getElementById('visor-3d-rotor');
+    
+    if (visorBase) {
+        visorBase.src = proyecto.modelo_3d_base_url || "https://modelviewer.dev/shared-assets/models/Astronaut.glb";
+    }
+    if (visorRotor) {
+        visorRotor.src = proyecto.modelo_3d_rotor_url || "https://modelviewer.dev/shared-assets/models/Astronaut.glb";
     }
 
     // Actualizar botones STL

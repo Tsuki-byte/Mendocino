@@ -797,8 +797,11 @@
                                         <button class="btn-icon" title="Subir o cambiar vídeo" onclick="solicitarSubidaVideo('${m.id}', '${m.id_unico}')">
                                             📁
                                         </button>
-                                        <button class="btn-icon" title="Subir Modelo 3D Interactivo (.glb)" onclick="solicitarSubida3D('${m.id}', '${m.id_unico}', 'modelo_3d_url', '.glb,.gltf')">
+                                        <button class="btn-icon" title="Subir GLB Base (Visor 3D)" onclick="solicitarSubida3D('${m.id}', '${m.id_unico}', 'modelo_3d_base_url', '.glb,.gltf')">
                                             🧊
+                                        </button>
+                                        <button class="btn-icon" title="Subir GLB Rotor (Visor 3D)" onclick="solicitarSubida3D('${m.id}', '${m.id_unico}', 'modelo_3d_rotor_url', '.glb,.gltf')">
+                                            💎
                                         </button>
                                         <button class="btn-icon" title="Subir STL Base (.stl)" onclick="solicitarSubida3D('${m.id}', '${m.id_unico}', 'base_stl_url', '.stl')">
                                             📦
