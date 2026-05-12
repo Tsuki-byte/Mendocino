@@ -812,6 +812,9 @@
                                         <button class="btn-action" style="background:${m.es_publico ? '#64748b' : '#3b82f6'}; font-size:11px; padding:5px 10px;" onclick="togglePublico('${m.id}', ${m.es_publico}, '${m.config?.panelNombre}', '${m.config?.hilo}')">
                                             ${m.es_publico ? 'Quitar' : 'Hacer Público'}
                                         </button>
+                                        <button class="btn-icon btn-danger-icon" title="Eliminar Motor" style="color:#ef4444;" onclick="eliminarMotorDesdePanel('${m.id}', '${escaparTexto(m.titulo)}')">
+                                            🗑️
+                                        </button>
                                     </div>
                                     <div id="progress-${m.id}" style="display:none; margin-top:5px;">
                                         <div style="width:100%; height:4px; background:#e2e8f0; border-radius:2px; overflow:hidden;">
@@ -1002,6 +1005,21 @@
                 cargarTodosLosMotores();
             } catch (e) {
                 mostrarToast('Error: ' + e.message, 'error');
+            }
+        }
+
+        async function eliminarMotorDesdePanel(id, titulo) {
+            if (!confirm(`¿Estás seguro de que quieres eliminar DEFINITIVAMENTE el motor "${titulo}"? Esta acción no se puede deshacer.`)) {
+                return;
+            }
+
+            try {
+                const { error } = await dbMendocinoClient.from('motores').delete().eq('id', id);
+                if (error) throw error;
+                mostrarToast('Motor eliminado correctamente', 'ok');
+                cargarTodosLosMotores();
+            } catch (e) {
+                mostrarToast('Error al eliminar el motor: ' + e.message, 'error');
             }
         }
 
