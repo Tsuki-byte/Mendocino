@@ -861,7 +861,8 @@
             try {
                 // Generar nombre de archivo basado en el ID único
                 const extension = archivo.name.split('.').pop();
-                const nombreLimpio = `${idUnicoEnSubida}.${extension}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9.\-_]/g, "_");
+                const timestamp = new Date().getTime();
+                const nombreLimpio = `${idUnicoEnSubida}_${timestamp}.${extension}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9.\-_]/g, "_");
                 const ruta = `videos/${nombreLimpio}`;
 
                 // 1. Subir al Storage (Bucket: motores)
@@ -879,13 +880,11 @@
                 const { data: { publicUrl } } = dbMendocinoClient.storage
                     .from('motores')
                     .getPublicUrl(ruta);
-                
-                const urlUnica = `${publicUrl}?t=${new Date().getTime()}`;
 
                 // 3. Actualizar la base de datos
                 const { error: dbError } = await dbMendocinoClient
                     .from('motores')
-                    .update({ video_url: urlUnica })
+                    .update({ video_url: publicUrl })
                     .eq('id', idProyectoEnSubida);
 
                 if (dbError) throw dbError;
@@ -940,7 +939,8 @@
             try {
                 // Generar nombre de archivo basado en el ID único y el tipo de columna
                 const prefijo = tipoColumnaSubida3D.replace('_url', '');
-                const nombreLimpio = `${idUnicoEnSubida}_${prefijo}.${extension}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9.\-_]/g, "_");
+                const timestamp = new Date().getTime();
+                const nombreLimpio = `${idUnicoEnSubida}_${prefijo}_${timestamp}.${extension}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9.\-_]/g, "_");
                 const ruta = `modelos_3d/${nombreLimpio}`; // Guardaremos todo en una carpeta modelos_3d dentro de motores
 
                 // 1. Subir al Storage (Bucket: motores)
@@ -957,12 +957,10 @@
                 const { data: { publicUrl } } = dbMendocinoClient.storage
                     .from('motores')
                     .getPublicUrl(ruta);
-                
-                const urlUnica = `${publicUrl}?t=${new Date().getTime()}`;
 
                 // 3. Actualizar la base de datos dinámica
                 const actualizaciones = {};
-                actualizaciones[tipoColumnaSubida3D] = urlUnica;
+                actualizaciones[tipoColumnaSubida3D] = publicUrl;
 
                 const { error: dbError } = await dbMendocinoClient
                     .from('motores')
