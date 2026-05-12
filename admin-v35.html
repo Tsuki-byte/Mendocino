@@ -879,11 +879,13 @@
                 const { data: { publicUrl } } = dbMendocinoClient.storage
                     .from('motores')
                     .getPublicUrl(ruta);
+                
+                const urlUnica = `${publicUrl}?t=${new Date().getTime()}`;
 
                 // 3. Actualizar la base de datos
                 const { error: dbError } = await dbMendocinoClient
                     .from('motores')
-                    .update({ video_url: publicUrl })
+                    .update({ video_url: urlUnica })
                     .eq('id', idProyectoEnSubida);
 
                 if (dbError) throw dbError;
@@ -955,10 +957,12 @@
                 const { data: { publicUrl } } = dbMendocinoClient.storage
                     .from('motores')
                     .getPublicUrl(ruta);
+                
+                const urlUnica = `${publicUrl}?t=${new Date().getTime()}`;
 
                 // 3. Actualizar la base de datos dinámica
                 const actualizaciones = {};
-                actualizaciones[tipoColumnaSubida3D] = publicUrl;
+                actualizaciones[tipoColumnaSubida3D] = urlUnica;
 
                 const { error: dbError } = await dbMendocinoClient
                     .from('motores')

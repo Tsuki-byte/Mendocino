@@ -3717,9 +3717,7 @@ function calcularOcupacionRanura() {
                                 <div class="proyecto-bloque proyecto-acciones">
                                     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
                                         <button class="btn-config" style="width: 100%; font-family: inherit !important; font-size:14px; height:42px; font-weight:700 !important; padding:0; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;" onclick='window.cargarMotor(${JSON.stringify(proyecto.config)}, "${proyecto.id_unico}", "${proyecto.titulo}")'>⚙️ Cargar en calculadora</button>
-                                        <a href="${proyecto.video_url}" download class="btn-download" style="text-decoration:none; font-family: inherit !important; display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; height:42px; font-size:14px; font-weight:700 !important; padding:0; background-color:#10b981; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
-                                            ⬇️ Descargar vídeo
-                                        </a>
+                                        ${proyecto.video_url ? `<a href="${proyecto.video_url}${proyecto.video_url.includes('?') ? '&' : '?'}download=${encodeURIComponent(proyecto.titulo.replace(/[^a-zA-Z0-9]/g, '_') + '_video.mp4')}" download="${proyecto.titulo.replace(/[^a-zA-Z0-9]/g, '_')}_video.mp4" class="btn-download" style="text-decoration:none; font-family: inherit !important; display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; height:42px; font-size:14px; font-weight:700 !important; padding:0; background-color:#10b981; color: white; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">⬇️ Descargar vídeo</a>` : ''}
                                     </div>
                                 </div>
                                 
@@ -3742,8 +3740,8 @@ function calcularOcupacionRanura() {
                                     </div>` : ''}
 
                                     <div style="display: flex; flex-direction: column; gap: 8px;">
-                                        ${proyecto.base_stl_url ? `<a href="${proyecto.base_stl_url}" target="_blank" class="btn-primary" style="text-decoration:none; display:flex; justify-content:center; gap:8px; font-size:13px; padding:8px; border-radius:6px;">📦 Descargar Base (.STL)</a>` : ''}
-                                        ${proyecto.rotor_stl_url ? `<a href="${proyecto.rotor_stl_url}" target="_blank" class="btn-primary" style="text-decoration:none; display:flex; justify-content:center; gap:8px; font-size:13px; padding:8px; border-radius:6px;">⚙️ Descargar Rotor (.STL)</a>` : ''}
+                                        ${proyecto.base_stl_url ? `<a href="${proyecto.base_stl_url}${proyecto.base_stl_url.includes('?') ? '&' : '?'}download=${encodeURIComponent(proyecto.titulo.replace(/[^a-zA-Z0-9]/g, '_') + '_base.stl')}" download="${proyecto.titulo.replace(/[^a-zA-Z0-9]/g, '_')}_base.stl" class="btn-primary" style="text-decoration:none; display:flex; justify-content:center; gap:8px; font-size:13px; padding:8px; border-radius:6px;">📦 Descargar Base (.STL)</a>` : ''}
+                                        ${proyecto.rotor_stl_url ? `<a href="${proyecto.rotor_stl_url}${proyecto.rotor_stl_url.includes('?') ? '&' : '?'}download=${encodeURIComponent(proyecto.titulo.replace(/[^a-zA-Z0-9]/g, '_') + '_rotor.stl')}" download="${proyecto.titulo.replace(/[^a-zA-Z0-9]/g, '_')}_rotor.stl" class="btn-primary" style="text-decoration:none; display:flex; justify-content:center; gap:8px; font-size:13px; padding:8px; border-radius:6px;">⚙️ Descargar Rotor (.STL)</a>` : ''}
                                     </div>
                                 </div>` : ''}
                             </div>
