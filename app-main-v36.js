@@ -3674,7 +3674,7 @@ function calcularOcupacionRanura() {
                         <div class="proyecto-card" ${esMio ? 'style="border: 2px solid #3b82f6;"' : ''}>
                             <div class="proyecto-card__media">
                                 <video controls preload="metadata" loading="lazy">
-                                    <source src="${proyecto.video_url || ''}" type="video/mp4">
+                                    <source src="${proyecto.video_url ? proyecto.video_url + '#t=0.1' : ''}" type="video/mp4">
                                     Tu navegador no soporta el video.
                                 </video>
                             </div>
