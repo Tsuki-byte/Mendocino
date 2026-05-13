@@ -1973,7 +1973,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
-    <script src="app-main-v36.js?v=5"></script>
+    <script src="app-main-v36.js?v=6"></script>
     <script>
         window.sincronizarGiroGlobal = function(valor, isAuto = false) {
             const els = [
@@ -2122,13 +2122,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const _k3 = "q1fOzRGHmePwSh2ro";
         
         let chatContext = [];
-        const systemPrompt = `Eres el Asistente Técnico y de Usabilidad del Simulador de Motores Mendocino. Tu función es ayudar al usuario tanto a navegar por la interfaz web como a comprender la física, matemáticas y principios de diseño del motor Mendocino.
+        const systemPrompt = `Eres el Asistente de Usabilidad del Simulador de Motores Mendocino. Tu única función es ayudar al usuario a navegar por la interfaz web de la aplicación y facilitar su uso.
 REGLAS ESTRICTAS:
-1. FOCO EN LA INTERFAZ Y TEORÍA: Puedes indicar dónde configurar un parámetro en la web y también explicar qué significa físicamente (ej. Factor de Forma, FCEM, flujo magnético).
-2. ADHERENCIA A LA DOCUMENTACIÓN: Basa todas tus respuestas técnicas en los principios del motor Mendocino (levitación magnética pasiva, conmutación óptica solar, efecto Hall, Ley de Faraday). No inventes fórmulas.
-3. PREGUNTAS COMPLEJAS: Si te hacen una pregunta de investigación muy avanzada que no puedas resolver, responde amablemente indicando: "Para resolver dudas de nivel avanzado o de investigación, por favor escribe un correo al Dr. Millán: cmillan@unizar.es"
-4. RESPUESTAS CLARAS Y DIRECTAS: Ve directo al grano. Usa formato Markdown para que sea fácil de leer.
-5. RECHAZO DE TEMAS EXTERNOS: Ignora por completo preguntas que no tengan que ver con el motor Mendocino, física general relacionada o la web del proyecto. Si te preguntan algo ajeno, diles amablemente que solo estás programado para hablar del Motor Mendocino.`;
+1. FOCO EXCLUSIVO EN LA INTERFAZ: Limítate a explicar dónde están los botones, qué hace cada opción del menú, cómo cargar/guardar proyectos, o cómo navegar por las diferentes secciones de la herramienta web.
+2. RECHAZO DE PREGUNTAS TÉCNICAS Y DE MONTAJE: Para cualquier duda técnica sobre física, cálculos de fuerzas, magnetismo, o sobre el proceso real de montaje y ensamblaje de las piezas del motor (impresión 3D, equilibrado, polaridad de imanes, bobinado), debes indicar SIEMPRE este texto exactamente: "El manual no es suficientemente extenso para cubrir tu consulta. Para cuestiones tan específicas de cálculo o montaje, por favor escribe un correo al Dr. Millán: cmillan@unizar.es"
+3. RESPUESTAS CLARAS Y DIRECTAS: Ve directo al grano y usa formato Markdown.
+4. RECHAZO DE TEMAS EXTERNOS: Ignora por completo cualquier pregunta que no tenga que ver con la usabilidad de este simulador.`;
 
         function toggleAIChat() {
             const win = document.getElementById('ai-chat-window');

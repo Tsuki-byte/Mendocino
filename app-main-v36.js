@@ -149,7 +149,7 @@ window.ejecutarAuth = async function() {
 
 const CONFIG_NIVELES = {
     basico: {
-        pasosPermitidos: [1, 2, 3, 4],
+        pasosPermitidos: [1, 2, 3],
         puedeVerPasoMagnetico: false,
         puedeVerPasoFCEM: false,
         puedeVerInforme: false
@@ -9111,3 +9111,55 @@ window.cargarProyectoEnInforme = function() {
         }, 500);
     }
 };
+
+// --- SISTEMA DE REGISTRO DE VISITAS ---
+document.addEventListener('DOMContentLoaded', () => {
+    let idVisitaActual = null;
+    const horaEntrada = new Date();
+
+    async function registrarEntrada() {
+        // Esperamos a que el cliente de Supabase esté inicializado
+        let intentos = 0;
+        while (!window.dbMendocinoClient && intentos < 10) {
+            await new Promise(r => setTimeout(r, 500));
+            intentos++;
+        }
+        
+        if (!window.dbMendocinoClient) return;
+
+        let usuarioId = null;
+        if (window.sessionActiva && window.sessionActiva.user) {
+            usuarioId = window.sessionActiva.user.id;
+        } else {
+            // Re-verificamos la sesión actual por si tardó en cargar
+            const { data } = await window.dbMendocinoClient.auth.getUser();
+            if (data && data.user) usuarioId = data.user.id;
+        }
+
+        const { data, error } = await window.dbMendocinoClient
+            .from('registro_visitas')
+            .insert([{ hora_entrada: horaEntrada.toISOString(), usuario_id: usuarioId }])
+            .select();
+            
+        if (data && data.length > 0) {
+            idVisitaActual = data[0].id;
+        }
+    }
+
+    // Iniciar el registro con un ligero retraso para asegurar que la autenticación ha cargado
+    setTimeout(registrarEntrada, 1000);
+
+    // Actualizar el tiempo al salir de la página
+    window.addEventListener('beforeunload', () => {
+        if (idVisitaActual && window.dbMendocinoClient) {
+            const horaSalida = new Date();
+            const tiempoSegundos = Math.round((horaSalida - horaEntrada) / 1000);
+            
+            window.dbMendocinoClient
+                .from('registro_visitas')
+                .update({ hora_salida: horaSalida.toISOString(), tiempo_total_segundos: tiempoSegundos })
+                .eq('id', idVisitaActual)
+                .then(() => {}); 
+        }
+    });
+});
