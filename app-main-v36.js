@@ -4975,6 +4975,7 @@ window.cambiarPasoMarx = function(paso) {
                 {left: "$", right: "$", display: false},
                 {left: "\\(", right: "\\)", display: false}
             ]
+        });
     }
 };
 
