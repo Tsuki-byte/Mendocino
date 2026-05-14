@@ -5703,7 +5703,7 @@ async function renderizarPasoMagpylib() {
                 <h4 style="margin: 0 0 10px 0; color: #f87171; display: flex; align-items: center; gap: 8px;">
                     ⚠️ Error de conexión
                 </h4>
-                <p style="margin: 0; font-size: 13px; color: #ccc;">¿Está corriendo el servidor Python (<code>magpylib_api.py</code>)?</p>
+                <p style="margin: 0; font-size: 13px; color: #ccc;">¿El servidor remoto de Render está suspendido? Espera ~50s e inténtalo de nuevo.</p>
                 <div style="margin-top: 10px; font-size: 11px; color: #888; font-family: monospace; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 4px;">
                     Detalles: ${error.message}
                 </div>
@@ -8465,7 +8465,7 @@ async function ejecutarMagpylibLevitacion() {
         }
         
     } catch (error) {
-        contenedor.innerHTML = `<div style="padding: 15px; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">Error: ${error.message}. ¿Está corriendo el servidor Python?</div>`;
+        contenedor.innerHTML = `<div style="padding: 15px; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">Error: ${error.message}. El servidor remoto en Render podría estar arrancando, espera 1 minuto y vuelve a intentar.</div>`;
     }
 }
 
