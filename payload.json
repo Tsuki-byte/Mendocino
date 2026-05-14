@@ -1,0 +1,1 @@
+{"imanes_sustentacion":[{"dimension":[5,10,20],"posicion":[-50,-20,10],"magnetizacion":[1200,0,0],"rotacion":{"angle":0,"axis":"x","anchor":[-50,-20,0]}}],"imanes_rotor":[{"x":-50,"y":0,"z":20,"r":10,"w":5,"pol_x":1200}],"rotor_weight_N":0.5,"style_2d":"scifi"}

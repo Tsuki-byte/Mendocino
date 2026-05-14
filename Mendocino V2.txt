@@ -1,0 +1,146 @@
+MOTOR SOLAR MENDOCINO
+
+
+
+Manual de Montaje: Motor Solar Mendocino 
+1. Introducción
+Un Motor Mendocino es un excelente ejemplo de física aplicada, electromagnetismo y energía solar experimentando además con levitación magnética y circuitos simples.
+Este dispositivo es un motor eléctrico solar que utiliza levitación magnética para reducir el rozamiento. Una vez montado, el rotor flotará sobre la base y girará indefinidamente bajo la luz del sol o una luz artificial potente.
+2. Advertencias de Seguridad 
+	•	Riesgo de Lesiones: Evita que los imanes choquen entre sí sin control; el impacto puede atrapar la piel o hacer saltar fragmentos del imán.
+	•	Piezas Pequeñas: Mantener fuera del alcance de niños pequeños (riesgo de asfixia).
+3. Materiales
+
+A
+
+Base Mendocino impreso
+Fichero de impresión 3D: Base Medocino 4 caras 53 x 18.stl
+B
+
+Bloque magnético, N42, longitud 40 mm, ancho 20 mm y alto 5 mm
+
+C
+
+Bloque magnético, N42, longitud 30 mm, ancho 10 mm y alto 5 mm
+
+D
+
+Cristal de muestras de microscopio con cantos esmerilados
+
+E
+
+Rotor motor mendocino impreso
+                 Fichero de impresión 3D: Mendocino 4 caras 53x18.stl
+F
+
+panel Solar, módulo de silicio policristalino, 53X18, 0,5 V, 160MA
+G
+
+Eje 3mm y longitud de 130mm  
+H
+
+ 4 Adaptadores eje imán impreso
+Fichero de impresión 3D:  Eje 3 mm iman 10x5x5.stl
+I
+
+Aro magnético, N42, fuerza 2,5 kg, diámetro exterior 10 mm, interior 4 mm, alto 5 mm
+J
+
+Hilo de cobre Ø 0,3 mm esmaltado
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4. Herramientas Necesarias 
+Para completar el montaje necesitarás:
+	•	Pegamento
+	•	Soldador de estaño y estaño.
+	•	Tijeras o cortahílos. 
+	•	Lija fina (para ajustar piezas impresas y quitar el esmalte del hilo de los bobinados).
+
+5. Instrucciones de Montaje Paso a Paso
+
+Fase 1: Preparación de la Base
+
+	•	Instalación del Cristal (D): Localiza la ranura vertical en uno de los extremos de la Base Impresa (A). Aplica una gota pequeña de pegamento e inserta los dos cristales de muestras (D) juntos. Servirán como punto de apoyo de bajo rozamiento para el eje. Son muy frágiles, por eso usaremos dos (uno sobre otro). Aunque sus cantos están esmerilados, ten cuidado para no cortarte.
+	•	Colocación de Imanes de Base (B y C):
+	•	Inserta el Bloque Magnético "Grande" (B) (40x20x5 mm) en su hueco correspondiente en la base. No importa la polaridad de montaje, ya que cambiarla únicamente invierte el sentido del giro.
+	•	Inserta los Bloques Magnéticos Pequeños (C) (30x10x5 mm) en los huecos superiores de la Base Impresa (A) que servirán para sustentar el rotor. Una vez insertados, ajusta la altura para que sea igual en todos ellos.
+	•	Nota sobre Polaridad: Es vital tener en cuenta la posición de los imanes del rotor respecto a los de la base para que la sustentación sea correcta. Los polos opuestos se atraen y los iguales se repelen.
+                                 Repulsión			                  Atracción
+                              
+
+	•	Si los imanes (B) o (C) quedan holgados, asegúralos con una gota de pegamento. De lo contrario, al aproximar otros elementos magnéticos, podrían salirse y causar pellizcos o romperse.
+
+
+
+
+
+A - Base impresa
+B - Imán (40x20x5mm)
+C – imanes (30x10x5mm) x4
+D – Cristal de muestras x2
+
+
+Fase 2: Montaje del Rotor
+
+	•	Ensamblaje del Eje: Introduce el Eje de 3 mm (G) a través del Rotor Mendocino Impreso (E). Asegúrate de que quede perfectamente centrado (misma distancia de eje sobrante a cada lado).
+	•	Nota: Previamente al montaje, hay que afilar el eje en uno de sus extremos para que la superficie de contacto con el cristal sea la menor posible, reduciendo así el rozamiento durante el giro, cuanto más fina sea la punta, menos fricción habrá, pero asegúrate de que la punta quede centrada, no desviada hacia un lado
+	•	Colocación de Imanes del Rotor: Coloca los 4 Adaptadores (H) en el eje, dos a cada lado del rotor, intercalando un Aro Magnético (I) entre cada par de adaptadores (H). Desliza el imán y los adaptadores a lo largo del eje para ajustar la posición correcta.
+	•	Polaridad: Antes de fijarlos definitivamente, acércalos a la base. Los imanes del rotor deben REPELER a los imanes de la base para crear la levitación. Si notas atracción, dales la vuelta a los aros magnéticos.
+ I 
+ I 
+E
+E
+G
+G
+H
+H
+H
+H
+
+Fase 3: Montaje de los Paneles Solares
+	•	Primero, suelda unos cables de unos 5 cm para realizar las conexiones eléctricas del panel solar (rojo para el positivo, negro para el negativo).
+	•	Inserta los Paneles Solares (F) en las caras del rotor impreso, deslizándolos desde los laterales hacia el centro.
+	•	Antes de encajarlos del todo, asegúrate de pasar los cables soldados por los agujeros hacia la cara donde está insertado el eje, donde luego realizaremos las conexiones eléctricas.
+Fase 4: El Bobinado (La parte eléctrica)
+
+
+	•	Preparación: Deja unos 5 cm de Hilo de cobre (J) libre antes de empezar a enrollar.
+	•	Bobinado 1: Enrolla el hilo alrededor del rotor en una dirección. Da 68 vueltas manteniendo la tensión del hilo. No aprietes tanto el hilo que deformes el eje impreso en 3D, pero tampoco lo dejes flojo.
+   Para que el peso del rotor esté mejor repartido y el giro sea más equilibrado, puedes pasar las espiras pares por un lado del eje y las impares por el opuesto. Si en número de espiras de los dos devanados no es el mismo, el motor estará desequilibrado eléctrica y mecánicamente (vibrará).
+Deja 5 cm al final y corta.
+	•	Bobinado 2: Repite el proceso en las ranuras opuestas, cruzando sobre la primera bobina. Usa la misma cantidad de vueltas.
+	•	Limpieza: Quita el esmalte de los extremos de los cables con la lija para poder soldarlos (el cobre debe verse brillante).
+
+Fase 5: Conexiones eléctricas. 
+
+	•	Soldadura: Debes conectar los paneles a las bobinas.
+	•	El panel de "arriba" debe alimentar la bobina que está en posición vertical en ese momento.
+	•	Suelda los cables siguiendo el esquema del circuito (generalmente Panel A positivo con Bobina 1 inicio, Panel A negativo con Bobina 1 final, etc., asegurando que la corriente fluya para generar el campo magnético correcto).
+
+Fase 6: Ajuste Final y Levitación
+	•	Coloca el rotor sobre la base. La punta afilada del eje debe tocar suavemente el Cristal (D).
+	•	Los imanes deben sostener el peso del rotor en el aire (levitación).
+	•	Si el rotor salta o se gira violentamente hacia abajo, revisa la polaridad de los imanes (deben repelerse).
+	•	Colócalo bajo luz solar directa. Dale un pequeño empujón inicial con la mano. ¡Debería empezar a acelerar!
+
+
+6. Solución de Problemas
+	•	El rotor no gira: ¿Hay suficiente luz? La luz interior de una casa suele ser demasiado débil; usa un foco halógeno o luz solar directa.
+	•	El rotor vibra pero no arranca: Revisa el equilibrado. Si una bobina tiene más hilo o estaño que la otra, el rotor pesará más de un lado. Agrega pequeñas gotas de pegamento o cinta en el lado ligero para equilibrar el peso.
+	•	El rotor se pega a la base: Los imanes no están en repulsión. Dales la vuelta a los aros del rotor.
+
+

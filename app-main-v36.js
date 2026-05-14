@@ -4446,6 +4446,10 @@ function cambiarPaso(numPaso) {
         return;
     }
 
+    if (typeof cambiarPagina === 'function') {
+        cambiarPagina('calc');
+    }
+
     document.querySelectorAll('.step-container').forEach(step => step.classList.remove('active'));
     document.querySelectorAll('.step-indicator').forEach(ind => ind.classList.remove('active'));
 
