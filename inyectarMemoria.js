@@ -605,7 +605,7 @@ function inyectarMemoriaTecnica() {
 
 <h2>3. ESTUDIO ANALÍTICO DESARROLLADO: "${N} Caras - Placas ${L.toFixed(1)}x${W.toFixed(1)}x${T.toFixed(1)} - Hilo ${diametroHilo.toFixed(3)}"</h2>
 
-<p>A petición del usuario, desarrollaremos paso a paso los números detrás de un diseño característico alojado en la base de datos pública del simulador.</p>
+<p>A continuación, se desarrolla paso a paso el estudio analítico con los parámetros geométricos y eléctricos exactos del modelo que se encuentra actualmente configurado en la calculadora.</p>
 
 <details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
     <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
