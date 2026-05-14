@@ -1236,6 +1236,134 @@ def calculate_global_forces():
         traceback.print_exc()
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+@app.route('/api/magpylib-tesla', methods=['POST'])
+def calculate_tesla_coil():
+    try:
+        data = request.json
+        sec_data = data.get('secondary', {})
+        pri_data = data.get('primary', {})
+        c_topload = data.get('topload_capacitance_pF', 0)
+        
+        # Sec parameters
+        r_sec = sec_data.get('radius_mm', 55)
+        h_sec = sec_data.get('height_mm', 435)
+        n_sec = sec_data.get('turns', 1827)
+        rw_sec = sec_data.get('wire_radius_mm', 0.1)
+        
+        # Pri parameters
+        r_pri = pri_data.get('radius_mm', 100)
+        h_pri = pri_data.get('height_mm', 50)
+        n_pri = pri_data.get('turns', 5)
+        rw_pri = pri_data.get('wire_radius_mm', 2.0)
+        z_pri = pri_data.get('z_offset_mm', 0)
+        
+        # Calculations Secondary
+        d_sec = r_sec * 2
+        l_cable_sec = np.pi * n_sec * (d_sec + 2*rw_sec) / 1000.0 # meters
+        A_sec = np.pi * (rw_sec/1000.0)**2
+        R_sec = 1.7e-8 * l_cable_sec / A_sec if A_sec > 0 else 0
+        
+        # Wheeler inductance (metric)
+        L_sec_uH = (r_sec**2 * n_sec**2) / (25.4 * (9*r_sec + 10*h_sec)) if (9*r_sec + 10*h_sec) > 0 else 0
+        L_sec = L_sec_uH * 1e-6
+        
+        # Medhurst Capacitance
+        if d_sec > 0:
+            h_D = h_sec / d_sec
+            C_sec_pF = (d_sec / 10.0) * (0.1126 * h_D + 0.08 + 0.27 / np.sqrt(h_D))
+        else:
+            C_sec_pF = 0
+            
+        C_total_pF = C_sec_pF + c_topload
+        C_total = C_total_pF * 1e-12
+        
+        f_res = 1 / (2 * np.pi * np.sqrt(L_sec * C_total)) if L_sec * C_total > 0 else 0
+        
+        # Calculations Primary
+        d_pri = r_pri * 2
+        l_cable_pri = np.pi * n_pri * (d_pri + 2*rw_pri) / 1000.0
+        A_pri = np.pi * (rw_pri/1000.0)**2
+        R_pri = 1.7e-8 * l_cable_pri / A_pri if A_pri > 0 else 0
+        L_pri_uH = (r_pri**2 * n_pri**2) / (25.4 * (9*r_pri + 10*h_pri)) if (9*r_pri + 10*h_pri) > 0 else 0
+        L_pri = L_pri_uH * 1e-6
+        
+        # Build Magpylib Coils
+        def make_spiral(r, h, n, z_offset=0):
+            if n == 0: return []
+            t = np.linspace(0, n * 2 * np.pi, int(n * 20))
+            x = r * np.cos(t)
+            y = r * np.sin(t)
+            z = np.linspace(-h/2, h/2, len(t)) + z_offset
+            return np.column_stack((x, y, z))
+            
+        sec_verts = make_spiral(r_sec, h_sec, n_sec, 0)
+        pri_verts = make_spiral(r_pri, h_pri, n_pri, z_pri)
+        
+        col = magpy.Collection()
+        sec_coil = None
+        pri_coil = None
+        
+        if len(sec_verts) > 0:
+            sec_coil = magpy.current.Polyline(current=1.0, vertices=sec_verts) # 1A test
+            sec_coil.style.color = '#3498db'
+            col.add(sec_coil)
+            
+        if len(pri_verts) > 0:
+            pri_coil = magpy.current.Polyline(current=1.0, vertices=pri_verts) # 1A for M calculation
+            pri_coil.style.color = '#e74c3c'
+            pri_coil.style.line.width = 4
+            col.add(pri_coil)
+            
+        # Mutual Inductance calculation numerically M = Flux / I
+        # Evaluate B field from Primary at the center of each turn of Secondary
+        M = 0
+        k = 0
+        if pri_coil and n_sec > 0:
+            turn_zs = np.linspace(-h_sec/2, h_sec/2, int(n_sec))
+            centers = np.column_stack((np.zeros(len(turn_zs)), np.zeros(len(turn_zs)), turn_zs))
+            B_at_centers = pri_coil.getB(centers) # in mT
+            B_z = B_at_centers[:, 2] / 1000.0 # Convert to Tesla
+            flux_per_turn = B_z * (np.pi * (r_sec/1000.0)**2)
+            M = np.sum(flux_per_turn) # I = 1A so M = Total Flux
+            if L_sec > 0 and L_pri > 0:
+                k = abs(M) / np.sqrt(L_sec * L_pri)
+
+        plotly_html = None
+        try:
+            import plotly.graph_objects as go
+            fig_plotly = magpy.show(col, return_fig=True, backend='plotly')
+            fig_plotly.update_layout(
+                scene=dict(aspectmode='data'),
+                margin=dict(l=0, r=0, b=0, t=0),
+                showlegend=False
+            )
+            plotly_html = fig_plotly.to_html(full_html=False, include_plotlyjs='cdn')
+        except Exception as e:
+            print("Plotly error:", e)
+
+        return jsonify({
+            'status': 'success',
+            'secondary': {
+                'R_dc': float(R_sec),
+                'L_uH': float(L_sec_uH),
+                'C_pF': float(C_sec_pF),
+                'f_res_Hz': float(f_res)
+            },
+            'primary': {
+                'R_dc': float(R_pri),
+                'L_uH': float(L_pri_uH)
+            },
+            'coupling': {
+                'M_uH': float(M * 1e6),
+                'k': float(k)
+            },
+            'plotly_html': plotly_html
+        })
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
