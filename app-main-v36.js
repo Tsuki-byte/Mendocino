@@ -1227,10 +1227,10 @@ window.actualizarResumenPesoManual = function() {
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
             
             if (pagina === 'calc') {
-                const selectorMaquina = document.getElementById('selector-maquina');
-                if (selectorMaquina && selectorMaquina.value === 'marx') {
-                    document.getElementById('page-calc-marx').classList.add('active');
-                    document.getElementById('page-calc-marx').style.display = 'block';
+                const selectorMaquina = document.getElementById('maquina-selector');
+                const maquinaActual = selectorMaquina ? selectorMaquina.value : 'mendocino';
+                if (typeof window.cambiarMaquina === 'function') {
+                    window.cambiarMaquina(maquinaActual);
                 } else {
                     document.getElementById('page-calc').classList.add('active');
                 }
