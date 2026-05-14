@@ -1250,7 +1250,8 @@ window.actualizarResumenPesoManual = function() {
                     const nombresModulo = {
                         'db': 'Base de Componentes',
                         'videos': 'Proyectos y Galería',
-                        'montaje': 'Manuales de Montaje'
+                        'montaje': 'Manuales de Montaje',
+                        'ayuda': 'Manual de Ayuda'
                     };
                     const nombreMod = nombresModulo[pagina] || 'Módulo';
                     

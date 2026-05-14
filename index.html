@@ -202,7 +202,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <button class="nav-tab" id="tab-db" data-page="db">🗄️ Componentes</button>
                 <button class="nav-tab" id="tab-videos" data-page="videos">🚀 Proyectos</button>
                 <button class="nav-tab" id="tab-montaje" data-page="montaje">🛠️ Manuales de Montaje</button>
-                <button class="nav-tab" onclick="const s=document.getElementById('maquina-selector'); if(s && s.value !== 'mendocino'){alert('El manual de ayuda para esta máquina estará disponible próximamente.');}else{window.open('Manual_Mendocino.html', '_blank');}" title="Abrir el Manual de Ayuda en una nueva pestaña">📖 Ayuda / Manual</button>
+                <button class="nav-tab" id="tab-ayuda" data-page="ayuda" title="Abrir el Manual de Ayuda de la aplicación">📖 Ayuda / Manual</button>
             </div>
             
             <div id="sidebar-context-calc" class="sidebar-context">
@@ -1995,6 +1995,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <button id="modal-dialogo-btn-aceptar" class="btn-action" style="flex: 1; background: var(--primary-color); margin-top: 0;">Aceptar</button>
             </div>
         </div>
+    </div>
+    
+    <div id="page-ayuda" class="page-container" style="display:none; height: calc(100vh - 80px);">
+        <iframe src="Manual_Mendocino.html" style="width: 100%; height: 100%; border: none; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></iframe>
     </div>
     </main>
 </div>
