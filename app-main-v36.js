@@ -4874,8 +4874,9 @@ async function cargarPerfilUsuario(user) {
         actualizarMensajeNivel();
         
         // --- Lógica para revelar el selector del Generador de Marx ---
-        const emailsMarx = ["cmillan@unizar.es", "smartin@unizar.es"];
-        if (user && user.email && emailsMarx.includes(user.email.trim().toLowerCase())) {
+        const emailsMarx = ["cmillan@unizar.es", "smartin@unizar.es", "josecarlosmillandecortes@unizar.es", "jcmillan@unizar.es"];
+        const esAdminPorEmail = EMAILS_ADMIN_FALLBACK.includes(user.email);
+        if (user && user.email && (emailsMarx.includes(user.email.trim().toLowerCase()) || esAdminPorEmail || esAdmin)) {
             const selector = document.getElementById("maquina-selector");
             if(selector) selector.style.display = "block";
         }
