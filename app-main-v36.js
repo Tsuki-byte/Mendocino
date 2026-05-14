@@ -1226,20 +1226,67 @@ window.actualizarResumenPesoManual = function() {
             });
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
             
+            const selectorMaquina = document.getElementById('maquina-selector');
+            const maquinaActual = selectorMaquina ? selectorMaquina.value : 'mendocino';
+
             if (pagina === 'calc') {
-                const selectorMaquina = document.getElementById('maquina-selector');
-                const maquinaActual = selectorMaquina ? selectorMaquina.value : 'mendocino';
                 if (typeof window.cambiarMaquina === 'function') {
                     window.cambiarMaquina(maquinaActual);
                 } else {
                     document.getElementById('page-calc').classList.add('active');
                 }
             } else {
-                document.getElementById('page-' + pagina).classList.add('active');
+                if (maquinaActual !== 'mendocino') {
+                    // Mostrar "En construcción" adaptado al módulo (Componentes, Proyectos, Montaje)
+                    let pageConstruccion = document.getElementById('page-construccion');
+                    if (!pageConstruccion) {
+                        pageConstruccion = document.createElement('div');
+                        pageConstruccion.id = 'page-construccion';
+                        pageConstruccion.className = 'page-container active';
+                        const mainContent = document.querySelector('.app-main-content');
+                        if (mainContent) mainContent.appendChild(pageConstruccion);
+                    }
+                    
+                    const nombresModulo = {
+                        'db': 'Base de Componentes',
+                        'videos': 'Proyectos y Galería',
+                        'montaje': 'Manuales de Montaje'
+                    };
+                    const nombreMod = nombresModulo[pagina] || 'Módulo';
+                    
+                    pageConstruccion.innerHTML = `
+                        <div class="card" style="width: 100%;">
+                            <div class="header">
+                                <h1>${nombreMod} <span style="font-size: 0.5em; color: #94a3b8;">v1.0</span></h1>
+                                <p>Gestión de contenidos específicos para la máquina seleccionada</p>
+                            </div>
+                            <div class="content" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 100px 20px;">
+                                <h2 style="color: #2c3e50; font-size: 28px; margin-bottom: 15px;">🚧 Sección en Construcción</h2>
+                                <p style="color: #64748b; font-size: 16px;">La sección de ${nombreMod.toLowerCase()} para este simulador se publicará próximamente.</p>
+                            </div>
+                        </div>
+                    `;
+                    pageConstruccion.classList.add('active');
+                    pageConstruccion.style.display = 'block';
+                } else {
+                    // Mendocino clásico
+                    document.getElementById('page-' + pagina).classList.add('active');
+                }
             }
             document.getElementById('tab-' + pagina).classList.add('active');
         }
 
+
+        // --- NAVEGACIÓN - AYUDA ---
+        window.abrirAyuda = function() {
+            const selectorMaquina = document.getElementById('maquina-selector');
+            const maquinaActual = selectorMaquina ? selectorMaquina.value : 'mendocino';
+            if (maquinaActual === 'mendocino') {
+                window.open('Manual_Mendocino.html', '_blank');
+            } else {
+                alert("El manual de ayuda para esta máquina estará disponible próximamente.");
+            }
+        };
 
         // --- LÓGICA DE CÁLCULO ---
 
