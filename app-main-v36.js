@@ -6,7 +6,7 @@ const NIVELES_USUARIO = {
 
 let usuarioActual = {
     nombre: 'demo',
-    nivel: localStorage.getItem('nivelUsuarioMotor') || NIVELES_USUARIO.BASICO
+    nivel: localStorage.getItem('nivelUsuarioMotor') || NIVELES_USUARIO.EXPERTO
 };
 
 // === VARIABLES GLOBALES CRÍTICAS ===
@@ -4815,19 +4815,19 @@ async function cargarPerfilUsuario(user) {
             profileActual = profile;
             esAdmin = esAdmin || (profile.rol === 'admin');
             usuarioActual.nombre = profile.nombre || user.email;
-            usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.BASICO;
+            usuarioActual.nivel = profile.nivel || NIVELES_USUARIO.EXPERTO;
             usuarioActual.permisos_pasos = profile.permisos_pasos || null;
         } else {
             profileActual = null;
             usuarioActual.nombre = user.user_metadata?.nombre || user.email || 'Alumno';
-            usuarioActual.nivel = NIVELES_USUARIO.BASICO;
+            usuarioActual.nivel = NIVELES_USUARIO.EXPERTO;
             usuarioActual.permisos_pasos = null;
         }
     } catch (err) {
         console.error("DEBUG [Perfil]: Error crítico cargando perfil:", err);
         profileActual = null;
         usuarioActual.nombre = user.email || 'Usuario';
-        usuarioActual.nivel = NIVELES_USUARIO.BASICO;
+        usuarioActual.nivel = NIVELES_USUARIO.EXPERTO;
     } finally {
         actualizarPanelAdminUI();
         actualizarMensajeNivel();
@@ -4848,17 +4848,44 @@ window.cambiarMaquina = function(maquina) {
     const pageMendocino = document.getElementById('page-calc');
     const pageMarx = document.getElementById('page-calc-marx');
 
+    // Ocultar todos por defecto
+    if (sidebarMendocino) sidebarMendocino.style.display = 'none';
+    if (sidebarMarx) sidebarMarx.style.display = 'none';
+    if (pageMendocino) { pageMendocino.classList.remove('active'); pageMendocino.style.display = 'none'; }
+    if (pageMarx) { pageMarx.classList.remove('active'); pageMarx.style.display = 'none'; }
+
+    // Ocultar pantalla de construcción si existe
+    let pageConstruccion = document.getElementById('page-construccion');
+    if (pageConstruccion) pageConstruccion.style.display = 'none';
+
     if (maquina === 'marx') {
-        if (sidebarMendocino) sidebarMendocino.style.display = 'none';
         if (sidebarMarx) sidebarMarx.style.display = 'block';
-        if (pageMendocino) { pageMendocino.classList.remove('active'); pageMendocino.style.display = 'none'; }
         if (pageMarx) { pageMarx.classList.add('active'); pageMarx.style.display = 'block'; }
         if (typeof calcularMarxPaso1 === 'function') calcularMarxPaso1();
-    } else {
+    } else if (maquina === 'mendocino') {
         if (sidebarMendocino) sidebarMendocino.style.display = 'block';
-        if (sidebarMarx) sidebarMarx.style.display = 'none';
         if (pageMendocino) { pageMendocino.classList.add('active'); pageMendocino.style.display = 'block'; }
-        if (pageMarx) { pageMarx.classList.remove('active'); pageMarx.style.display = 'none'; }
+    } else {
+        // Mostrar "En construcción" para el resto de simuladores nuevos
+        if (!pageConstruccion) {
+            pageConstruccion = document.createElement('div');
+            pageConstruccion.id = 'page-construccion';
+            pageConstruccion.className = 'page-container active';
+            pageConstruccion.style.display = 'flex';
+            pageConstruccion.style.flexDirection = 'column';
+            pageConstruccion.style.justifyContent = 'center';
+            pageConstruccion.style.alignItems = 'center';
+            pageConstruccion.style.height = '100%';
+            pageConstruccion.innerHTML = `
+                <div class="card" style="text-align: center; padding: 60px; max-width: 600px; margin: 40px auto; border: 1px dashed #cbd5e1; background: #f8fafc;">
+                    <h1 style="color: #2c3e50; font-size: 32px; margin-bottom: 10px;">🚧 Módulo en Construcción</h1>
+                    <p style="color: #64748b; font-size: 18px;">Este simulador se añadirá a la plataforma próximamente. Estamos trabajando en su desarrollo.</p>
+                </div>
+            `;
+            const mainContent = document.querySelector('.app-main-content');
+            if (mainContent) mainContent.appendChild(pageConstruccion);
+        }
+        if (pageConstruccion) pageConstruccion.style.display = 'block';
     }
 };
 

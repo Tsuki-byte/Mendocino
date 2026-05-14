@@ -153,9 +153,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="top-navbar">
             <div class="nav-right" style="width: 100%; justify-content: center; flex-wrap: wrap; gap: 10px;">
                 <div class="grupo-config-nav" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;">
-                    <select id="maquina-selector" style="display:none; background: rgba(52, 152, 219, 0.1); border: 1px solid rgba(52, 152, 219, 0.4); border-radius: 6px; padding: 6px 12px; color: #2c3e50; font-weight: bold; cursor: pointer; font-size: 14px;" onchange="cambiarMaquina(this.value)">
-                        <option value="mendocino">⚡ Simulador: Mendocino</option>
-                        <option value="marx">⚡ Simulador: Marx</option>
+                    <select id="maquina-selector" style="display:none; background: #1e293b; border: 1px solid #3b82f6; border-radius: 6px; padding: 6px 12px; color: #f8fafc; font-weight: bold; cursor: pointer; font-size: 14px;" onchange="cambiarMaquina(this.value)">
+                        <option value="mendocino" style="background: #1e293b; color: #f8fafc;">⚡ Simulador: Mendocino</option>
+                        <option value="marx" style="background: #1e293b; color: #f8fafc;">⚡ Simulador: Marx</option>
+                        <option value="lifter" style="background: #1e293b; color: #f8fafc;">⚡ Simulador: LIFTER (Electrostático)</option>
+                        <option value="mag_atraccion" style="background: #1e293b; color: #f8fafc;">⚡ Simulador: Mag. Atracción</option>
+                        <option value="mag_sustentacion" style="background: #1e293b; color: #f8fafc;">⚡ Simulador: Mag. Sustentación</option>
+                        <option value="wimshurst" style="background: #1e293b; color: #f8fafc;">⚡ Simulador: Gen. Wimshurst</option>
+                        <option value="plasma" style="background: #1e293b; color: #f8fafc;">⚡ Simulador: Bola de Plasma</option>
+                        <option value="coche" style="background: #1e293b; color: #f8fafc;">⚡ Simulador: Coche Electromagnético</option>
+                        <option value="transferencia" style="background: #1e293b; color: #f8fafc;">⚡ Simulador: Transf. de Energía</option>
                     </select>
                     <button class="btn-toolbar-nav" type="button" onclick="nuevoProyecto()" title="Nuevo proyecto desde cero" style="background: rgba(52, 152, 219, 0.2); border-color: rgba(52, 152, 219, 0.3);">
                         <span>Nuevo</span> ✨
