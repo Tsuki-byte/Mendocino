@@ -428,6 +428,37 @@
 
     </div>
 </details>
+<details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
+    <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Fase 13: Simulación Avanzada de Bobina de Tesla (Alta Frecuencia)</span>
+        <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
+    </summary>
+    <div style="padding: 20px;">
+        
+<p>Este módulo experimental permite dimensionar y analizar transformadores resonantes (Bobinas de Tesla) basados en la teoría de parámetros distribuidos y el modelado por elementos finitos interactivo.</p>
+<p><strong>Concepto Teórico:</strong> A diferencia de las bobinas convencionales de baja frecuencia, en este módulo la capacitancia parasítica del secundario (calculada mediante la aproximación empírica de Medhurst) y el acoplamiento magnético <em>K</em> juegan un papel fundamental para determinar la frecuencia de resonancia natural del sistema.</p>
+<div class="math-container" style="background-color: #f8f9fa; padding: 10px 20px; border-left: 4px solid #2c3e50; margin: 10px 0;">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub><mi>f</mi><mi>res</mi></msub>
+  <mo>=</mo>
+  <mfrac>
+    <mn>1</mn>
+    <mrow><mn>2</mn><mi>&pi;</mi><msqrt><mrow><mi>L</mi><mo>&sdot;</mo><mi>C</mi></mrow></msqrt></mrow>
+  </mfrac>
+</math>
+</div>
+<p>La integración con el motor científico <code>Magpylib</code> modela espacialmente cada espira del primario y secundario en 3D para calcular la inductancia mutua (M) exacta sumando el flujo magnético en el eje a lo largo de toda la longitud del devanado.</p>
+<div class="io-box">
+    <div class="io-title">Variables de la Fase 13</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Dimensiones geométricas y número de espiras del Primario y Secundario.</div>
+    <div class="io-entry io-in"><strong>Entrada:</strong> Capacitancia del toroide superior (Topload).</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Resistencia y Frecuencia de Resonancia teórica del secundario.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Inductancia Mutua (M) y factor de acoplamiento (k) calculados numéricamente en 3D.</div>
+    <div class="io-entry io-out"><strong>Salida:</strong> Visor tridimensional de Plotly para inspeccionar el campo geomético del bobinado.</div>
+</div>
+
+    </div>
+</details>
 <hr>
 
 <h2>3. ESTUDIO ANALÍTICO DESARROLLADO: "6 Caras - Placas 53x18x2 - Hilo 0,315"</h2>
