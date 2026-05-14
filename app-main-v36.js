@@ -4866,26 +4866,45 @@ window.cambiarMaquina = function(maquina) {
         if (sidebarMendocino) sidebarMendocino.style.display = 'block';
         if (pageMendocino) { pageMendocino.classList.add('active'); pageMendocino.style.display = 'block'; }
     } else {
-        // Mostrar "En construcción" para el resto de simuladores nuevos
+        // Mostrar el menú lateral específico del nuevo simulador
+        const specificSidebar = document.getElementById(`sidebar-context-${maquina}`);
+        if (specificSidebar) specificSidebar.style.display = 'block';
+
+        // Definir títulos específicos para cada simulador nuevo
+        const titulosNuevos = {
+            'lifter': { title: 'Diseño de LIFTER Electrostático', sub: 'Simulador de levitación electrostática de alta tensión' },
+            'mag_atraccion': { title: 'Diseño de Levitador por Atracción', sub: 'Simulador de levitación magnética activa' },
+            'mag_sustentacion': { title: 'Diseño de Levitador por Sustentación', sub: 'Simulador de levitación magnética pasiva' },
+            'wimshurst': { title: 'Diseño de Generador Wimshurst', sub: 'Simulador de generador electrostático de influencia' },
+            'plasma': { title: 'Diseño de Bola de Plasma', sub: 'Simulador de descargas en gases nobles a alta frecuencia' },
+            'coche': { title: 'Diseño de Coche Electromagnético', sub: 'Simulador de propulsión y tracción electromagnética' },
+            'transferencia': { title: 'Diseño de Transferencia de Energía', sub: 'Simulador de acoplamiento inductivo resonante' }
+        };
+
+        const configInfo = titulosNuevos[maquina] || { title: 'Módulo en Desarrollo', sub: 'Simulación próximamente disponible' };
+
+        // Mostrar "En construcción" pero con el estilo de cabecera estándar
         if (!pageConstruccion) {
             pageConstruccion = document.createElement('div');
             pageConstruccion.id = 'page-construccion';
             pageConstruccion.className = 'page-container active';
-            pageConstruccion.style.display = 'flex';
-            pageConstruccion.style.flexDirection = 'column';
-            pageConstruccion.style.justifyContent = 'center';
-            pageConstruccion.style.alignItems = 'center';
-            pageConstruccion.style.height = '100%';
-            pageConstruccion.innerHTML = `
-                <div class="card" style="text-align: center; padding: 60px; max-width: 600px; margin: 40px auto; border: 1px dashed #cbd5e1; background: #f8fafc;">
-                    <h1 style="color: #2c3e50; font-size: 32px; margin-bottom: 10px;">🚧 Módulo en Construcción</h1>
-                    <p style="color: #64748b; font-size: 18px;">Este simulador se añadirá a la plataforma próximamente. Estamos trabajando en su desarrollo.</p>
-                </div>
-            `;
             const mainContent = document.querySelector('.app-main-content');
             if (mainContent) mainContent.appendChild(pageConstruccion);
         }
-        if (pageConstruccion) pageConstruccion.style.display = 'block';
+        
+        pageConstruccion.innerHTML = `
+            <div class="card" style="width: 100%;">
+                <div class="header">
+                    <h1>${configInfo.title} <span style="font-size: 0.5em; color: #94a3b8;">v1.0</span></h1>
+                    <p>${configInfo.sub}</p>
+                </div>
+                <div class="content" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 100px 20px;">
+                    <h2 style="color: #2c3e50; font-size: 28px; margin-bottom: 15px;">🚧 Módulo en Construcción</h2>
+                    <p style="color: #64748b; font-size: 16px;">Este simulador se añadirá a la plataforma próximamente.</p>
+                </div>
+            </div>
+        `;
+        pageConstruccion.style.display = 'block';
     }
 };
 
