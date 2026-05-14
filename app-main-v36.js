@@ -1277,17 +1277,6 @@ window.actualizarResumenPesoManual = function() {
         }
 
 
-        // --- NAVEGACIÓN - AYUDA ---
-        window.abrirAyuda = function() {
-            const selectorMaquina = document.getElementById('maquina-selector');
-            const maquinaActual = selectorMaquina ? selectorMaquina.value : 'mendocino';
-            if (maquinaActual === 'mendocino') {
-                window.open('Manual_Mendocino.html', '_blank');
-            } else {
-                alert("El manual de ayuda para esta máquina estará disponible próximamente.");
-            }
-        };
-
         // --- LÓGICA DE CÁLCULO ---
 
         // --- PASO 1: GEOMETRÍA ---
