@@ -130,7 +130,7 @@ function inyectarMemoriaTecnica() {
     #informe-automatico-html .io-out::before { content: '✔️ '; }
 </style>
 
-<h1>Memoria Técnica y Cálculos de Diseño: Motor Mendocino</h1>
+<h1>Memoria Técnica y Cálculos de Diseño: ${window.EstadoDiseno?.tituloProyecto || "Diseño en Curso"}</h1>
 
 <p>Este documento constituye la memoria técnica que desglosa el diseño, la parametrización geométrica y los cálculos físicos del prototipo de motor Mendocino que ha configurado. Sirve como registro de ingeniería detallado sobre la viabilidad, el equilibrio de masas, así como las fuerzas electrodinámicas de levitación y rotación de este modelo específico.</p>
 
@@ -683,7 +683,7 @@ function inyectarMemoriaTecnica() {
 </details>
 <details style="margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden;">
     <summary style="font-size: 18px; font-weight: bold; cursor: pointer; color: #16a085; padding: 15px; background: #e2e8f0; border-bottom: 1px solid #cbd5e1; list-style: none; display: flex; justify-content: space-between; align-items: center;">
-        <span>3.3. Interacción Lumínica según Inclinación (Ley del Coseno)</span>
+        <span>3.3. Interacción Lumínica según Inclinación</span>
         <span style="font-size: 14px; color: #64748b;">(Clic para expandir) 🔽</span>
     </summary>
     <div style="padding: 20px;">
