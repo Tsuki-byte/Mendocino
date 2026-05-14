@@ -895,48 +895,6 @@ function inyectarMemoriaTecnica() {
         </div>
         <p style="margin-top: 10px; margin-bottom: 5px; color: #475569;">Conocida la Longitud Media de una sola espira (<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>L</mi><mi>m</mi></msub></math>), la calculadora puede deducir analíticamente el <strong>Número de Vueltas</strong> necesarias simplemente dividiendo la longitud total de cable requerida (para que su resistencia alcance el punto de máxima potencia del panel) entre este valor <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><msub><mi>L</mi><mi>m</mi></msub></math>.</p>
     </li>
-</ul>
-
-<hr>
-
-<h2>4. Simulación Avanzada: Bobina de Tesla</h2>
-<p>Basado en los cálculos analíticos y las simulaciones del TFG para transformadores resonantes, este módulo utiliza <strong>Magpylib</strong> para resolver numéricamente el campo magnético interactivo entre primario y secundario, calculando la inductancia mutua y las frecuencias de resonancia por parámetros distribuidos.</p>
-
-<div class="io-box" style="background-color: #f0fdf4; border-color: #bbf7d0;">
-    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-        <div style="flex: 1;">
-            <strong style="color: #047857;">Secundario (Bobinado Alta Tensión):</strong><br>
-            <div style="margin-top: 5px;">Radio (mm): <input type="number" id="tesla-sec-r" value="55" style="width:70px; padding:3px;"></div>
-            <div style="margin-top: 5px;">Altura (mm): <input type="number" id="tesla-sec-h" value="435" style="width:70px; padding:3px;"></div>
-            <div style="margin-top: 5px;">Espiras: <input type="number" id="tesla-sec-n" value="1827" style="width:70px; padding:3px;"></div>
-            <div style="margin-top: 5px;">Hilo (mm): <input type="number" id="tesla-sec-w" value="0.1" style="width:70px; padding:3px;"></div>
-        </div>
-        <div style="flex: 1;">
-            <strong style="color: #047857;">Primario (Bobinado Excitador):</strong><br>
-            <div style="margin-top: 5px;">Radio (mm): <input type="number" id="tesla-pri-r" value="100" style="width:70px; padding:3px;"></div>
-            <div style="margin-top: 5px;">Altura (mm): <input type="number" id="tesla-pri-h" value="50" style="width:70px; padding:3px;"></div>
-            <div style="margin-top: 5px;">Espiras: <input type="number" id="tesla-pri-n" value="5" style="width:70px; padding:3px;"></div>
-            <div style="margin-top: 5px;">Hilo (mm): <input type="number" id="tesla-pri-w" value="2.0" style="width:70px; padding:3px;"></div>
-        </div>
-    </div>
-    <div style="text-align: center; margin-top: 20px;">
-        <button onclick="ejecutarSimulacionTesla()" style="background-color: #10b981; color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">Simular Campo y Acoplamiento (Magpylib)</button>
-    </div>
-</div>
-
-<div id="resultado-tesla" style="margin-top: 20px; display: none;">
-    <h3 style="color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Resultados del Análisis Magnético</h3>
-    <div id="tesla-loading" style="display: none; color: #f59e0b; font-weight: bold; padding: 10px; background: #fffbeb; border-radius: 5px; margin-bottom: 15px;">Calculando integración de flujo espira a espira en el servidor...</div>
-    
-    <div id="tesla-data" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
-        <!-- Datos inyectados aquí -->
-    </div>
-    
-    <div id="tesla-plot" style="width: 100%; height: 500px; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; background: #f8fafc;">
-        <!-- HTML de Plotly inyectado aquí -->
-    </div>
-</div>
-
 `;
     
     contenedor.innerHTML = htmlString;
@@ -962,7 +920,7 @@ window.ejecutarSimulacionTesla = async function() {
             wire_radius_mm: parseFloat(document.getElementById('tesla-pri-w').value),
             z_offset_mm: 0
         },
-        topload_capacitance_pF: 7.5
+        topload_capacitance_pF: parseFloat(document.getElementById('tesla-ctop').value) || 0
     };
     
     try {

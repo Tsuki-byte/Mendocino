@@ -4886,14 +4886,18 @@ async function cargarPerfilUsuario(user) {
 window.cambiarMaquina = function(maquina) {
     const sidebarMendocino = document.getElementById('sidebar-context-calc');
     const sidebarMarx = document.getElementById('sidebar-context-marx');
+    const sidebarTesla = document.getElementById('sidebar-context-tesla');
     const pageMendocino = document.getElementById('page-calc');
     const pageMarx = document.getElementById('page-calc-marx');
+    const pageTesla = document.getElementById('page-calc-tesla');
 
     // Ocultar todos por defecto
     if (sidebarMendocino) sidebarMendocino.style.display = 'none';
     if (sidebarMarx) sidebarMarx.style.display = 'none';
+    if (sidebarTesla) sidebarTesla.style.display = 'none';
     if (pageMendocino) { pageMendocino.classList.remove('active'); pageMendocino.style.display = 'none'; }
     if (pageMarx) { pageMarx.classList.remove('active'); pageMarx.style.display = 'none'; }
+    if (pageTesla) { pageTesla.classList.remove('active'); pageTesla.style.display = 'none'; }
 
     // Ocultar pantalla de construcción si existe
     let pageConstruccion = document.getElementById('page-construccion');
@@ -4903,6 +4907,9 @@ window.cambiarMaquina = function(maquina) {
         if (sidebarMarx) sidebarMarx.style.display = 'block';
         if (pageMarx) { pageMarx.classList.add('active'); pageMarx.style.display = 'block'; }
         if (typeof calcularMarxPaso1 === 'function') calcularMarxPaso1();
+    } else if (maquina === 'tesla') {
+        if (sidebarTesla) sidebarTesla.style.display = 'block';
+        if (pageTesla) { pageTesla.classList.add('active'); pageTesla.style.display = 'block'; }
     } else if (maquina === 'mendocino') {
         if (sidebarMendocino) sidebarMendocino.style.display = 'block';
         if (pageMendocino) { pageMendocino.classList.add('active'); pageMendocino.style.display = 'block'; }
@@ -4968,8 +4975,17 @@ window.cambiarPasoMarx = function(paso) {
                 {left: "$", right: "$", display: false},
                 {left: "\\(", right: "\\)", display: false}
             ]
-        });
     }
+};
+
+window.cambiarPasoTesla = function(paso) {
+    document.querySelectorAll('#sidebar-context-tesla .step-indicator').forEach(ind => ind.classList.remove('active'));
+    const activo = document.getElementById(`ind-tesla-${paso}`);
+    if(activo) activo.classList.add('active');
+    
+    document.querySelectorAll('#page-calc-tesla .step-container').forEach(container => container.classList.remove('active'));
+    const contenedorActivo = document.getElementById(`step-tesla-${paso}`);
+    if (contenedorActivo) contenedorActivo.classList.add('active');
 };
 
 window.calcularMarxPaso1 = function() {

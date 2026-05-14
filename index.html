@@ -296,6 +296,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="step-indicator active"><span>1. Esquema eléctrico</span></div>
                 </div>
             </div>
+
+            <div id="sidebar-context-tesla" class="sidebar-context" style="display:none;">
+                <hr style="border: none; height: 1px; background: rgba(148, 163, 184, 0.3); margin: 25px 10px;">
+                <h3 class="sidebar-title">BOBINA DE TESLA</h3>
+                <div class="stepper-container">
+                    <div class="step-indicator active" id="ind-tesla-1" onclick="cambiarPasoTesla(1)"><span>1. Simulación Magpylib</span></div>
+                </div>
+            </div>
         </aside>
 
         <main class="app-main-content">
@@ -421,6 +429,66 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                 <div class="nav-buttons">
                                     <button class="btn-nav btn-prev" onclick="cambiarPasoMarx(3)">⬅ Anterior</button>
                                     <div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-calc-tesla" class="page-container" style="display:none;">
+                <div class="card">
+                    <div class="header">
+                        <h1>Diseño de Bobina de Tesla <span style="font-size: 0.5em; color: #94a3b8;">v1.0</span></h1>
+                        <p>Simulador interactivo con Magpylib (Alta Frecuencia)</p>
+                    </div>
+                    <div class="content">
+                        <!-- Paso 1 -->
+                        <div id="step-tesla-1" class="step-container active">
+                            <div class="form-section">
+                                <h2 class="titulo-seccion-principal">⚡ 1. Parámetros Geométricos</h2>
+                                <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Ajusta las dimensiones de las bobinas y el toroide para calcular inductancias y frecuencia de resonancia.</p>
+                                
+                                <div class="fila-formulario">
+                                    <div class="form-group" style="flex: 1;">
+                                        <label style="color: #047857;">Secundario (Alta Tensión)</label>
+                                        <div style="margin-top: 5px; font-size: 14px;">Radio (mm): <input type="number" id="tesla-sec-r" value="55" style="width:100%; padding:5px; margin-bottom: 10px;"></div>
+                                        <div style="margin-top: 5px; font-size: 14px;">Altura (mm): <input type="number" id="tesla-sec-h" value="435" style="width:100%; padding:5px; margin-bottom: 10px;"></div>
+                                        <div style="margin-top: 5px; font-size: 14px;">Espiras (N): <input type="number" id="tesla-sec-n" value="1827" style="width:100%; padding:5px; margin-bottom: 10px;"></div>
+                                        <div style="margin-top: 5px; font-size: 14px;">Ø Hilo (mm): <input type="number" id="tesla-sec-w" value="0.1" style="width:100%; padding:5px; margin-bottom: 10px;"></div>
+                                    </div>
+                                    <div class="form-group" style="flex: 1;">
+                                        <label style="color: #b45309;">Primario (Baja Tensión)</label>
+                                        <div style="margin-top: 5px; font-size: 14px;">Radio Ext (mm): <input type="number" id="tesla-pri-r" value="100" style="width:100%; padding:5px; margin-bottom: 10px;"></div>
+                                        <div style="margin-top: 5px; font-size: 14px;">Altura (mm): <input type="number" id="tesla-pri-h" value="50" style="width:100%; padding:5px; margin-bottom: 10px;"></div>
+                                        <div style="margin-top: 5px; font-size: 14px;">Espiras (N): <input type="number" id="tesla-pri-n" value="5" style="width:100%; padding:5px; margin-bottom: 10px;"></div>
+                                        <div style="margin-top: 5px; font-size: 14px;">Ø Hilo (mm): <input type="number" id="tesla-pri-w" value="2.0" style="width:100%; padding:5px; margin-bottom: 10px;"></div>
+                                    </div>
+                                </div>
+                                <div class="fila-formulario">
+                                    <div class="form-group" style="flex: 1;">
+                                        <label style="color: #3b82f6;">Toroide (Topload)</label>
+                                        <div style="margin-top: 5px; font-size: 14px;">Capacitancia C_top (pF): <input type="number" id="tesla-ctop" value="15.0" step="0.1" style="width:100%; padding:5px; margin-bottom: 10px;"></div>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn-action" style="width: 100%; margin-top: 15px;" onclick="ejecutarSimulacionTesla()">🚀 Ejecutar Simulación 3D</button>
+                            </div>
+                            
+                            <div class="summary-section" style="flex: 1.5; padding-left: 20px;">
+                                <h3 style="margin-top: 0; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📊 Resultados Magpylib</h3>
+                                <div id="resultado-tesla">
+                                    <div id="tesla-loading" style="display: none; color: #f59e0b; font-weight: bold; padding: 10px; background: #fffbeb; border-radius: 5px; margin-bottom: 15px;">Calculando integración de flujo espira a espira en el servidor...</div>
+                                    
+                                    <div id="tesla-data" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+                                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; font-size: 14px; color: #334155; width: 100%;">
+                                            Haz clic en "Ejecutar Simulación 3D" para calcular los parámetros.
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="tesla-plot" style="width: 100%; height: 500px; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; background: #f8fafc;">
+                                        <div style="text-align:center; padding-top: 220px; color: #94a3b8;">Visor 3D Interactivo</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
