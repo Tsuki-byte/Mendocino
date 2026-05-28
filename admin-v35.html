@@ -814,14 +814,24 @@
                 alert('No puedes eliminarte a ti mismo.');
                 return;
             }
-            if (!confirm(`¿Estás seguro de que quieres dar de baja a ${nombre}?`)) return;
+            if (!confirm(`¿Estás seguro de que quieres dar de baja DEFINITIVAMENTE a ${nombre}?`)) return;
 
-            const { error } = await dbMendocinoClient.from('profiles').delete().eq('id', id);
-            if (error) {
-                mostrarToast('Error al eliminar: ' + error.message, 'error');
-                return;
+            // Intentar eliminar desde auth.users usando una función RPC (requiere configuración en Supabase)
+            const { error: rpcError } = await dbMendocinoClient.rpc('delete_user', { target_user_id: id });
+            
+            if (rpcError) {
+                console.warn("RPC delete_user falló. Procediendo con borrado manual del perfil. Error:", rpcError);
+                // Fallback: solo borramos el perfil, pero el auth.users se queda
+                const { error } = await dbMendocinoClient.from('profiles').delete().eq('id', id);
+                if (error) {
+                    mostrarToast('Error al eliminar perfil: ' + error.message, 'error');
+                    return;
+                }
+                alert('⚠️ Se ha borrado el perfil público, pero para eliminar sus credenciales debes ir al panel de Supabase -> Authentication -> Users y borrarlo manualmente allí, o crear la función RPC de borrado.');
+            } else {
+                mostrarToast('Usuario y credenciales eliminados correctamente.', 'ok');
             }
-            mostrarToast('Usuario eliminado.', 'ok');
+            
             cargarUsuarios();
         }
 
