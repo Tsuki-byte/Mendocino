@@ -2236,7 +2236,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <span style="font-size: 24px;">🤖</span>
                     <div>
                         <strong style="display: block; font-size: 15px; line-height: 1.2;">Mendocino AI</strong>
-                        <span style="font-size: 11px; color: #94a3b8;">Asistente Técnico Integrado</span>
+                        <span style="font-size: 11px; color: #94a3b8;">Asistente de Usabilidad</span>
                     </div>
                 </div>
                 <button onclick="toggleAIChat()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
@@ -2244,7 +2244,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             
             <div id="ai-chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 10px;">
                 <div style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 14px; color: #334155; align-self: flex-start; max-width: 85%; line-height: 1.4;">
-                    ¡Hola! Soy el asistente experto en el Simulador de Motores Mendocino. Conozco toda la física, matemáticas y usabilidad de esta web.<br><br>¿En qué te puedo ayudar hoy?
+                    ¡Hola! Soy el asistente de usabilidad del Simulador de Motores Mendocino. Puedo ayudarte a navegar por la web, entender las opciones de la herramienta y resolver dudas sobre su manejo.<br><br>¿En qué te puedo ayudar hoy?
                 </div>
             </div>
             
@@ -2265,9 +2265,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const systemPrompt = `Eres el Asistente de Usabilidad del Simulador de Motores Mendocino. Tu única función es ayudar al usuario a navegar por la interfaz web de la aplicación y facilitar su uso.
 REGLAS ESTRICTAS:
 1. FOCO EXCLUSIVO EN LA INTERFAZ: Limítate a explicar dónde están los botones, qué hace cada opción del menú, cómo cargar/guardar proyectos, o cómo navegar por las diferentes secciones de la herramienta web.
-2. RECHAZO DE PREGUNTAS TÉCNICAS Y DE MONTAJE: Para cualquier duda técnica sobre física, cálculos de fuerzas, magnetismo, o sobre el proceso real de montaje y ensamblaje de las piezas del motor (impresión 3D, equilibrado, polaridad de imanes, bobinado), debes indicar SIEMPRE este texto exactamente: "El manual no es suficientemente extenso para cubrir tu consulta. Para cuestiones tan específicas de cálculo o montaje, por favor escribe un correo al Dr. Millán: cmillan@unizar.es"
-3. RESPUESTAS CLARAS Y DIRECTAS: Ve directo al grano y usa formato Markdown.
-4. RECHAZO DE TEMAS EXTERNOS: Ignora por completo cualquier pregunta que no tenga que ver con la usabilidad de este simulador.`;
+2. RECHAZO DE PREGUNTAS TÉCNICAS Y DE CÁLCULO: Para cualquier duda técnica sobre física, cálculos de fuerzas, magnetismo, o sobre el proceso real de montaje y ensamblaje de las piezas del motor (impresión 3D, equilibrado, polaridad de imanes, bobinado), debes indicar SIEMPRE este texto exactamente: "Para cuestiones de cálculo o montaje, por favor contacta con Susana Martín Arroyo: smartin@unizar.es"
+3. RECHAZO DE PREGUNTAS DE USABILIDAD QUE SUPEREN TU CONOCIMIENTO: Si no puedes resolver una duda sobre el manejo o la interfaz de la web, indica SIEMPRE este texto exactamente: "Para cuestiones de usabilidad o manejo de la herramienta, puedes contactar en: cmillan@unizar.es"
+4. RESPUESTAS CLARAS Y DIRECTAS: Ve directo al grano y usa formato Markdown.
+5. RECHAZO DE TEMAS EXTERNOS: Ignora por completo cualquier pregunta que no tenga que ver con la usabilidad de este simulador.`;
 
         function toggleAIChat() {
             const win = document.getElementById('ai-chat-window');
